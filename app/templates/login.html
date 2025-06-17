@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Connexion - LegalHub{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center h-100">
+    <div class="card p-4 shadow-sm" style="width: 100%; max-width: 400px;">
+        <h2 class="card-title text-center mb-4">Connexion Avocat</h2>
+        <form method="post" action="/login">
+            <div class="mb-3">
+                <label for="emailInput" class="form-label">Email :</label>
+                <input type="email" class="form-control" id="emailInput" name="email" required placeholder="votre@email.com">
+            </div>
+            <div class="mb-3">
+                <label for="passwordInput" class="form-label">Mot de passe :</label>
+                <input type="password" class="form-control" id="passwordInput" name="password" required placeholder="Votre mot de passe">
+            </div>
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">Se connecter</button>
+            </div>
+            <div class="text-center mt-3">
+                <a href="#" class="text-muted">Mot de passe oublié ?</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
