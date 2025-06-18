@@ -3,25 +3,51 @@
 {% block title %}Connexion - LegalHub{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-center align-items-center h-100">
-    <div class="card p-4 shadow-sm" style="width: 100%; max-width: 400px;">
-        <h2 class="card-title text-center mb-4">Connexion Avocat</h2>
-        <form method="post" action="/login">
-            <div class="mb-3">
-                <label for="emailInput" class="form-label">Email :</label>
-                <input type="email" class="form-control" id="emailInput" name="email" required placeholder="votre@email.com">
+<div class="row justify-content-center">
+    <div class="col-xl-10 col-lg-12 col-md-9">
+        <div class="card o-hidden border-0 shadow-lg my-5">
+            <div class="card-body p-0">
+                <div class="row">
+                    <div class="col-lg-6 d-none d-lg-block" style="background: url('https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-login-form/img3.webp') no-repeat center center; background-size: cover;">
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="p-5">
+                            <div class="text-center">
+                                <h1 class="h4 text-gray-900 mb-4">Bienvenue!</h1>
+                            </div>
+                            <form class="user" method="post" action="/login">
+                                <div class="form-group">
+                                    <input type="email" id="emailInput" name="email" class="form-control form-control-user"
+                                        aria-describedby="emailHelp"
+                                        placeholder="Entrez l'adresse e-mail..." required>
+                                </div>
+                                <div class="form-group">
+                                    <input type="password" id="passwordInput" name="password" class="form-control form-control-user"
+                                        placeholder="Mot de passe" required>
+                                </div>
+                                <div class="form-group">
+                                    <div class="custom-control custom-checkbox small">
+                                        <input type="checkbox" class="custom-control-input" id="customCheck">
+                                        <label class="custom-control-label" for="customCheck">Se souvenir de moi</label>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-google btn-user btn-block">
+                                    Se connecter
+                                </button>
+                                <hr>
+                                <a href="/auth/google" class="btn btn-google btn-user btn-block">
+                                    <i class="fab fa-google fa-fw"></i> Connexion avec Google
+                                </a>
+                            </form>
+                            <hr>
+                            <div class="text-center">
+                                <a class="small" href="forgot-password.html">Mot de passe oublié?</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="mb-3">
-                <label for="passwordInput" class="form-label">Mot de passe :</label>
-                <input type="password" class="form-control" id="passwordInput" name="password" required placeholder="Votre mot de passe">
-            </div>
-            <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary btn-lg">Se connecter</button>
-            </div>
-            <div class="text-center mt-3">
-                <a href="#" class="text-muted">Mot de passe oublié ?</a>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 {% endblock %}
