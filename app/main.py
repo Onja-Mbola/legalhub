@@ -2,8 +2,17 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from app.api.routes import user
+from app.db.init_db import init_db
+
 
 app = FastAPI()
+
+@app.on_event("startup")
+def startup_event():
+    init_db()
+
+app.include_router(user.router)
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 

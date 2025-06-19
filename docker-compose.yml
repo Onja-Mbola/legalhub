@@ -1,4 +1,5 @@
 version: '3.8'
+
 services:
   legalhub:
     build: .
@@ -8,3 +9,27 @@ services:
       - .:/app
     env_file:
       - .env
+    depends_on:
+      - db
+    networks:
+      - legalhub-network
+
+  db:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_USER: legalhub_user
+      POSTGRES_PASSWORD: secretpassword
+      POSTGRES_DB: legalhub_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - legalhub-network
+
+volumes:
+  postgres_data:
+
+networks:
+  legalhub-network:
