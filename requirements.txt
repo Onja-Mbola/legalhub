@@ -5,3 +5,7 @@ python-multipart
 sqlalchemy
 psycopg2-binary
 pydantic
+email-validator
+passlib
+python-jose[cryptography]
+fastapi-mail
