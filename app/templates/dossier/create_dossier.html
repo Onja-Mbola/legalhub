@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Création de dossier - Avocat{% endblock %}
+
+{% block sidebar %}
+    {% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+    {% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block content %}
+<form id="creationDossierForm" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label class="form-label">Type d'affaire</label>
+        <select class="form-select" name="type_affaire" id="type_affaire" required>
+            <option value="">-- Sélectionner --</option>
+            {% for item in type_affaire %}
+                <option value="{{ item.id }}">{{ item.valeur | capitalize }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="mb-3" id="sous_type_affaire_container" style="display: none;">
+        <label class="form-label">Sous-type</label>
+        <select class="form-select" name="sous_type_affaire" id="sous_type_affaire">
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Urgence</label>
+        <select class="form-select" name="urgence" id="urgence">
+            <option value="">-- Sélectionner --</option>
+            {% for item in urgences %}
+                <option value="{{ item.id }}">{{ item.valeur }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label for="nom_dossier" class="form-label">Nom du dossier</label>
+        <input type="text" class="form-control" id="nom_dossier" name="nom_dossier" required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Demandeurs</label>
+        <div id="demandeurs-container"></div>
+        <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addDemandeur()">+ Ajouter un demandeur</button>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Parties adverses</label>
+        <div id="adverses-container"></div>
+        <button type="button" class="btn btn-outline-danger btn-sm mt-2" onclick="addAdverse()">+ Ajouter une partie adverse</button>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Adresse du client</label>
+        <input type="text" class="form-control" name="adresse_client">
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label class="form-label">Juridiction</label>
+            <input type="text" class="form-control" name="juridiction">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Tribunal</label>
+            <input type="text" class="form-control" name="tribunal">
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label class="form-label">Numéro de dossier (interne)</label>
+            <input type="text" class="form-control" name="numero_dossier">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Avocat responsable</label>
+            <input type="text" class="form-control" name="responsable" value="Maitre {{ user.nom }}" readonly>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="mb-3">
+        <label class="form-label">Avocat de la partie Adverse</label>
+        <input type="text" class="form-control" name="avocat_adverse">
+    </div>
+
+        <div class="col-md-6">
+            <label class="form-label">Date de création</label>
+            <input type="date" class="form-control" name="date_creation">
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Huissiers impliqués</label>
+        <input type="text" class="form-control" name="huissiers">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Pièces jointes</label>
+        <input type="file" class="form-control" name="pieces_jointes" multiple>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Commentaires</label>
+        <input type="text" class="form-control" name="commentaire">
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-1">Enregistrer et passer à l’étape suivante</button>
+</form>
+
+<script>
+    const civilTypes = {{ civil_types | tojson }};
+    const penalTypes = {{ penal_types | tojson }};
+    const qualiteTypes = {{ qualite_types | tojson }};
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', path='/js/creation_dossier.js') }}?v=5"></script>
+{% endblock %}

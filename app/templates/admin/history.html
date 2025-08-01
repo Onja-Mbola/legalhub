@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Admin - Historique des Activités{% endblock %}
+
+{% block sidebar %}
+    {% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4 mt-5">
+        <div>
+            <h1 class="h3 mb-1 text-gray-800">Historique des activités</h1>
+            <p class="text-muted small">Liste des actions d’activation ou de désactivation effectuées sur les comptes utilisateurs.</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Utilisateur concerné</th>
+                            <th>Action</th>
+                            <th>Effectué par</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry, user, actor in history %}
+                        <tr>
+                            <td class="text-muted">{{ loop.index }}</td>
+                            <td>
+                                <strong>{{ entry.user.nom }}</strong>
+                                <br>
+                                <small class="text-muted">{{ entry.user.email }}</small>
+                            </td>
+                            <td>
+                                {% if entry.action == 'activation' %}
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-user-check"></i> Activation
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-secondary">
+                                        <i class="fas fa-user-slash"></i> Désactivation
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ entry.actor.nom }}</strong>
+                                <br>
+                                <small class="text-muted">{{ entry.actor.email }}</small>
+                            </td>
+                            <td>
+                                <span class="text-muted">{{ entry.timestamp.strftime('%d/%m/%Y %H:%M') }}</span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">Aucune activité trouvée.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,149 @@
+{% set role = user.role.value if user.role.value else "" %}
+
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+    <a class="sidebar-brand d-flex align-items-center justify-content-center"
+       href="{% if role == 'admin' %}/admin/dashboard{% elif role == 'clarck' %}/dashboard/clarck{% elif role == 'avocat' %}/avocat/dashboard{% else %}/ {% endif %}">
+        <div class="sidebar-brand-icon
+            {% if role == 'avocat' %} rotate-n-15 {% endif %}">
+            <i class="
+                {% if role == 'admin' %}fas fa-user-shield
+                {% elif role == 'clarck' %}fas fa-user
+                {% elif role == 'avocat' %}fas fa-laugh-wink
+                {% else %}fas fa-question
+                {% endif %}"></i>
+        </div>
+        <div class="sidebar-brand-text mx-3">
+            {% if role == 'clarck' %}
+                Clarck - {{ user.nom }}
+            {% elif role == 'admin' %}
+                Admin
+            {% elif role == 'avocat' %}
+                LegalHub
+            {% else %}
+                LegalHub
+            {% endif %}
+        </div>
+    </a>
+
+    <hr class="sidebar-divider {% if role == 'avocat' %}my-0{% endif %}">
+
+    {% if role == 'admin' %}
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/dashboard">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard Admin</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/users/create">
+                <i class="fas fa-user-plus"></i>
+                <span>Créer un compte</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+                <a class="nav-link" href="/admin/history">
+                    <i class="fas fa-history"></i>
+                    <span>Historique des activités</span>
+                </a>
+        </li>
+
+    {% elif role == 'avocat' %}
+        <li class="nav-item {% if request.url.path == '/' %}active{% endif %}">
+            <a class="nav-link" href="/">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Tableau de bord</span>
+            </a>
+        </li>
+
+        <hr class="sidebar-divider">
+
+        <div class="sidebar-heading">Interface</div>
+
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseDossiers"
+               aria-expanded="true" aria-controls="collapseDossiers">
+                <i class="fas fa-folder"></i>
+                <span>Dossiers</span>
+            </a>
+            <div id="collapseDossiers" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    <h6 class="collapse-header">Gestion des dossiers:</h6>
+                    <a class="collapse-item" href="/dossiers">Voir les dossiers</a>
+                    <a class="collapse-item" href="/dossiers/nouveau">Nouveau dossier</a>
+                </div>
+            </div>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseFacturation"
+               aria-expanded="true" aria-controls="collapseFacturation">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <span>Facturation</span>
+            </a>
+            <div id="collapseFacturation" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    <h6 class="collapse-header">Gestion des factures:</h6>
+                    <a class="collapse-item" href="/factures">Voir les factures</a>
+                    <a class="collapse-item" href="/factures/nouvelle">Nouvelle facture</a>
+                </div>
+            </div>
+        </li>
+
+        <hr class="sidebar-divider">
+
+        <div class="sidebar-heading">Addons</div>
+
+        <li class="nav-item">
+            <a class="nav-link" href="/statistiques">
+                <i class="fas fa-chart-area"></i>
+                <span>Statistiques</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="/utilisateurs">
+                <i class="fas fa-users"></i>
+                <span>Utilisateurs</span>
+            </a>
+        </li>
+
+
+    {% elif role == 'clarck' %}
+        <li class="nav-item">
+            <a class="nav-link" href="/dossiers">
+                <i class="fas fa-folder"></i>
+                <span>Voir les dossiers</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="/profil">
+                <i class="fas fa-user-cog"></i>
+                <span>Mon Profil</span>
+            </a>
+        </li>
+
+    {% else %}
+        <li class="nav-item">
+            <a class="nav-link" href="/">
+                <i class="fas fa-home"></i>
+                <span>Accueil</span>
+            </a>
+        </li>
+    {% endif %}
+
+    <hr class="sidebar-divider">
+
+    <li class="nav-item">
+        <a class="nav-link" href="/logout">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Déconnexion</span>
+        </a>
+    </li>
+    <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+    </div>
+
+</ul>

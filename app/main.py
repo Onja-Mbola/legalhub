@@ -4,6 +4,10 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from app.api.routes import user
 from app.db.init_db import init_db
+<<<<<<< Updated upstream
+=======
+from app.api.routes import auth, admin, avocat, clarck, dossier
+>>>>>>> Stashed changes
 
 
 app = FastAPI()
@@ -12,7 +16,16 @@ app = FastAPI()
 def startup_event():
     init_db()
 
+<<<<<<< Updated upstream
 app.include_router(user.router)
+=======
+app.include_router(auth.router)
+app.include_router(admin.router)
+app.include_router(avocat.router)
+app.include_router(clarck.router)
+app.include_router(dossier.router)
+
+>>>>>>> Stashed changes
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
