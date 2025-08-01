@@ -1,6 +1,6 @@
 import os
 
-from fastapi import APIRouter, Request, Depends, HTTPException
+from fastapi import APIRouter, Request, Depends, HTTPException, Form
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from starlette import status
@@ -45,18 +45,16 @@ def create_user_page(request: Request, current_user: User = Depends(get_current_
         "roles": roles
     })
 
-
 @router.post("/admin/users/create", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 async def create_user_api(
-        user_in: UserCreate,
-        db: Session = Depends(get_db),
-        current_user=Depends(get_current_admin_user)
+    nom: str = Form(...),
+    email: str = Form(...),
+    role: str = Form(...),
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_admin_user)
 ):
     try:
-        user_in.created_by_id = current_user.id
-
-        new_user = await register_user(db, user_in.nom, user_in.email, user_in.role, user_in.created_by_id)
-
+        new_user = await register_user(db, nom, email, role, current_user.id)
         return new_user
 
     except ValueError as e:
@@ -64,6 +62,7 @@ async def create_user_api(
     except Exception:
         db.rollback()
         raise HTTPException(status_code=500, detail="Erreur lors de la création du compte.")
+
 
 @router.get("/admin/users/{user_id}/toggle")
 async def toggle_user_activation(
