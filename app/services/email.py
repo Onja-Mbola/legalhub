@@ -15,7 +15,7 @@ conf = ConnectionConfig(
 )
 
 async def send_activation_email(email: EmailStr, token: str):
-    activation_link = f"http://localhost:8000/activate?token={token}"
+    activation_link = f"https://legalhub.onrender.com/activate?token={token}"
 
     html_content = f"""
     <html>
