@@ -47,6 +47,7 @@ def create_user_page(request: Request, current_user: User = Depends(get_current_
 
 @router.post("/admin/users/create", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 async def create_user_api(
+    request: Request,
     nom: str = Form(...),
     email: str = Form(...),
     role: str = Form(...),
@@ -54,14 +55,25 @@ async def create_user_api(
     current_user=Depends(get_current_admin_user)
 ):
     try:
-        new_user = await register_user(db, nom, email, role, current_user.id)
-        return new_user
+        await register_user(db, nom, email, role, current_user.id)
+        return RedirectResponse(url="/admin/dashboard", status_code=303)
+
 
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        return templates.TemplateResponse("admin/admin_create_user.html", {
+            "request": request,
+            "user": current_user,
+            "roles": [RoleEnum.admin, RoleEnum.avocat],
+            "error": str(e)
+        })
     except Exception:
         db.rollback()
-        raise HTTPException(status_code=500, detail="Erreur lors de la création du compte.")
+        return templates.TemplateResponse("admin/admin_create_user.html", {
+            "request": request,
+            "user": current_user,
+            "roles": [RoleEnum.admin, RoleEnum.avocat],
+            "error": "Erreur lors de la création du compte."
+        })
 
 
 @router.get("/admin/users/{user_id}/toggle")
