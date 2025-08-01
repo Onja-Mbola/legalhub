@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord - Clarck{% endblock %}
+
+{% block head %}
+<!-- FullCalendar CSS -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block sidebar %}
+    {% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <h1 class="h3 mb-4 text-gray-800">📂 Mes dossiers assignés</h1>
+
+    <table class="table table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th>Référence</th>
+                <th>Nom du Client</th>
+                <th>Statut</th>
+                <th>Dernière Mise à jour</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dossier in dossiers %}
+            <tr>
+                <td>{{ dossier.reference }}</td>
+                <td>{{ dossier.client }}</td>
+                <td>{{ dossier.statut }}</td>
+                <td>{{ dossier.updated_at }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr class="my-5">
+
+    <h1 class="h3 mb-4 text-gray-800">🗓️ Agenda de mon avocat</h1>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Titre</th>
+                <th>Date</th>
+                <th>Type</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for event in events %}
+            <tr>
+                <td>{{ event.title }}</td>
+                <td>{{ event.start }}</td>
+                <td>{{ 'Toute la journée' if event.allDay else 'Heure précise' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

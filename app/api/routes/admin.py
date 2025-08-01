@@ -1,25 +1,19 @@
-import asyncio
 import os
-from datetime import timedelta
 
-from fastapi import APIRouter, Request, Depends, Form, HTTPException
-from sqlalchemy.orm import Session, aliased
+from fastapi import APIRouter, Request, Depends, HTTPException
 from fastapi.templating import Jinja2Templates
+from sqlalchemy.orm import Session
 from starlette import status
 from starlette.responses import RedirectResponse, HTMLResponse
 
 from app.core.auth import get_current_user, get_current_admin_user
-from app.core.security import create_access_token
+from app.core.enums import RoleEnum
 from app.db.session import get_db
 from app.models.user import User
-from app.schemas.user import UserCreate
 from app.repositories.user import get_user_by_id
-from app.services.email import send_activation_email, send_activation
+from app.schemas.user import UserCreate, UserOut
 from app.services.history import list_activation_history
 from app.services.user import list_users, register_user, toggle_activation
-from app.core.enums import RoleEnum
-from app.models.activation_history import ActivationHistory
-
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -52,55 +46,25 @@ def create_user_page(request: Request, current_user: User = Depends(get_current_
     })
 
 
-@router.post("/admin/users/create", response_class=HTMLResponse)
-async def user_create_submit(
-    request: Request,
-    nom: str = Form(...),
-    email: str = Form(...),
-    role: str = Form(...),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin_user)
+@router.post("/admin/users/create", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+async def create_user_api(
+        user_in: UserCreate,
+        db: Session = Depends(get_db),
+        current_user=Depends(get_current_admin_user)
 ):
     try:
-        user_data = UserCreate(
-            nom=nom,
-            email=email,
-            role=RoleEnum(role),
-            created_by_id=current_user.id
-        )
-    except ValidationError as e:
-        return templates.TemplateResponse("admin/admin_create_user.html", {
-            "request": request,
-            "user": current_user,
-            "roles": [RoleEnum.admin, RoleEnum.avocat],
-            "error": e.errors()
-        })
+        user_in.created_by_id = current_user.id
 
-    try:
-        await register_user(
-            db,
-            user_data.nom,
-            user_data.email,
-            user_data.role,
-            user_data.created_by_id
-        )
-        return RedirectResponse(url="/admin/dashboard", status_code=302)
+        new_user = await register_user(db, user_in.nom, user_in.email, user_in.role, user_in.created_by_id)
+
+        return new_user
 
     except ValueError as e:
-        return templates.TemplateResponse("admin/admin_create_user.html", {
-            "request": request,
-            "user": current_user,
-            "roles": [RoleEnum.admin, RoleEnum.avocat],
-            "error": str(e)
-        })
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception:
         db.rollback()
-        return templates.TemplateResponse("admin/admin_create_user.html", {
-            "request": request,
-            "user": current_user,
-            "roles": [RoleEnum.admin, RoleEnum.avocat],
-            "error": "Erreur lors de la création du compte."
-        })
+        raise HTTPException(status_code=500, detail="Erreur lors de la création du compte.")
+
 @router.get("/admin/users/{user_id}/toggle")
 async def toggle_user_activation(
     user_id: int,

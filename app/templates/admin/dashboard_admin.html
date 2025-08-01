@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Admin - Gestion des utilisateurs{% endblock %}
+
+{% block sidebar %}
+    {% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4 mt-5">
+        <div>
+            <h1 class="h3 mb-1 text-gray-800">Gestion des utilisateurs</h1>
+        </div>
+        <a href="/admin/users/create" class="btn btn-success shadow-sm">
+            <i class="fas fa-user-plus"></i> Ajouter un utilisateur
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Nom</th>
+                            <th>Email</th>
+                            <th>Rôle</th>
+                            <th>Statut</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td class="font-weight-bold">{{ user.nom }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                <span class="badge badge-pill
+                                    {% if user.role.value == 'admin' %}badge-danger
+                                    {% elif user.role.value == 'avocat' %}badge-info
+                                    {% else %}badge-primary{% endif %}">
+                                    {{ user.role.value|capitalize }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if user.is_active %}
+                                    <span class="badge badge-success"><i class="fas fa-check-circle"></i> Actif</span>
+                                {% else %}
+                                    <span class="badge badge-secondary"><i class="fas fa-times-circle"></i> Désactivé</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <a href="/admin/users/{{ user.id }}/edit" class="btn btn-sm btn-outline-primary mr-1" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="/admin/users/{{ user.id }}/toggle" class="btn btn-sm btn-outline-warning" title="{{ 'Désactiver' if user.is_active else 'Activer' }}">
+                                    <i class="fas {{ 'fa-user-slash' if user.is_active else 'fa-user-check' }}"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">Aucun utilisateur trouvé.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

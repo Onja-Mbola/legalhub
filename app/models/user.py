@@ -1,5 +1,7 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Enum
+from sqlalchemy.orm import relationship
 from app.db.base_class import Base
+from app.core.enums import RoleEnum
 
 class User(Base):
     __tablename__ = "users"
@@ -7,9 +9,6 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     nom = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
-<<<<<<< Updated upstream
-    role = Column(String, default="avocat")
-=======
     password = Column(String, nullable=True)
     role = Column(Enum(RoleEnum), default=RoleEnum.avocat, nullable=False)
     is_active = Column(Boolean, default=False)
@@ -17,4 +16,3 @@ class User(Base):
 
     created_by = relationship("User", remote_side=[id], backref="clarcks")
 
->>>>>>> Stashed changes

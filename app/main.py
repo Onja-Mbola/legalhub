@@ -1,13 +1,13 @@
-from fastapi import FastAPI, Request, Form
-from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
-from app.api.routes import user
+from fastapi.templating import Jinja2Templates
+from starlette.responses import JSONResponse
+from starlette.status import HTTP_403_FORBIDDEN, HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+
 from app.db.init_db import init_db
-<<<<<<< Updated upstream
-=======
-from app.api.routes import auth, admin, avocat, clarck, dossier
->>>>>>> Stashed changes
+from app.api.routes import auth, admin, avocat, clarck,dossier
 
 
 app = FastAPI()
@@ -16,31 +16,32 @@ app = FastAPI()
 def startup_event():
     init_db()
 
-<<<<<<< Updated upstream
-app.include_router(user.router)
-=======
 app.include_router(auth.router)
 app.include_router(admin.router)
 app.include_router(avocat.router)
 app.include_router(clarck.router)
 app.include_router(dossier.router)
 
->>>>>>> Stashed changes
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
-
 templates = Jinja2Templates(directory="app/templates")
 
+@app.exception_handler(StarletteHTTPException)
+async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == HTTP_401_UNAUTHORIZED:
+        return templates.TemplateResponse("error/401.html", {
+            "request": request,
+            "detail": exc.detail
+        }, status_code=401)
+    elif exc.status_code == HTTP_403_FORBIDDEN:
+        return templates.TemplateResponse("error/403.html", {
+            "request": request,
+            "detail": exc.detail
+        }, status_code=403)
+    elif exc.status_code == HTTP_404_NOT_FOUND:
+        return templates.TemplateResponse("error/404.html", {
+            "request": request,
+            "detail": exc.detail
+        }, status_code=404)
 
-@app.get("/", response_class=HTMLResponse)
-def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
-
-
-@app.post("/login", response_class=HTMLResponse)
-def handle_login(request: Request, email: str = Form(...), password: str = Form(...)):
-    if email == "avocat@legalhub.fr" and password == "1234":
-        user = {"nom": "Dupont"}
-        return templates.TemplateResponse("dashboard_avocat.html", {"request": request, "user": user})
-    else:
-        return templates.TemplateResponse("login.html", {"request": request, "error": "Identifiants incorrects"})
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
