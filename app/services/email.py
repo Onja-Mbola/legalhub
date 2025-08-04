@@ -14,8 +14,14 @@ conf = ConnectionConfig(
     VALIDATE_CERTS=True
 )
 
+ENV = os.getenv("ENV", "development")
+
 async def send_activation_email(email: EmailStr, token: str):
-    activation_link = f"https://legalhub.onrender.com/activate?token={token}"
+    if ENV == "production":
+        activation_link = f"https://legalhub.onrender.com/activate?token={token}"
+    else:
+        activation_link = f"http://localhost:8000/activate?token={token}"
+
 
     html_content = f"""
     <html>

@@ -9,3 +9,4 @@ email-validator
 passlib
 python-jose[cryptography]
 fastapi-mail
+alembic

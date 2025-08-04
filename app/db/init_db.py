@@ -41,7 +41,9 @@ def init_db(retries=5, delay=3):
                 {"nom": "sous_type_penal", "valeur": "Simple Police", "unite": None, "ordre": 10},
                 {"nom": "sous_type_penal", "valeur": "Criminel", "unite": None, "ordre": 15},
                 {"nom": "qualite_type", "valeur": "Personne physique", "unite": None, "ordre": 5},
-                {"nom": "qualite_type", "valeur": "Personne morale", "unite": None, "ordre": 15}
+                {"nom": "qualite_type", "valeur": "Personne morale", "unite": None, "ordre": 15},
+                {"nom": "role_type", "valeur": "Demandeur", "unite": None, "ordre": 15},
+                {"nom": "role_type", "valeur": "Defendeur", "unite": None, "ordre": 10}
             ]
 
             for p in params_to_create:

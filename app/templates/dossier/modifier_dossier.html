@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier le dossier - {{ dossier.nom_dossier }}{% endblock %}
+
+{% block sidebar %}
+    {% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+    {% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Modifier le dossier : {{ dossier.nom_dossier }}</h2>
+
+<form action="/dossiers/{{ dossier.id }}/modifier" method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label class="form-label">Nom du dossier</label>
+        <input type="text" class="form-control" name="nom_dossier" value="{{ dossier.nom_dossier }}" required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Commentaires</label>
+        <textarea class="form-control" name="commentaire" rows="4">{{ dossier.commentaire }}</textarea>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Pièces jointes (ajouter)</label>
+        <input type="file" class="form-control" name="pieces_jointes" multiple>
+    </div>
+
+    <button type="submit" class="btn btn-success">Mettre à jour</button>
+
+    <a href="/dossiers/{{ dossier.id }}" class="btn btn-secondary">Annuler</a>
+</form>
+{% endblock %}

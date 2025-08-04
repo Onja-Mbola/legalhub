@@ -11,6 +11,9 @@
 {% endblock %}
 
 {% block content %}
+{% if request.query_params.get('error') == '1' %}
+    <div class="alert alert-danger">Erreur lors de la création du dossier. Veuillez réessayer.</div>
+{% endif %}
 <form id="creationDossierForm" enctype="multipart/form-data">
     <div class="mb-3">
         <label class="form-label">Type d'affaire</label>
@@ -24,8 +27,7 @@
 
     <div class="mb-3" id="sous_type_affaire_container" style="display: none;">
         <label class="form-label">Sous-type</label>
-        <select class="form-select" name="sous_type_affaire" id="sous_type_affaire">
-        </select>
+        <select class="form-select" name="sous_type_affaire" id="sous_type_affaire"></select>
     </div>
 
     <div class="mb-3">
@@ -33,6 +35,16 @@
         <select class="form-select" name="urgence" id="urgence">
             <option value="">-- Sélectionner --</option>
             {% for item in urgences %}
+                <option value="{{ item.id }}">{{ item.valeur }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Rôle du Client dans l'affaire</label>
+        <select class="form-select" name="role_client" id="role_client">
+            <option value="">-- Sélectionner --</option>
+            {% for item in role_types %}
                 <option value="{{ item.id }}">{{ item.valeur }}</option>
             {% endfor %}
         </select>
@@ -57,61 +69,48 @@
 
     <div class="mb-3">
         <label class="form-label">Adresse du client</label>
-        <input type="text" class="form-control" name="adresse_client">
+        <input type="text" class="form-control" name="adresse_client" id="adresse_client">
     </div>
 
     <div class="row mb-3">
         <div class="col-md-6">
             <label class="form-label">Juridiction</label>
-            <input type="text" class="form-control" name="juridiction">
+            <input type="text" class="form-control" name="juridiction" id="juridiction">
         </div>
         <div class="col-md-6">
             <label class="form-label">Tribunal</label>
-            <input type="text" class="form-control" name="tribunal">
+            <input type="text" class="form-control" name="tribunal" id="tribunal">
         </div>
     </div>
 
     <div class="row mb-3">
-        <div class="col-md-6">
-            <label class="form-label">Numéro de dossier (interne)</label>
-            <input type="text" class="form-control" name="numero_dossier">
-        </div>
-        <div class="col-md-6">
-            <label class="form-label">Avocat responsable</label>
-            <input type="text" class="form-control" name="responsable" value="Maitre {{ user.nom }}" readonly>
-        </div>
+        <label class="form-label">Avocat responsable</label>
+        <input type="text" class="form-control" value="Maitre {{ user.nom }}" readonly>
+        <input type="hidden" name="avocat_responsable" id="avocat_responsable" value="{{ user.id }}">
     </div>
 
     <div class="row mb-3">
         <div class="col-md-6">
             <label class="form-label">Avocat de la partie Adverse</label>
-            <input type="text" class="form-control" name="avocat_adverse">
+            <input type="text" class="form-control" name="avocat_adverse" id="avocat_adverse">
         </div>
-
         <div class="col-md-6">
             <label class="form-label">Date de création</label>
-            <input type="date" class="form-control" name="date_creation">
+            <input type="date" class="form-control" name="date_creation" id="date_creation">
         </div>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Huissiers impliqués</label>
-        <input type="text" class="form-control" name="huissiers">
     </div>
 
     <div class="mb-3">
         <label class="form-label">Pièces jointes</label>
-        <input type="file" class="form-control" name="pieces_jointes" multiple>
+        <input type="file" class="form-control" name="pieces_jointes" id="pieces_jointes" multiple>
     </div>
 
     <div class="mb-3">
         <label class="form-label">Commentaires</label>
-        <input type="text" class="form-control" name="commentaire">
+        <textarea class="form-control" name="commentaire" id="commentaire" rows="4" style="resize: vertical;" placeholder="Entrez vos commentaires ici..."></textarea>
     </div>
 
-    <button type="submit" class="btn btn-circle mt-3 float-end">
-        Enregistrer
-    </button>
+    <button type="submit" class="btn btn-circle mt-3 float-end">Enregistrer</button>
 </form>
 
 <script>
@@ -122,5 +121,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', path='/js/creation_dossier.js') }}?v=5"></script>
+<script src="{{ url_for('static', path='/js/creation_dossier.js') }}?v=14"></script>
 {% endblock %}

@@ -25,3 +25,8 @@ def update_param(db: Session, nom: str, valeur: str, unite: str | None = None) -
     db.commit()
     db.refresh(param)
     return param
+
+
+def get_nom_param_general(db: Session, param_id: int) -> str:
+    param = db.query(ParamGeneral).filter(ParamGeneral.id == param_id).first()
+    return param.nom if param else None

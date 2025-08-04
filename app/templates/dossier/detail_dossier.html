@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Détails du dossier - {{ dossier.nom_dossier }}{% endblock %}
+
+{% block sidebar %}
+    {% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+    {% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Dossier : {{ dossier.nom_dossier }}</h2>
+
+<div class="card p-4">
+    <p><strong>Numéro interne :</strong> {{ dossier.numero_dossier }}</p>
+    <p><strong>Type :</strong> {{ dossier.type_affaire_param.valeur }}{% if dossier.sous_type_affaire_param.valeur %} - {{ dossier.sous_type_affaire_param.valeur }}{% endif %}</p>
+    <p><strong>Urgence :</strong> {{ dossier.urgence_param.valeur }}</p>
+    <p><strong>Rôle du client :</strong> {{ dossier.client.role_client_param.valeur }}</p>
+    <p><strong>Juridiction :</strong> {{ dossier.juridiction }}</p>
+    <p><strong>Tribunal :</strong> {{ dossier.tribunal }}</p>
+    <p><strong>Avocat Responsable :</strong> Maitre {{ dossier.avocat_nom }}</p>
+    <p><strong>Avocat Adverse :</strong> {{ dossier.avocat_adverse }}</p>
+    <p><strong>Date de création :</strong> {{ dossier.date_creation.strftime('%d/%m/%Y') if dossier.date_creation else '' }}</p>
+    <p><strong>Commentaires :</strong> {{ dossier.commentaire }}</p>
+
+    <h4 class="mt-4">Pièces jointes</h4>
+    <ul>
+        {% for piece in dossier.pieces_jointes %}
+            <li>{{ piece }}</li>
+        {% endfor %}
+    </ul>
+
+    <div class="mt-4">
+        <a href="/dossiers/{{ dossier.id }}/modifier" class="btn btn-warning">Modifier</a>
+        <a href="/dossiers" class="btn btn-secondary">Retour à la liste</a>
+    </div>
+</div>
+{% endblock %}

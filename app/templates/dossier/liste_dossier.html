@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Dossiers - Avocat{% endblock %}
+
+{% block sidebar %}
+    {% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+    {% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block content %}
+{% if request.query_params.get('success') == '1' %}
+    <div class="alert alert-success">Dossier créé avec succès</div>
+{% endif %}
+<h2 class="mb-4">Liste des dossiers de Maitre {{ user.nom }}</h2>
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Numéro</th>
+            <th>Nom du dossier</th>
+            <th>Type</th>
+            <th>Urgence</th>
+            <th>Date de création</th>
+            <th>Rôle du client</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dossier in dossiers %}
+        <tr>
+            <td>{{ dossier.numero_dossier }}</td>
+            <td>{{ dossier.nom_dossier }}</td>
+            <td>{{ dossier.type_affaire }}{% if dossier.sous_type_affaire %} - {{ dossier.sous_type_affaire }}{% endif %}</td>
+            <td>{{ dossier.urgence }}</td>
+            <td>{{ dossier.date_creation.strftime('%d/%m/%Y') if dossier.date_creation else '' }}</td>
+            <td>{{ dossier.client.role_client_param.valeur }}</td>
+            <td>
+                <a href="/dossiers/{{ dossier.id }}" class="btn btn-sm btn-primary">Voir</a>
+                <a href="/dossiers/{{ dossier.id }}/modifier" class="btn btn-sm btn-warning">Modifier</a>
+
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
