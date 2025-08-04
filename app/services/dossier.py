@@ -18,6 +18,6 @@ def get_dossier_by_id_service(db: Session, dossier_id: int):
     return get_dossier_by_id(db,dossier_id)
 
 
-def update_dossier_with_files_service(db: Session, dossier_id: int, nom_dossier: str, commentaire: str, files: List[UploadFile]):
-    return update_dossier_with_files(db, dossier_id, nom_dossier, commentaire, files)
+def update_dossier_with_files_service(db: Session, dossier_id: int, avocat_nom: str,nom_dossier: str, commentaire: str, files: List[UploadFile]):
+    return update_dossier_with_files(db, dossier_id,avocat_nom, nom_dossier, commentaire, files)
 

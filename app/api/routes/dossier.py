@@ -1,10 +1,11 @@
 import json
+import os
 from typing import List
 
 from fastapi import APIRouter, Depends, Request, Form, UploadFile, File
 from sqlalchemy.exc import SQLAlchemyError
 from starlette import status
-from starlette.responses import RedirectResponse, HTMLResponse
+from starlette.responses import RedirectResponse, HTMLResponse, FileResponse
 
 from app.core.auth import get_current_avocat_user
 from app.models.user import User
@@ -92,6 +93,19 @@ async def edit_dossier(dossier_id: int, request: Request, db: Session = Depends(
 
 
 @router.post("/dossiers/{dossier_id}/modifier")
-async def update_dossier(dossier_id: int, nom_dossier: str = Form(...), commentaire: str = Form(None), pieces_jointes: List[UploadFile] = File(None), db: Session = Depends(get_db)):
-    update_dossier_with_files_service(db, dossier_id, nom_dossier, commentaire, pieces_jointes)
+async def update_dossier(dossier_id: int, nom_dossier: str = Form(...), commentaire: str = Form(None), pieces_jointes: List[UploadFile] = File(None), db: Session = Depends(get_db),user = Depends(get_current_avocat_user)):
+    update_dossier_with_files_service(db, dossier_id,user.nom, nom_dossier, commentaire, pieces_jointes)
     return RedirectResponse(url=f"/dossiers/{dossier_id}", status_code=303)
+
+
+@router.get("/documents/{filepath:path}", name="documents")
+async def documents(filepath: str):
+    base_dir = os.path.abspath("app/documents")
+    full_path = os.path.join(base_dir, filepath)
+
+    if not os.path.commonpath([base_dir, os.path.abspath(full_path)]) == base_dir:
+        return {"error": "Accès interdit"}
+
+    if os.path.exists(full_path) and os.path.isfile(full_path):
+        return FileResponse(full_path, filename=os.path.basename(full_path))
+    return {"error": "Fichier non trouvé"}

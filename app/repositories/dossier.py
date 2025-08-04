@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import UploadFile
+from fastapi import UploadFile, HTTPException
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.adverse import Adverse
@@ -133,29 +133,33 @@ def get_dossier_by_id(db: Session, dossier_id: int):
         )
 
 
-def update_dossier_with_files(db: Session, dossier_id: int, nom_dossier: str, commentaire: str, files: List[UploadFile]):
+def update_dossier_with_files(
+    db: Session,
+    dossier_id: int,
+    avocat_nom: str,
+    nom_dossier: str,
+    commentaire: str,
+    files: List[UploadFile]
+):
     dossier = get_dossier_by_id(db, dossier_id)
+    if not dossier:
+        raise HTTPException(status_code=404, detail="Dossier non trouvé")
+
     dossier.nom_dossier = nom_dossier
     dossier.commentaire = commentaire
 
-    pieces_jointes = dossier.pieces_jointes or []
+    pieces_jointes = dossier.pieces_jointes[:] if dossier.pieces_jointes else []
+
+    dossier_path = dossier.dossier_path or os.path.join("app/documents", avocat_nom, dossier.numero_dossier)
 
     if files:
-        dossier_path = f"app/documents/{dossier.client.nom}/{dossier.numero_dossier}"
-        os.makedirs(dossier_path, exist_ok=True)
-
-        for file in files:
-            file_path = os.path.join(dossier_path, file.filename)
-
-            with open(file_path, "wb") as f:
-                f.write(file.file.read())
-
-            pieces_jointes.append({
-                "filename": file.filename,
-                "filepath": file_path
-            })
+        new_files = save_uploaded_files(files, dossier_path)
+        print("Fichiers enregistrés :", new_files)
+        pieces_jointes.extend(new_files)
+        dossier.dossier_path = dossier_path
 
     dossier.pieces_jointes = pieces_jointes
+    print("Pièces finales :", dossier.pieces_jointes)  
 
     db.commit()
     db.refresh(dossier)

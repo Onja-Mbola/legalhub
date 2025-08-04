@@ -26,11 +26,27 @@
     <p><strong>Commentaires :</strong> {{ dossier.commentaire }}</p>
 
     <h4 class="mt-4">Pièces jointes</h4>
-    <ul>
-        {% for piece in dossier.pieces_jointes %}
-            <li>{{ piece }}</li>
-        {% endfor %}
+    {% set relative_path = dossier.dossier_path.replace('app/documents/', '') %}
+    <ul class="list-group">
+        {% if dossier.pieces_jointes %}
+            {% for filename in dossier.pieces_jointes %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <i class="bi bi-file-earmark-text"></i>
+                    <span class="flex-grow-1 ms-2">{{ filename }}</span>
+                    <a href="{{ url_for('documents', filepath=relative_path + '/' + filename) }}"
+                       class="btn btn-sm btn-outline-primary"
+                       download
+                       title="Télécharger {{ filename }}">
+                       <i class="bi bi-download"></i> Télécharger
+                    </a>
+                </li>
+            {% endfor %}
+        {% else %}
+            <li class="list-group-item text-muted">Aucune pièce jointe disponible.</li>
+        {% endif %}
     </ul>
+
+
 
     <div class="mt-4">
         <a href="/dossiers/{{ dossier.id }}/modifier" class="btn btn-warning">Modifier</a>

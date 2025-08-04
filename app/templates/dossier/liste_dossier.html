@@ -33,8 +33,8 @@
         <tr>
             <td>{{ dossier.numero_dossier }}</td>
             <td>{{ dossier.nom_dossier }}</td>
-            <td>{{ dossier.type_affaire }}{% if dossier.sous_type_affaire %} - {{ dossier.sous_type_affaire }}{% endif %}</td>
-            <td>{{ dossier.urgence }}</td>
+            <td>{{ dossier.type_affaire_param.valeur }}{% if dossier.sous_type_affaire_param.valeur %} - {{ dossier.sous_type_affaire_param.valeur }}{% endif %}</td>
+            <td>{{ dossier.urgence_param.valeur }}</td>
             <td>{{ dossier.date_creation.strftime('%d/%m/%Y') if dossier.date_creation else '' }}</td>
             <td>{{ dossier.client.role_client_param.valeur }}</td>
             <td>

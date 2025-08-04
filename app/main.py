@@ -24,6 +24,7 @@ app.include_router(dossier.router)
 
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+app.mount("/documents", StaticFiles(directory="app/documents"), name="documents")
 templates = Jinja2Templates(directory="app/templates")
 
 @app.exception_handler(StarletteHTTPException)
