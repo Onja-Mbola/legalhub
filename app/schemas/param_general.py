@@ -7,6 +7,9 @@ class ParamGeneralBase(BaseModel):
     unite: Optional[str] = None
     ordre: Optional[str] = None
 
+class ParamGeneralCreate(ParamGeneralBase):
+    pass
+
 class ParamGeneralUpdate(ParamGeneralBase):
     pass
 

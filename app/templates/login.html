@@ -30,6 +30,9 @@
                                         <input type="checkbox" class="custom-control-input" id="customCheck">
                                         <label class="custom-control-label" for="customCheck">Se souvenir de moi</label>
                                     </div>
+                                        {% if error %}
+                                            <div class="alert alert-danger">{{ error }}</div>
+                                        {% endif %}
                                 </div>
                                 <button type="submit" class="btn btn-google btn-user btn-block">
                                     Se connecter

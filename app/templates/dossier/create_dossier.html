@@ -11,107 +11,136 @@
 {% endblock %}
 
 {% block content %}
-{% if request.query_params.get('error') == '1' %}
-    <div class="alert alert-danger">Erreur lors de la création du dossier. Veuillez réessayer.</div>
-{% endif %}
-<form id="creationDossierForm" enctype="multipart/form-data">
-    <div class="mb-3">
-        <label class="form-label">Type d'affaire</label>
-        <select class="form-select" name="type_affaire" id="type_affaire" required>
-            <option value="">-- Sélectionner --</option>
-            {% for item in type_affaire %}
-                <option value="{{ item.id }}">{{ item.valeur | capitalize }}</option>
-            {% endfor %}
-        </select>
-    </div>
-
-    <div class="mb-3" id="sous_type_affaire_container" style="display: none;">
-        <label class="form-label">Sous-type</label>
-        <select class="form-select" name="sous_type_affaire" id="sous_type_affaire"></select>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Urgence</label>
-        <select class="form-select" name="urgence" id="urgence">
-            <option value="">-- Sélectionner --</option>
-            {% for item in urgences %}
-                <option value="{{ item.id }}">{{ item.valeur }}</option>
-            {% endfor %}
-        </select>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Rôle du Client dans l'affaire</label>
-        <select class="form-select" name="role_client" id="role_client">
-            <option value="">-- Sélectionner --</option>
-            {% for item in role_types %}
-                <option value="{{ item.id }}">{{ item.valeur }}</option>
-            {% endfor %}
-        </select>
-    </div>
-
-    <div class="mb-3">
-        <label for="nom_dossier" class="form-label">Nom du dossier</label>
-        <input type="text" class="form-control" id="nom_dossier" name="nom_dossier" required>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Demandeurs</label>
-        <div id="demandeurs-container"></div>
-        <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addDemandeur()">+ Ajouter un demandeur</button>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Parties adverses</label>
-        <div id="adverses-container"></div>
-        <button type="button" class="btn btn-outline-danger btn-sm mt-2" onclick="addAdverse()">+ Ajouter une partie adverse</button>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Adresse du client</label>
-        <input type="text" class="form-control" name="adresse_client" id="adresse_client">
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label class="form-label">Juridiction</label>
-            <input type="text" class="form-control" name="juridiction" id="juridiction">
+<div class="container-fluid mt-5">
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-header bg-gradient-primary text-white py-3">
+            <h4 class="mb-0"><i class="fas fa-folder-plus me-2"></i> Création d’un nouveau dossier</h4>
         </div>
-        <div class="col-md-6">
-            <label class="form-label">Tribunal</label>
-            <input type="text" class="form-control" name="tribunal" id="tribunal">
+
+        <div class="card-body">
+            <div class="progress mb-4" style="height: 10px;">
+                <div id="progressBar" class="progress-bar bg-primary" style="width: 25%;"></div>
+            </div>
+
+            <form id="creationDossierForm" enctype="multipart/form-data">
+                <div class="wizard-step" id="step-1">
+                    <h5 class="text-primary mb-3"><i class="fas fa-balance-scale me-2"></i> Informations principales</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Type d'affaire</label>
+                            <select class="form-select rounded-pill" name="type_affaire" id="type_affaire" required>
+                                <option value="">-- Sélectionner --</option>
+                                {% for item in type_affaire %}
+                                    <option value="{{ item.id }}">{{ item.valeur | capitalize }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6" id="sous_type_affaire_container" style="display: none;">
+                            <label class="form-label fw-semibold">Sous-type</label>
+                            <select class="form-select rounded-pill" name="sous_type_affaire" id="sous_type_affaire"></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Urgence</label>
+                            <select class="form-select rounded-pill" name="urgence" id="urgence">
+                                <option value="">-- Sélectionner --</option>
+                                {% for item in urgences %}
+                                    <option value="{{ item.id }}">{{ item.valeur }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Rôle du Client</label>
+                            <select class="form-select rounded-pill" name="role_client" id="role_client">
+                                <option value="">-- Sélectionner --</option>
+                                {% for item in role_types %}
+                                    <option value="{{ item.id }}">{{ item.valeur }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label for="nom_dossier" class="form-label fw-semibold">Nom du dossier</label>
+                            <input type="text" class="form-control shadow-sm" id="nom_dossier" name="nom_dossier" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wizard-step d-none" id="step-2">
+                    <h5 class="text-primary mb-3"><i class="fas fa-users me-2"></i> Parties</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Demandeurs</label>
+                            <div id="demandeurs-container"></div>
+                            <button type="button" class="btn btn-outline-primary btn-sm mt-2 rounded-pill" onclick="addDemandeur()">
+                                <i class="fas fa-user-plus me-1"></i> Ajouter
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Parties adverses</label>
+                            <div id="adverses-container"></div>
+                            <button type="button" class="btn btn-outline-danger btn-sm mt-2 rounded-pill" onclick="addAdverse()">
+                                <i class="fas fa-user-minus me-1"></i> Ajouter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wizard-step d-none" id="step-3">
+                    <h5 class="text-primary mb-3"><i class="fas fa-gavel me-2"></i> Détails supplémentaires</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Adresse du client</label>
+                            <input type="text" class="form-control shadow-sm" id="adresse_client" name="adresse_client">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Juridiction</label>
+                            <input type="text" class="form-control shadow-sm" id="juridiction" name="juridiction">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Tribunal</label>
+                            <input type="text" class="form-control shadow-sm" id="tribunal" name="tribunal">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Avocat responsable</label>
+                            <input type="text" class="form-control shadow-sm" value="Maitre {{ user.nom }}" readonly>
+                            <input type="hidden" id="avocat_responsable" name="avocat_responsable" value="{{ user.id }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Avocat de la partie adverse</label>
+                            <input type="text" class="form-control shadow-sm" id="avocat_adverse" name="avocat_adverse">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wizard-step d-none" id="step-4">
+                    <h5 class="text-primary mb-3"><i class="fas fa-paperclip me-2"></i> Fichiers & Commentaires</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Date de création</label>
+                            <input type="date" class="form-control shadow-sm" id="date_creation" name="date_creation">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Pièces jointes</label>
+                            <input type="file" class="form-control shadow-sm" id="pieces_jointes" name="pieces_jointes" multiple>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Commentaires</label>
+                            <textarea class="form-control shadow-sm" id="commentaire" name="commentaire" rows="4" placeholder="Entrez vos commentaires ici..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" id="prevBtn" class="btn btn-outline-secondary rounded-pill px-4" onclick="changeStep(-1)" disabled>
+                        <i class="fas fa-arrow-left me-2"></i> Précédent
+                    </button>
+                    <button type="button" id="nextBtn" class="btn btn-primary rounded-pill px-4" onclick="changeStep(1)">
+                        Suivant <i class="fas fa-arrow-right ms-2"></i>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
-
-    <div class="row mb-3">
-        <label class="form-label">Avocat responsable</label>
-        <input type="text" class="form-control" value="Maitre {{ user.nom }}" readonly>
-        <input type="hidden" name="avocat_responsable" id="avocat_responsable" value="{{ user.id }}">
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label class="form-label">Avocat de la partie Adverse</label>
-            <input type="text" class="form-control" name="avocat_adverse" id="avocat_adverse">
-        </div>
-        <div class="col-md-6">
-            <label class="form-label">Date de création</label>
-            <input type="date" class="form-control" name="date_creation" id="date_creation">
-        </div>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Pièces jointes</label>
-        <input type="file" class="form-control" name="pieces_jointes" id="pieces_jointes" multiple>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Commentaires</label>
-        <textarea class="form-control" name="commentaire" id="commentaire" rows="4" style="resize: vertical;" placeholder="Entrez vos commentaires ici..."></textarea>
-    </div>
-
-    <button type="submit" class="btn btn-circle mt-3 float-end">Enregistrer</button>
-</form>
+</div>
 
 <script>
     const civilTypes = {{ civil_types | tojson }};
@@ -121,5 +150,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', path='/js/creation_dossier.js') }}?v=14"></script>
+<script src="{{ url_for('static', path='/js/creation_dossier.js') }}?v=3"></script>
 {% endblock %}

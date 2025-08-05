@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Créer un Paramètre{% endblock %}
+
+{% block sidebar %}
+    {% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-plus"></i> Nouveau Paramètre</h5>
+        </div>
+        <div class="card-body">
+            <form action="/admin/params/create" method="post">
+                <div class="mb-3">
+                    <label for="nom" class="form-label">Nom</label>
+                    <select id="nom" name="nom" class="form-select" required>
+                        <option value="" disabled selected>-- Sélectionnez un nom --</option>
+                        {% for nom in noms_existants %}
+                            <option value="{{ nom }}">{{ nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="valeur" class="form-label">Valeur</label>
+                    <input type="text" id="valeur" name="valeur" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="unite" class="form-label">Unité (optionnel)</label>
+                    <input type="text" id="unite" name="unite" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label for="ordre" class="form-label">Ordre</label>
+                    <input type="number" id="ordre" name="ordre" class="form-control" required>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <a href="/admin/params" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% if error %}
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div class="toast bg-danger text-white" id="toastError" role="alert">
+        <div class="toast-body">
+            <i class="fas fa-exclamation-circle"></i> {{ error }}
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+{% block extra_js %}
+<script src="{{ url_for('static', path='/js/toasts.js') }}?v=1"></script>
+{% endblock %}

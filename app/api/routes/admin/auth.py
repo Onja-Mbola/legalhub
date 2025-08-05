@@ -7,10 +7,13 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 from starlette.templating import Jinja2Templates
 
+from app.core.auth import get_current_user
 from app.core.security import create_access_token
 from app.db.session import get_db
+from app.models.user import User
 from app.schemas.user import UserCreate, UserOut
 from app.services.auth_service import authenticate_user, register_user_by_email, decode_token, activate_account
+from app.services.user import get_user_by_email_service
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -20,17 +23,20 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 
 @router.get("/", include_in_schema=False)
-def root(request: Request):
+def root(request: Request, db: Session = Depends(get_db)):
     token = request.cookies.get("access_token")
     if not token:
         return RedirectResponse("/login_Page")
 
     try:
-        email, role = decode_token(token)
+        email = decode_token(token)
+        user = get_user_by_email_service(db, email)
+        if not user:
+            return RedirectResponse("/login_Page")
     except Exception:
         return RedirectResponse("/login_Page")
 
-    return RedirectResponse(f"/{role}/dashboard")
+    return RedirectResponse(f"/{user.role.value}/dashboard")
 
 
 @router.get("/login_Page", response_class=HTMLResponse)
@@ -54,7 +60,6 @@ def login(request: Request, email: str = Form(...), password: str = Form(...), d
                         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60, expires=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
                         samesite="Lax", secure=False)
     return response
-
 
 @router.post("/users/", response_model=UserOut)
 async def create_user(user_in: UserCreate, db: Session = Depends(get_db)):

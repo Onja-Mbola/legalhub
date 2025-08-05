@@ -7,8 +7,8 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 
 from app.db.init_db import init_db
-from app.api.routes import auth, admin, avocat, clarck,dossier
-
+from app.api.routes import avocat, clarck, dossier
+from app.api.routes.admin import admin, auth, param_general
 
 app = FastAPI()
 
@@ -18,6 +18,7 @@ def startup_event():
 
 app.include_router(auth.router)
 app.include_router(admin.router)
+app.include_router(param_general.router)
 app.include_router(avocat.router)
 app.include_router(clarck.router)
 app.include_router(dossier.router)

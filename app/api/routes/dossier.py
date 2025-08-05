@@ -1,6 +1,6 @@
 import json
 import os
-from typing import List
+from typing import List, Optional, Union
 
 from fastapi import APIRouter, Depends, Request, Form, UploadFile, File
 from sqlalchemy.exc import SQLAlchemyError
@@ -91,11 +91,25 @@ async def edit_dossier(dossier_id: int, request: Request, db: Session = Depends(
     dossier = get_dossier_by_id_service(db, dossier_id)
     return templates.TemplateResponse("dossier/modifier_dossier.html", {"request": request, "dossier": dossier, "user": user})
 
-
 @router.post("/dossiers/{dossier_id}/modifier")
-async def update_dossier(dossier_id: int, nom_dossier: str = Form(...), commentaire: str = Form(None), pieces_jointes: List[UploadFile] = File(None), db: Session = Depends(get_db),user = Depends(get_current_avocat_user)):
-    update_dossier_with_files_service(db, dossier_id,user.nom, nom_dossier, commentaire, pieces_jointes)
+async def update_dossier(
+    dossier_id: int,
+    nom_dossier: str = Form(...),
+    commentaire: str = Form(None),
+    pieces_jointes: Union[List[UploadFile], UploadFile, None] = File(None),
+    db: Session = Depends(get_db),
+    user = Depends(get_current_avocat_user)
+):
+    if pieces_jointes is None:
+        files = []
+    elif isinstance(pieces_jointes, list):
+        files = pieces_jointes
+    else:
+        files = [pieces_jointes]
+
+    update_dossier_with_files_service(db, dossier_id, user.nom, nom_dossier, commentaire, files)
     return RedirectResponse(url=f"/dossiers/{dossier_id}", status_code=303)
+
 
 
 @router.get("/documents/{filepath:path}", name="documents")

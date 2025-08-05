@@ -1,4 +1,6 @@
 console.log("onkl");
+let currentStep = 1;
+const totalSteps = 4;
 
 document.addEventListener('DOMContentLoaded', () => {
     const typeAffaireSelect = document.getElementById('type_affaire');
@@ -60,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
             commentaire: document.getElementById('commentaire').value,
             client: {
                 adresse_client: document.getElementById('adresse_client').value,
-                role_client : document.getElementById('role_client').value,
+                role_client: document.getElementById('role_client').value,
                 demandeurs: collectContacts('demandeurs-container'),
                 adverses: collectContacts('adverses-container')
             }
@@ -97,7 +99,6 @@ function collectContacts(containerId) {
     const container = document.getElementById(containerId);
     const contacts = [];
     container.querySelectorAll('div.border').forEach(div => {
-        const index = div.dataset.index;
         contacts.push({
             nom: div.querySelector(`[name^="${containerId.slice(0, -10)}"][name$="[nom]"]`).value,
             qualite: div.querySelector(`[name^="${containerId.slice(0, -10)}"][name$="[qualite]"]`).value,
@@ -125,21 +126,21 @@ function createContactFields(containerId, prefix) {
 
     div.innerHTML = `
         <div class="mb-3">
-            <label class="form-label" for="${prefix}_nom_${index}">Nom</label>
+            <label class="form-label">Nom</label>
             <input type="text" class="form-control" name="${prefix}[${index}][nom]" required>
         </div>
         <div class="mb-3">
-            <label class="form-label" for="${prefix}_qualite_${index}">Qualité</label>
+            <label class="form-label">Qualité</label>
             <select class="form-select" name="${prefix}[${index}][qualite]" required>
                 ${qualiteOptions}
             </select>
         </div>
         <div class="mb-3">
-            <label class="form-label" for="${prefix}_tel_${index}">Numéro de téléphone</label>
+            <label class="form-label">Numéro de téléphone</label>
             <input type="tel" class="form-control" name="${prefix}[${index}][telephone]" placeholder="+261 34 12 345 67" required>
         </div>
         <div class="mb-3">
-            <label class="form-label" for="${prefix}_email_${index}">Email</label>
+            <label class="form-label">Email</label>
             <input type="email" class="form-control" name="${prefix}[${index}][email]" required>
         </div>
         <button type="button" class="btn btn-danger btn-sm" onclick="removeContact(this)">Supprimer</button>
@@ -150,4 +151,54 @@ function createContactFields(containerId, prefix) {
 
 function addDemandeur() { createContactFields('demandeurs-container', 'demandeurs'); }
 function addAdverse() { createContactFields('adverses-container', 'adverses'); }
-function removeContact(button) { const div = button.closest('div.border'); if (div) div.remove(); }
+function removeContact(button) {
+    const div = button.closest('div.border');
+    if (div) div.remove();
+}
+
+function showStep(step) {
+    document.querySelectorAll(".wizard-step").forEach((el, index) => {
+        el.classList.toggle("d-none", index !== step - 1);
+    });
+
+    document.getElementById("progressBar").style.width = `${(step / totalSteps) * 100}%`;
+
+    document.getElementById("prevBtn").disabled = step === 1;
+    document.getElementById("nextBtn").innerHTML =
+        step === totalSteps
+            ? '<i class="fas fa-save me-2"></i> Enregistrer'
+            : 'Suivant <i class="fas fa-arrow-right ms-2"></i>';
+}
+
+function validateStep(step) {
+    const stepElement = document.getElementById(`step-${step}`);
+    const inputs = stepElement.querySelectorAll("input, select, textarea");
+    let valid = true;
+
+    inputs.forEach(input => {
+        if (input.hasAttribute("required") && !input.value.trim()) {
+            input.classList.add("is-invalid");
+            valid = false;
+        } else {
+            input.classList.remove("is-invalid");
+        }
+    });
+
+    return valid;
+}
+
+function changeStep(n) {
+    if (n === 1 && !validateStep(currentStep)) return;
+
+    if (n === 1 && currentStep === totalSteps) {
+        document.getElementById("creationDossierForm").dispatchEvent(new Event('submit'));
+        return;
+    }
+
+    currentStep += n;
+    if (currentStep < 1) currentStep = 1;
+    if (currentStep > totalSteps) currentStep = totalSteps;
+    showStep(currentStep);
+}
+
+showStep(currentStep);

@@ -153,13 +153,14 @@ def update_dossier_with_files(
     dossier_path = dossier.dossier_path or os.path.join("app/documents", avocat_nom, dossier.numero_dossier)
 
     if files:
-        new_files = save_uploaded_files(files, dossier_path)
-        print("Fichiers enregistrés :", new_files)
-        pieces_jointes.extend(new_files)
-        dossier.dossier_path = dossier_path
+        files = [f for f in files if f.filename]
+        if files:
+            new_files = save_uploaded_files(files, dossier_path)
+            pieces_jointes.extend(new_files)
+            dossier.dossier_path = dossier_path
 
     dossier.pieces_jointes = pieces_jointes
-    print("Pièces finales :", dossier.pieces_jointes)  
+    print("Pièces finales :", dossier.pieces_jointes)
 
     db.commit()
     db.refresh(dossier)

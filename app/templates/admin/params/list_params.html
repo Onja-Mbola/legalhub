@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Admin - Paramètres Généraux{% endblock %}
+
+{% block sidebar %}
+    {% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4 mt-5">
+        <div>
+            <h1 class="h3 mb-1 text-gray-800">Paramètres Généraux</h1>
+            <p class="text-muted small">Gérez les paramètres utilisés dans l’application.</p>
+        </div>
+        <a href="/admin/params/create" class="btn btn-primary shadow-sm">
+            <i class="fas fa-plus"></i> Nouveau Paramètre
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Nom</th>
+                            <th>Valeur</th>
+                            <th>Unité</th>
+                            <th>Ordre</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for param in params %}
+                        <tr>
+                            <td class="text-muted">{{ param.id }}</td>
+                            <td><strong>{{ param.nom }}</strong></td>
+                            <td>{{ param.valeur }}</td>
+                            <td>
+                                {% if param.unite %}
+                                    <span class="badge bg-info text-dark">{{ param.unite }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ param.ordre }}</td>
+                            <td class="text-end">
+                                <a href="/admin/params/{{ param.id }}/edit" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-edit"></i> Modifier
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">Aucun paramètre trouvé.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="toastSuccess" class="toast bg-success text-white" role="alert">
+        <div class="toast-body">
+            <i class="fas fa-check-circle"></i> Paramètre créé avec succès.
+        </div>
+    </div>
+    <div id="toastUpdated" class="toast bg-warning text-dark" role="alert">
+        <div class="toast-body">
+            <i class="fas fa-edit"></i> Paramètre mis à jour.
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{{ url_for('static', path='/js/toasts.js') }}?v=1"></script>
+{% endblock %}

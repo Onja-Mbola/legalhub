@@ -19,6 +19,9 @@ ALGORITHM = os.getenv("ALGORITHM")
 def list_users(db: Session):
     return get_all_users(db)
 
+def get_user_by_email_service(db: Session, email: str) -> User | None:
+    return get_user_by_email(db, email)
+
 async def register_user(db, nom: str, email: str, role: str, created_by_id: int):
     if get_user_by_email(db, email):
         raise ValueError("Un utilisateur avec cet email existe déjà.")
