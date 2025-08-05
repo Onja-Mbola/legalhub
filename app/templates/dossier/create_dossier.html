@@ -41,7 +41,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Urgence</label>
-                            <select class="form-select rounded-pill" name="urgence" id="urgence">
+                            <select class="form-select rounded-pill" name="urgence" id="urgence" required>
                                 <option value="">-- Sélectionner --</option>
                                 {% for item in urgences %}
                                     <option value="{{ item.id }}">{{ item.valeur }}</option>
@@ -50,7 +50,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Rôle du Client</label>
-                            <select class="form-select rounded-pill" name="role_client" id="role_client">
+                            <select class="form-select rounded-pill" name="role_client" id="role_client" required>
                                 <option value="">-- Sélectionner --</option>
                                 {% for item in role_types %}
                                     <option value="{{ item.id }}">{{ item.valeur }}</option>
@@ -89,15 +89,15 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Adresse du client</label>
-                            <input type="text" class="form-control shadow-sm" id="adresse_client" name="adresse_client">
+                            <input type="text" class="form-control shadow-sm" id="adresse_client" name="adresse_client" required>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-semibold">Juridiction</label>
-                            <input type="text" class="form-control shadow-sm" id="juridiction" name="juridiction">
+                            <input type="text" class="form-control shadow-sm" id="juridiction" name="juridiction" required>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-semibold">Tribunal</label>
-                            <input type="text" class="form-control shadow-sm" id="tribunal" name="tribunal">
+                            <input type="text" class="form-control shadow-sm" id="tribunal" name="tribunal" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Avocat responsable</label>
