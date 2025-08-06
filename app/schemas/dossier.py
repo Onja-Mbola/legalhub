@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 from typing import Optional, List
 
 from pydantic import BaseModel
@@ -15,9 +15,9 @@ class DossierCreate(BaseModel):
     tribunal: Optional[str]
     avocat_responsable: str
     avocat_adverse: Optional[str]
-    date_creation: Optional[date]
+    date_creation: Optional[datetime]
     commentaire: Optional[str]
-    client: ClientBase
+    client: Optional[ClientBase]
 
 
 class DossierOut(DossierCreate):

@@ -9,7 +9,7 @@ class Client(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     adresse_client = Column(String, nullable=True)
-    role_client = Column(Integer, ForeignKey("param_general.id"), nullable=False)
+    role_client = Column(Integer, ForeignKey("param_general.id"), nullable=True)
 
     dossiers = relationship("Dossier", back_populates="client")
 

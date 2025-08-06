@@ -57,7 +57,7 @@
                             {% endif %}
                         </td>
                         <td><span class="badge bg-warning text-dark">{{ dossier.urgence_param.valeur }}</span></td>
-                        <td>{{ dossier.date_creation.strftime('%d/%m/%Y') if dossier.date_creation else '' }}</td>
+                        <td>{{ dossier.date_creation if dossier.date_creation else '' }}</td>
                         <td>{{ dossier.client.role_client_param.valeur }}</td>
                         <td class="text-center">
                             <a href="/dossiers/{{ dossier.id }}" class="btn btn-sm btn-outline-primary me-1" title="Voir">

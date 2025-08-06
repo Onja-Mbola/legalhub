@@ -48,27 +48,29 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
 
         const files = document.getElementById('pieces_jointes').files;
+        const dateValue = document.getElementById('date_creation').value;
+        const formattedDate = dateValue ;
 
         const dossierData = {
             nom_dossier: document.getElementById('nom_dossier').value,
             type_affaire: typeAffaireSelect.value,
-            sous_type_affaire: document.getElementById('sous_type_affaire').value,
-            urgence: document.getElementById('urgence').value,
-            juridiction: document.getElementById('juridiction').value,
-            tribunal: document.getElementById('tribunal').value,
+            sous_type_affaire: document.getElementById('sous_type_affaire').value || null,
+            urgence: document.getElementById('urgence').value || null,
+            juridiction: document.getElementById('juridiction').value || null,
+            tribunal: document.getElementById('tribunal').value || null,
             avocat_responsable: document.getElementById('avocat_responsable').value,
-            avocat_adverse: document.getElementById('avocat_adverse').value,
-            date_creation: document.getElementById('date_creation').value,
-            commentaire: document.getElementById('commentaire').value,
+            avocat_adverse: document.getElementById('avocat_adverse').value || null,
+            date_creation: formattedDate,
+            commentaire: document.getElementById('commentaire').value || null,
             client: {
                 adresse_client: document.getElementById('adresse_client').value,
-                role_client: document.getElementById('role_client').value,
-                demandeurs: collectContacts('demandeurs-container'),
-                adverses: collectContacts('adverses-container')
+                role_client: document.getElementById('role_client').value || null,
+                demandeurs: collectContacts('demandeurs-container') || null,
+                adverses: collectContacts('adverses-container') || null
             }
         };
 
-        console.log(dossierData);
+        console.log("Valeur envoyée pour date_creation :", dossierData.date_creation);
 
         const formData = new FormData();
         formData.append("dossier_data", JSON.stringify(dossierData));
@@ -84,6 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const result = await response.json();
             if (result.redirect_url) {
+                // console.log("Valeur envoyée pour date_creation :", dossierData.date_creation);
+                // console.log("Valeur envoyée pour date_creation :", dossierData);
                 window.location.href = result.redirect_url;
             } else {
                 alert("Dossier enregistré avec succès !");
@@ -93,6 +97,13 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Une erreur est survenue lors de l'enregistrement.");
         }
     });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const now = new Date();
+    const utcPlus3 = new Date(now.getTime() + (3 * 60 * 60 * 1000));
+    const formatted = utcPlus3.toISOString().slice(0,16);
+    document.getElementById("date_creation").value = formatted;
 });
 
 function collectContacts(containerId) {

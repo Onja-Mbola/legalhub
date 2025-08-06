@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, Text, JSON
+from datetime import datetime, timedelta
+
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, Text, JSON, DateTime
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
@@ -17,7 +19,7 @@ class Dossier(Base):
     tribunal = Column(String, nullable=True)
     avocat_responsable = Column(Integer, ForeignKey("users.id"), nullable=False)
     avocat_adverse = Column(String, nullable=True)
-    date_creation = Column(Date, nullable=True)
+    date_creation = Column(DateTime, default=datetime.utcnow() + timedelta(hours=3),nullable=True)
     commentaire = Column(Text, nullable=True)
     dossier_path = Column(String, nullable=True)
     pieces_jointes = Column(JSON, nullable=True)

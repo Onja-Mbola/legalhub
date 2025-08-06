@@ -53,6 +53,8 @@ def create_dossier(db: Session, dossier_in: DossierCreate, avocat_nom: str) -> D
     db.commit()
     db.refresh(dossier)
 
+    print(dossier)
+
     os.makedirs(dossier.dossier_path, exist_ok=True)
 
     return dossier

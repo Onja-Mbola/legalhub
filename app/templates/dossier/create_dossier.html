@@ -12,6 +12,15 @@
 
 {% block content %}
 <div class="container-fluid mt-5">
+       {% if request.query_params.get('error') == '1' %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Erreur !</strong> Veuillez remplir toute les champs.
+            <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+    {% endif %}
     <div class="card shadow-lg border-0 rounded-4">
         <div class="card-header bg-gradient-primary text-white py-3">
             <h4 class="mb-0"><i class="fas fa-folder-plus me-2"></i> Création d’un nouveau dossier</h4>
@@ -41,7 +50,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Urgence</label>
-                            <select class="form-select rounded-pill" name="urgence" id="urgence" required>
+                            <select class="form-select rounded-pill" name="urgence" id="urgence">
                                 <option value="">-- Sélectionner --</option>
                                 {% for item in urgences %}
                                     <option value="{{ item.id }}">{{ item.valeur }}</option>
@@ -50,7 +59,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Rôle du Client</label>
-                            <select class="form-select rounded-pill" name="role_client" id="role_client" required>
+                            <select class="form-select rounded-pill" name="role_client" id="role_client">
                                 <option value="">-- Sélectionner --</option>
                                 {% for item in role_types %}
                                     <option value="{{ item.id }}">{{ item.valeur }}</option>
@@ -93,11 +102,11 @@
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-semibold">Juridiction</label>
-                            <input type="text" class="form-control shadow-sm" id="juridiction" name="juridiction" required>
+                            <input type="text" class="form-control shadow-sm" id="juridiction" name="juridiction">
                         </div>
                         <div class="col-md-3">
                             <label class="form-label fw-semibold">Tribunal</label>
-                            <input type="text" class="form-control shadow-sm" id="tribunal" name="tribunal" required>
+                            <input type="text" class="form-control shadow-sm" id="tribunal" name="tribunal">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Avocat responsable</label>
@@ -115,8 +124,8 @@
                     <h5 class="text-primary mb-3"><i class="fas fa-paperclip me-2"></i> Fichiers & Commentaires</h5>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Date de création</label>
-                            <input type="date" class="form-control shadow-sm" id="date_creation" name="date_creation">
+                            <label class="form-label fw-semibold">Date et heure de création</label>
+                            <input type="datetime-local" class="form-control shadow-sm" id="date_creation" name="date_creation">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Pièces jointes</label>
@@ -150,5 +159,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', path='/js/creation_dossier.js') }}?v=3"></script>
+<script src="{{ url_for('static', path='/js/creation_dossier.js') }}?v=11"></script>
 {% endblock %}
