@@ -44,10 +44,15 @@ def insert_enrolement_with_file(
 
     dossier_path = os.path.join("app/documents", avocat_nom, dossier.numero_dossier, "enrolement")
 
+    enrolement_exist = get_enrolement_by_dossier(db, dossier_id)
+
     fichier_path = None
-    if preuve_enrolement_file:
+    if preuve_enrolement_file and preuve_enrolement_file.filename:
         saved_files = save_uploaded_files([preuve_enrolement_file], dossier_path)
         fichier_path = os.path.join(dossier_path, saved_files[0])
+    else:
+        if enrolement_exist and enrolement_exist.preuve_enrolement:
+            fichier_path = enrolement_exist.preuve_enrolement
 
     try:
         date_enrolement = datetime.strptime(date_enrolement_str, "%Y-%m-%d").date()
@@ -64,6 +69,8 @@ def insert_enrolement_with_file(
 
     enrolement = save_or_update_enrolement(db, dossier_id, enrolement_in)
     return enrolement
+
+
 
 
 def get_enrolement_by_dossier_service(db: Session, dossier_id: int) -> Enrolement | None:

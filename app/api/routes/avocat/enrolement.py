@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Form, UploadFile, File, Request, HTTPException
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, HTMLResponse
 
 from app.core.auth import get_current_avocat_user
 from app.db.session import get_db
@@ -14,8 +14,8 @@ router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
 
-@router.get("/dossiers/{dossier_id}/enrolement", response_class=templates.TemplateResponse)
-async def enrolement_form(
+@router.get("/dossiers/{dossier_id}/enrolement", response_class=HTMLResponse)
+def enrolement_form(
     dossier_id: int,
     request: Request,
     db: Session = Depends(get_db),

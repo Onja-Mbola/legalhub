@@ -81,13 +81,13 @@ async def create_dossier_endpoint(
 
 
 @router.get("/dossiers/{dossier_id}", response_class=HTMLResponse)
-async def voir_dossier(dossier_id: int, request: Request, db: Session = Depends(get_db), user = Depends(get_current_avocat_user)):
+def voir_dossier(dossier_id: int, request: Request, db: Session = Depends(get_db), user = Depends(get_current_avocat_user)):
     dossier = get_dossier_by_id_service(db, dossier_id)
     return templates.TemplateResponse("dossier/detail_dossier.html", {"request": request, "dossier": dossier, "user": user})
 
 
 @router.get("/dossiers/{dossier_id}/modifier", response_class=HTMLResponse)
-async def edit_dossier(dossier_id: int, request: Request, db: Session = Depends(get_db), user = Depends(get_current_avocat_user)):
+def edit_dossier(dossier_id: int, request: Request, db: Session = Depends(get_db), user = Depends(get_current_avocat_user)):
     dossier = get_dossier_by_id_service(db, dossier_id)
     return templates.TemplateResponse("dossier/modifier_dossier.html", {"request": request, "dossier": dossier, "user": user})
 
@@ -113,7 +113,7 @@ async def update_dossier(
 
 
 @router.get("/documents/{filepath:path}", name="documents")
-async def documents(filepath: str):
+def documents(filepath: str):
     base_dir = os.path.abspath("app/documents")
     full_path = os.path.join(base_dir, filepath)
 
