@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -25,6 +27,9 @@ app.include_router(clarck.router)
 app.include_router(dossier.router)
 app.include_router(enrolement.router)
 
+documents_path = "app/documents"
+if not os.path.exists(documents_path):
+    os.makedirs(documents_path)
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.mount("/documents", StaticFiles(directory="app/documents"), name="documents")
