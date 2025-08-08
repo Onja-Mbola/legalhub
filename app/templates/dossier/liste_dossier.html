@@ -19,22 +19,29 @@
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
-
+    {% endif %}
+    {% if request.query_params.get('enrolement_success') == '1' %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>Succès !</strong> Action d'Enrolement fait avec succès.
+            <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
     {% endif %}
 
-    <h2 class="mb-4 fw-bold text-primary">Liste des dossiers de Maître {{ user.nom }}</h2>
+    <h2 class="mb-4 font-weight-bold text-primary">Liste des dossiers de Maître {{ user.nom }}</h2>
 
     <div class="mb-3 d-flex justify-content-between align-items-center">
         <input type="search" class="form-control w-25" placeholder="Rechercher un dossier..." aria-label="Recherche dossier">
         <a href="/dossiers/nouveau" class="btn btn-success">
-            <i class="fas fa-plus me-2"></i> Nouveau dossier
+            <i class="fas fa-plus mr-2"></i> Nouveau dossier
         </a>
     </div>
 
     <div class="card shadow-sm border-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light text-uppercase small">
+                <thead class="thead-light text-uppercase small">
                     <tr>
                         <th>Numéro</th>
                         <th>Nom du dossier</th>
@@ -42,35 +49,61 @@
                         <th>Urgence</th>
                         <th>Date de création</th>
                         <th>Rôle du client</th>
+                        <th>Date d'enrôlement</th>
+                        <th>Enrôlement</th>
                         <th class="text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for dossier in dossiers %}
                     <tr>
-                        <td class="fw-semibold text-secondary">{{ dossier.numero_dossier }}</td>
+                        <td class="font-weight-semibold text-secondary">{{ dossier.numero_dossier }}</td>
                         <td>{{ dossier.nom_dossier }}</td>
                         <td>
                             {{ dossier.type_affaire_param.valeur }}
-                            {% if dossier.sous_type_affaire_param.valeur %}
+                            {% if dossier.sous_type_affaire_param and dossier.sous_type_affaire_param.valeur %}
                                 <small class="text-muted"> - {{ dossier.sous_type_affaire_param.valeur }}</small>
                             {% endif %}
                         </td>
-                        <td><span class="badge bg-warning text-dark">{{ dossier.urgence_param.valeur }}</span></td>
-                        <td>{{ dossier.date_creation if dossier.date_creation else '' }}</td>
-                        <td>{{ dossier.client.role_client_param.valeur }}</td>
+                        <td><span class="badge badge-warning text-dark">{{ dossier.urgence_param.valeur }}</span></td>
+                        <td>{{ dossier.date_creation.strftime('%d/%m/%Y') if dossier.date_creation else '' }}</td>
+                        <td>{{ dossier.client.role_client_param.valeur if dossier.client else '' }}</td>
+                        <td>
+                            {% if dossier.enrolement %}
+                                {{ dossier.enrolement.date_enrolement.strftime('%d/%m/%Y') if dossier.enrolement.date_enrolement else '' }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if dossier.enrolement %}
+                                <span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i> OK</span>
+                            {% else %}
+                                <span class="badge badge-secondary"><i class="fas fa-times-circle mr-1"></i> Non fait</span>
+                            {% endif %}
+                        </td>
                         <td class="text-center">
-                            <a href="/dossiers/{{ dossier.id }}" class="btn btn-sm btn-outline-primary me-1" title="Voir">
+                            <a href="/dossiers/{{ dossier.id }}" class="btn btn-sm btn-outline-primary mr-1" title="Voir">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="/dossiers/{{ dossier.id }}/modifier" class="btn btn-sm btn-outline-warning" title="Modifier">
+                            <a href="/dossiers/{{ dossier.id }}/modifier" class="btn btn-sm btn-outline-warning mr-1" title="Modifier">
                                 <i class="fas fa-edit"></i>
                             </a>
+
+                            {% if not dossier.enrolement %}
+                                <a href="/dossiers/{{ dossier.id }}/enrolement" class="btn btn-sm btn-outline-success" title="Enrôler">
+                                    <i class="fas fa-file-signature mr-1"></i> Enrôler
+                                </a>
+                            {% else %}
+                                <a href="/dossiers/{{ dossier.id }}/enrolement" class="btn btn-sm btn-outline-info" title="Modifier enrôlement">
+                                    <i class="fas fa-pen mr-1"></i> Modifier enrôlement
+                                </a>
+                            {% endif %}
                         </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-4">Aucun dossier trouvé.</td>
+                        <td colspan="9" class="text-center text-muted py-4">Aucun dossier trouvé.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

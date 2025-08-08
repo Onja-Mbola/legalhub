@@ -10,6 +10,8 @@ from app.models.dossier import Dossier
 from app.schemas.dossier import DossierCreate
 import os
 
+from app.services.FileStorageService import save_uploaded_files
+
 
 def get_next_numero_dossier(db: Session) -> str:
     last_dossier = db.query(Dossier).order_by(Dossier.id.desc()).first()
@@ -58,16 +60,6 @@ def create_dossier(db: Session, dossier_in: DossierCreate, avocat_nom: str) -> D
     os.makedirs(dossier.dossier_path, exist_ok=True)
 
     return dossier
-
-def save_uploaded_files(files: List[UploadFile], dossier_path: str) -> List[str]:
-    saved_files = []
-    os.makedirs(dossier_path, exist_ok=True)
-    for file in files:
-        file_location = os.path.join(dossier_path, file.filename)
-        with open(file_location, "wb") as f:
-            f.write(file.file.read())
-        saved_files.append(file.filename)
-    return saved_files
 
 
 def create_dossier_with_files(db: Session, dossier_in: DossierCreate, avocat_nom: str, files: List[UploadFile]) -> Dossier:

@@ -30,3 +30,5 @@ class Dossier(Base):
     type_affaire_param = relationship("ParamGeneral", foreign_keys=[type_affaire])
     sous_type_affaire_param = relationship("ParamGeneral", foreign_keys=[sous_type_affaire])
     urgence_param = relationship("ParamGeneral", foreign_keys=[urgence])
+    enrolement = relationship("Enrolement", back_populates="dossier", uselist=False)
+

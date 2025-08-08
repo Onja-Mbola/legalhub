@@ -3,8 +3,7 @@ from typing import List
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
 from app.schemas.dossier import DossierCreate
-from app.repositories.dossier import create_dossier_with_files, get_dossiers_by_avocat, get_dossier_by_id, \
-    update_dossier_with_files
+from app.repositories.dossier import create_dossier_with_files, get_dossiers_by_avocat, get_dossier_by_id, update_dossier_with_files
 
 
 def create_new_dossier_with_files(db: Session, dossier_in: DossierCreate, avocat_nom: str, files: List[UploadFile]):
