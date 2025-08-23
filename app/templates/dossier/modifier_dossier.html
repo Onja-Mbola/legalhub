@@ -3,49 +3,64 @@
 {% block title %}Modifier le dossier - {{ dossier.nom_dossier }}{% endblock %}
 
 {% block sidebar %}
-    {% include "partials/sidebar.html" %}
+{% include "partials/sidebar.html" %}
 {% endblock %}
 
 {% block topbar %}
-    {% include "partials/topbar.html" %}
+{% include "partials/topbar.html" %}
 {% endblock %}
 
 {% block content %}
 <div class="container py-4">
-  <div class="card shadow-sm border-0">
-    <div class="card-header bg-primary text-white">
-      <h2 class="mb-0">Modifier le dossier : <small class="fw-light">{{ dossier.nom_dossier }}</small></h2>
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">Modifier le dossier : <small class="fw-light">{{ dossier.nom_dossier }}</small></h2>
+        </div>
+        <div class="card-body">
+            <form action="/dossiers/{{ dossier.id }}/modifier" method="post" enctype="multipart/form-data"
+                  class="needs-validation" novalidate>
+                <div class="mb-4">
+                    <label for="nom_dossier" class="form-label fw-semibold">Nom du dossier <span
+                            class="text-danger">*</span></label>
+                    <input type="text" id="nom_dossier" name="nom_dossier" class="form-control form-control-lg"
+                           value="{{ dossier.nom_dossier }}" required>
+                    <div class="invalid-feedback">Ce champ est obligatoire.</div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="commentaire" class="form-label fw-semibold">Commentaires</label>
+                    <textarea id="commentaire" name="commentaire" class="form-control" rows="5"
+                              placeholder="Ajouter des notes ou précisions...">{{ dossier.commentaire }}</textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label for="pieces_jointes" class="form-label fw-semibold">Pièces jointes (ajouter)</label>
+                    {% if dossier and dossier.pieces_jointes %}
+                    {% for filepath in dossier.pieces_jointes %}
+                    <p>Fichier actuel :
+                        <a href="{{ url_for('documents', filepath=filepath.split('app/documents/')[-1]) }}"
+                           target="_blank">
+                            {{ filepath.split('/')[-1] }}
+                        </a>
+                    </p>
+                    {% endfor %}
+                    {% endif %}
+
+                    <input type="file" id="pieces_jointes" name="pieces_jointes" class="form-control" multiple>
+                    <small class="form-text text-muted">Vous pouvez ajouter plusieurs fichiers à la fois.</small>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <button type="submit" class="btn btn-success btn-lg px-4">
+                        <i class="fas fa-save me-2"></i> Mettre à jour
+                    </button>
+                    <a href="/dossiers/{{ dossier.id }}" class="btn btn-outline-secondary btn-lg px-4">
+                        <i class="fas fa-times me-2"></i> Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
-    <div class="card-body">
-      <form action="/dossiers/{{ dossier.id }}/modifier" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
-        <div class="mb-4">
-          <label for="nom_dossier" class="form-label fw-semibold">Nom du dossier <span class="text-danger">*</span></label>
-          <input type="text" id="nom_dossier" name="nom_dossier" class="form-control form-control-lg" value="{{ dossier.nom_dossier }}" required>
-          <div class="invalid-feedback">Ce champ est obligatoire.</div>
-        </div>
-
-        <div class="mb-4">
-          <label for="commentaire" class="form-label fw-semibold">Commentaires</label>
-          <textarea id="commentaire" name="commentaire" class="form-control" rows="5" placeholder="Ajouter des notes ou précisions...">{{ dossier.commentaire }}</textarea>
-        </div>
-
-        <div class="mb-4">
-          <label for="pieces_jointes" class="form-label fw-semibold">Pièces jointes (ajouter)</label>
-          <input type="file" id="pieces_jointes" name="pieces_jointes" class="form-control" multiple>
-          <small class="form-text text-muted">Vous pouvez ajouter plusieurs fichiers à la fois.</small>
-        </div>
-
-        <div class="d-flex justify-content-between align-items-center">
-          <button type="submit" class="btn btn-success btn-lg px-4">
-            <i class="fas fa-save me-2"></i> Mettre à jour
-          </button>
-          <a href="/dossiers/{{ dossier.id }}" class="btn btn-outline-secondary btn-lg px-4">
-            <i class="fas fa-times me-2"></i> Annuler
-          </a>
-        </div>
-      </form>
-    </div>
-  </div>
 </div>
 {% endblock %}
 

@@ -3,125 +3,331 @@
 {% block title %}Détails du dossier - {{ dossier.nom_dossier }}{% endblock %}
 
 {% block sidebar %}
-    {% include "partials/sidebar.html" %}
+{% include "partials/sidebar.html" %}
 {% endblock %}
 
 {% block topbar %}
-    {% include "partials/topbar.html" %}
+{% include "partials/topbar.html" %}
 {% endblock %}
 
 {% block content %}
 <div class="container py-5">
-  <h2 class="mb-4 font-weight-bold text-primary">Dossier : {{ dossier.nom_dossier }}</h2>
+    <h2 class="mb-4 font-weight-bold text-primary">
+        Dossier : {{ dossier.nom_dossier }}
+    </h2>
 
-  <div class="card shadow-sm rounded p-4 mb-5">
-    <div class="row">
-      <div class="col-md-6">
-        <p><i class="fas fa-hashtag text-secondary mr-2"></i><strong>Numéro interne :</strong> {{ dossier.numero_dossier }}</p>
-        <p><i class="fas fa-briefcase text-secondary mr-2"></i><strong>Type :</strong> {{ dossier.type_affaire_param.valeur }}
-          {% if dossier.sous_type_affaire_param and dossier.sous_type_affaire_param.valeur %}
-            <small class="text-muted fst-italic"> - {{ dossier.sous_type_affaire_param.valeur }}</small>
-          {% endif %}
-        </p>
-        <p><i class="fas fa-bolt text-warning mr-2"></i><strong>Urgence :</strong>
-          <span class="badge badge-warning text-dark">{{ dossier.urgence_param.valeur }}</span>
-        </p>
-        <p><i class="fas fa-user-tag text-secondary mr-2"></i><strong>Rôle du client :</strong> {{ dossier.client.role_client_param.valeur }}</p>
-        <p><i class="fas fa-gavel text-secondary mr-2"></i><strong>Juridiction :</strong> {{ dossier.juridiction or '-' }}</p>
-      </div>
-      <div class="col-md-6">
-        <p><i class="fas fa-landmark text-secondary mr-2"></i><strong>Tribunal :</strong> {{ dossier.tribunal or '-' }}</p>
-        <p><i class="fas fa-user-tie text-secondary mr-2"></i><strong>Avocat Responsable :</strong> Maître {{ dossier.avocat_nom }}</p>
-        <p><i class="fas fa-user-secret text-secondary mr-2"></i><strong>Avocat Adverse :</strong> {{ dossier.avocat_adverse or '-' }}</p>
-        <p><i class="fas fa-calendar-alt text-secondary mr-2"></i><strong>Date de création :</strong>
-          {{ dossier.date_creation.strftime('%d/%m/%Y %H:%M') if dossier.date_creation else '-' }}
-        </p>
-      </div>
+    <div class="d-flex align-items-center mb-3">
+        <span class="text-muted me-2 fw-medium" style="letter-spacing: 0.5px;">Statut du dossier :</span>
+        <span class="badge bg-success text-uppercase px-3 py-2 shadow-sm">
+        {{ dossier.current_stage }}
+    </span>
     </div>
 
-    <!-- Enrôlement -->
-    <div class="mt-5 p-4 bg-light rounded shadow-sm">
-      <h4 class="mb-3 font-weight-semibold">
-        <i class="fas fa-file-signature text-primary mr-2"></i> Enrôlement
-      </h4>
 
-      {% if dossier.enrolement %}
-        <div class="row">
-          <div class="col-md-6">
-            <p><strong>Numéro rôle :</strong> {{ dossier.enrolement.numero_role }}</p>
-            <p><strong>Date d'enrôlement :</strong> {{ dossier.enrolement.date_enrolement.strftime('%d/%m/%Y') if dossier.enrolement.date_enrolement else '-' }}</p>
-            <p><strong>Frais payés :</strong> {{ dossier.enrolement.frais_payes if dossier.enrolement.frais_payes is not none else 'Non renseigné' }} Ariary</p>
-          </div>
-          <div class="col-md-6">
-            <p><strong>Greffier :</strong> {{ dossier.enrolement.greffier or 'Non renseigné' }}</p>
-            <p><strong>Preuve d'enrôlement :</strong>
-              {% if dossier.enrolement.preuve_enrolement %}
-                <a href="{{ url_for('documents', filepath=dossier.enrolement.preuve_enrolement | replace('app/documents/', '')) }}"
-                   class="btn btn-outline-primary btn-sm"
-                   target="_blank" rel="noopener">
-                  <i class="fas fa-file-download mr-1"></i> Télécharger
-                </a>
-              {% else %}
-                <span class="text-muted">Aucune preuve</span>
-              {% endif %}
-            </p>
-          </div>
-        </div>
-        <a href="/dossiers/{{ dossier.id }}/enrolement" class="btn btn-info btn-sm mt-3">
-          <i class="fas fa-pen mr-1"></i> Modifier l'enrôlement
-        </a>
-      {% else %}
-        <p class="text-muted fst-italic">Aucun enrôlement enregistré pour ce dossier.</p>
-        <a href="/dossiers/{{ dossier.id }}/enrolement" class="btn btn-success btn-sm mt-3">
-          <i class="fas fa-file-signature mr-1"></i> Ajouter un enrôlement
-        </a>
-      {% endif %}
-    </div>
+    <div class="card shadow-sm rounded p-4 mb-5">
 
-    <!-- Commentaires -->
-    <div class="mt-4 p-4 bg-light rounded shadow-sm">
-      <h4 class="font-weight-semibold mb-3"><i class="fas fa-comments text-secondary mr-2"></i> Commentaires</h4>
-      <p class="fst-italic mb-0">{{ dossier.commentaire or "Aucun commentaire." }}</p>
-    </div>
-
-    <!-- Pièces jointes -->
-    <div class="mt-4">
-      <h4>Pièces jointes</h4>
-      {% set relative_path = dossier.dossier_path.replace('app/documents/', '') %}
-      {% if dossier.pieces_jointes %}
-        <div class="row">
-          {% for filename in dossier.pieces_jointes %}
-            <div class="col-sm-6 col-md-4 col-lg-3 mb-3">
-              <div class="card h-100 shadow-sm">
-                <div class="card-body d-flex flex-column justify-content-between">
-                  <div class="d-flex align-items-center mb-3">
-                    <i class="fas fa-file-alt fa-2x text-primary mr-3"></i>
-                    <h6 class="card-title mb-0 text-truncate" title="{{ filename }}">{{ filename }}</h6>
-                  </div>
-                  <a href="{{ url_for('documents', filepath=relative_path + '/' + filename) }}"
-                     class="btn btn-outline-primary btn-sm mt-auto"
-                     download
-                     title="Télécharger {{ filename }}">
-                    <i class="fas fa-download mr-1"></i> Télécharger
-                  </a>
-                </div>
-              </div>
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <p><strong>Numéro interne :</strong> {{ dossier.numero_dossier }}</p>
+                <p><strong>Type :</strong> {{ dossier.type_affaire_param.valeur }}
+                    {% if dossier.sous_type_affaire_param and dossier.sous_type_affaire_param.valeur %}
+                    <small class="text-muted fst-italic"> - {{ dossier.sous_type_affaire_param.valeur }}</small>
+                    {% endif %}
+                </p>
+                <p><strong>Urgence :</strong> <span class="badge badge-warning text-dark">{{ dossier.urgence_param.valeur }}</span>
+                </p>
+                <p><strong>Rôle du client :</strong> {{ dossier.client.role_client_param.valeur }}</p>
+                <p><strong>Juridiction :</strong> {{ dossier.juridiction or '-' }}</p>
             </div>
-          {% endfor %}
+            <div class="col-md-6">
+                <p><strong>Tribunal :</strong> {{ dossier.tribunal or '-' }}</p>
+                <p><strong>Avocat Responsable :</strong> Maître {{ dossier.avocat_nom }}</p>
+                <p><strong>Avocat Adverse :</strong> {{ dossier.avocat_adverse or '-' }}</p>
+                <p><strong>Date de création :</strong> {{ dossier.date_creation.strftime('%d/%m/%Y %H:%M') if
+                    dossier.date_creation else '-' }}</p>
+            </div>
         </div>
-      {% else %}
-        <p class="text-muted fst-italic">Aucune pièce jointe disponible.</p>
-      {% endif %}
-    </div>
 
-    <div class="mt-5 d-flex gap-3">
-      <a href="/dossiers/{{ dossier.id }}/modifier" class="btn btn-warning btn-sm">
-        <i class="fas fa-edit mr-2"></i> Modifier
-      </a>
-      <a href="/dossiers" class="btn btn-secondary btn-sm">
-        <i class="fas fa-arrow-left mr-2"></i> Retour à la liste
-      </a>
+        <div class="mt-5 p-4 bg-light rounded shadow-sm">
+            <h4 class="mb-3 font-weight-semibold">
+                <i class="fas fa-file-signature text-primary mr-2"></i> Enrôlement
+            </h4>
+
+            {% if dossier.enrolement %}
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Numéro rôle :</strong> {{ dossier.enrolement.numero_role }}</p>
+                    <p><strong>Date d'enrôlement :</strong> {{ dossier.enrolement.date_enrolement.strftime('%d/%m/%Y')
+                        if dossier.enrolement.date_enrolement else '-' }}</p>
+                    <p><strong>Frais payés :</strong> {{ dossier.enrolement.frais_payes if
+                        dossier.enrolement.frais_payes is not none else 'Non renseigné' }} Ariary</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Greffier :</strong> {{ dossier.enrolement.greffier or 'Non renseigné' }}</p>
+                    <p><strong>Preuve d'enrôlement :</strong>
+                        {% if dossier.enrolement.preuve_enrolement %}
+                        <a href="{{ url_for('documents', filepath=dossier.enrolement.preuve_enrolement | replace('app/documents/', '')) }}"
+                           class="btn btn-outline-primary btn-sm" target="_blank">
+                            <i class="fas fa-file-download mr-1"></i> Télécharger
+                        </a>
+                        {% else %}
+                        <span class="text-muted">Aucune preuve</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            <a href="/dossiers/{{ dossier.id }}/enrolement" class="btn btn-info btn-sm mt-3">
+                <i class="fas fa-pen mr-1"></i> Modifier l'enrôlement
+            </a>
+            {% else %}
+            <p class="text-muted fst-italic">Aucun enrôlement enregistré pour ce dossier.</p>
+            <a href="/dossiers/{{ dossier.id }}/enrolement" class="btn btn-success btn-sm mt-3">
+                <i class="fas fa-file-signature mr-1"></i> Ajouter un enrôlement
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="mt-4 p-4 bg-light rounded shadow-sm">
+            <h4 class="mb-3 font-weight-semibold">
+                <i class="fas fa-file-contract text-primary mr-2"></i> Requête & Assignation
+            </h4>
+
+            {% if dossier.requete_assignation %}
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Nom huissier :</strong> {{ dossier.requete_assignation.nom_huissier or '-' }}</p>
+                    <p><strong>Date signification :</strong> {{
+                        dossier.requete_assignation.date_signification.strftime('%d/%m/%Y') if
+                        dossier.requete_assignation.date_signification else '-' }}</p>
+                    <p><strong>Date audience :</strong> {{
+                        dossier.requete_assignation.date_audience.strftime('%d/%m/%Y') if
+                        dossier.requete_assignation.date_audience else '-' }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Assignation :</strong>
+                        {% if dossier.requete_assignation.assignation_file %}
+                        <a href="{{ url_for('documents', filepath=dossier.requete_assignation.assignation_file | replace('app/documents/', '')) }}"
+                           class="btn btn-outline-primary btn-sm" target="_blank">
+                            <i class="fas fa-file-download mr-1"></i> Télécharger
+                        </a>
+                        {% else %}
+                        <span class="text-muted">Aucune assignation</span>
+                        {% endif %}
+                    </p>
+                    <p><strong>Preuve signification :</strong>
+                        {% if dossier.requete_assignation.preuve_signification_file %}
+                        <a href="{{ url_for('documents', filepath=dossier.requete_assignation.preuve_signification_file | replace('app/documents/', '')) }}"
+                           class="btn btn-outline-primary btn-sm" target="_blank">
+                            <i class="fas fa-file-download mr-1"></i> Télécharger
+                        </a>
+                        {% else %}
+                        <span class="text-muted">Aucune preuve</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            <a href="/dossiers/{{ dossier.id }}/requete_assignation" class="btn btn-info btn-sm mt-3">
+                <i class="fas fa-pen mr-1"></i> Modifier Requête & Assignation
+            </a>
+            {% else %}
+            <p class="text-muted fst-italic">Aucune requête ou assignation enregistrée pour ce dossier.</p>
+            <a href="/dossiers/{{ dossier.id }}/requete_assignation" class="btn btn-success btn-sm mt-3">
+                <i class="fas fa-file-contract mr-1"></i> Ajouter Requête & Assignation
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="mt-4 p-4 bg-light rounded shadow-sm">
+            <h4 class="mb-3 font-weight-semibold">
+                <i class="fas fa-gavel text-primary mr-2"></i> Première Audience
+            </h4>
+
+            {% if dossier.premieres_audiences %}
+            {% for audience in dossier.premieres_audiences %}
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p><strong>Date de l'audience :</strong> {{ audience.nouvelle_date_audience.strftime('%d/%m/%Y') if
+                        audience.nouvelle_date_audience else '-' }}</p>
+                    <p><strong>Décision :</strong> {{ audience.decision or '-' }}</p>
+                    <p><strong>Juge :</strong> {{ audience.nom_judge or '-' }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Observations du juge :</strong> {{ audience.observations_judge or '-' }}</p>
+                    <p><strong>Observations internes :</strong> {{ audience.observations_internes or '-' }}</p>
+                    <p><strong>PV de l'audience :</strong>
+                        {% if audience.pv_audience %}
+                        <a href="{{ url_for('documents', filepath=audience.pv_audience | replace('app/documents/', '')) }}"
+                           class="btn btn-outline-primary btn-sm" target="_blank">
+                            <i class="fas fa-file-download mr-1"></i> Télécharger
+                        </a>
+                        {% else %}
+                        <span class="text-muted">Aucun PV</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            <a href="/dossiers/{{ dossier.id }}/premiere_audience" class="btn btn-info btn-sm mb-3">
+                <i class="fas fa-pen mr-1"></i> Modifier Première Audience
+            </a>
+            {% endfor %}
+            {% else %}
+            <p class="text-muted fst-italic">Aucune première audience enregistrée pour ce dossier.</p>
+            <a href="/dossiers/{{ dossier.id }}/premiere_audience" class="btn btn-success btn-sm mt-3">
+                <i class="fas fa-gavel mr-1"></i> Ajouter Première Audience
+            </a>
+            {% endif %}
+        </div>
+
+
+        <div class="mt-4 p-4 bg-light rounded shadow-sm">
+            <h4 class="mb-3 font-weight-semibold"><i class="fas fa-comments text-primary mr-2"></i> Échanges de
+                conclusion</h4>
+            {% if dossier.echanges_conclusions %}
+            {% for echange in dossier.echanges_conclusions %}
+            <div class="border rounded p-3 mb-3">
+                <p><strong>Partie :</strong> {{ echange.partie }}</p>
+                <p><strong>Date de dépôt :</strong> {{ echange.date_depot.strftime('%d/%m/%Y') }}</p>
+                <p><strong>Résumé :</strong> {{ echange.contenu_resume or '-' }}</p>
+                <p><strong>Motif renvoi :</strong> {{ echange.motif_renvoi or '-' }}</p>
+                <p><strong>Fichier :</strong>
+                    {% if echange.conclusions_file %}
+                    <a href="{{ url_for('documents', filepath=echange.conclusions_file | replace('app/documents/', '')) }}"
+                       class="btn btn-outline-primary btn-sm" target="_blank">
+                        <i class="fas fa-file-download mr-1"></i> Télécharger
+                    </a>
+                    {% else %}<span class="text-muted">Aucun fichier</span>{% endif %}
+                </p>
+                <a href="/dossiers/{{ dossier.id }}/echange_conclusions/{{ echange.id }}/update"
+                   class="btn btn-info btn-sm mt-2">
+                    <i class="fas fa-pen mr-1"></i> Modifier
+                </a>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-muted fst-italic">Aucun échange de conclusion enregistré pour ce dossier.</p>
+            {% endif %}
+            <a href="/dossiers/{{ dossier.id }}/echange_conclusions" class="btn btn-success btn-sm mt-2"><i
+                    class="fas fa-plus mr-1"></i> Ajouter Échange de conclusion</a>
+        </div>
+
+        <div class="mt-4 p-4 bg-light rounded shadow-sm">
+            <h4 class="mb-3 font-weight-semibold"><i class="fas fa-gavel text-primary mr-2"></i> Délibérations /
+                Décisions</h4>
+            {% if dossier.deliberations_decisions %}
+            {% for deliberation in dossier.deliberations_decisions %}
+            <div class="border rounded p-3 mb-3">
+                <p><strong>Date mise en délibéré :</strong> {{ deliberation.date_mise_en_delibere.strftime('%d/%m/%Y')
+                    }}</p>
+                <p><strong>Type décision attendue :</strong> {{ deliberation.type_decision_attendue }}</p>
+                <p><strong>Observations du juge :</strong> {{ deliberation.observations_juge or '-' }}</p>
+                <p><strong>Fichier :</strong>
+                    {% if deliberation.note_audience_file %}
+                    <a href="{{ url_for('documents', filepath=deliberation.note_audience_file | replace('app/documents/', '')) }}"
+                       class="btn btn-outline-primary btn-sm" target="_blank">
+                        <i class="fas fa-file-download mr-1"></i> Télécharger
+                    </a>
+                    {% else %}<span class="text-muted">Aucun fichier</span>{% endif %}
+                </p>
+                <a href="/dossiers/{{ dossier.id }}/deliberation_update/{{ deliberation.id }}"
+                   class="btn btn-info btn-sm mt-2"><i class="fas fa-pen mr-1"></i> Modifier</a>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-muted fst-italic">Aucune délibération ou décision enregistrée pour ce dossier.</p>
+            {% endif %}
+            <a href="/dossiers/{{ dossier.id }}/deliberation" class="btn btn-success btn-sm mt-2"><i
+                    class="fas fa-plus mr-1"></i> Ajouter Délibération / Décision</a>
+        </div>
+
+        <div class="mt-4 p-4 bg-light rounded shadow-sm">
+            <h4 class="mb-3 font-weight-semibold"><i class="fas fa-balance-scale text-primary mr-2"></i> Décisions Avant
+                Dire Droit</h4>
+            {% if dossier.decisions_avant_dire_droit %}
+            {% for decision in dossier.decisions_avant_dire_droit %}
+            <div class="border rounded p-3 mb-3">
+                <p><strong>Date décision :</strong> {{ decision.date_decision.strftime('%d/%m/%Y') }}</p>
+                <p><strong>Nature incident :</strong> {{ decision.nature_incident }}</p>
+                <p><strong>Contenu :</strong> {{ decision.contenu or '-' }}</p>
+                <p><strong>Ordonnance :</strong>
+                    {% if decision.ordonnance_file %}
+                    <a href="{{ url_for('documents', filepath=decision.ordonnance_file | replace('app/documents/', '')) }}"
+                       class="btn btn-outline-primary btn-sm" target="_blank">
+                        <i class="fas fa-file-download mr-1"></i> Télécharger
+                    </a>
+                    {% else %}<span class="text-muted">Aucune ordonnance</span>{% endif %}
+                </p>
+                <a href="/dossiers/{{ dossier.id }}/decision_add_update/{{ decision.id }}"
+                   class="btn btn-info btn-sm mt-2"><i class="fas fa-pen mr-1"></i> Modifier</a>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-muted fst-italic">Aucune décision Avant Dire Droit enregistrée pour ce dossier.</p>
+            {% endif %}
+            <a href="/dossiers/{{ dossier.id }}/decision_add" class="btn btn-success btn-sm mt-2"><i
+                    class="fas fa-plus mr-1"></i> Ajouter Décision Avant Dire Droit</a>
+        </div>
+
+        <div class="mt-4 p-4 bg-light rounded shadow-sm">
+            <h4 class="mb-3 font-weight-semibold"><i class="fas fa-gavel text-success mr-2"></i> Décisions Définitives
+            </h4>
+            {% if dossier.decisions_definitives %}
+            {% for decision in dossier.decisions_definitives %}
+            <div class="border rounded p-3 mb-3">
+                <p><strong>Date décision :</strong> {{ decision.date_decision.strftime('%d/%m/%Y') }}</p>
+                <p><strong>Type décision :</strong> {{ decision.type_decision }}</p>
+                <p><strong>Motivation :</strong> {{ decision.motivation or '-' }}</p>
+                <p><strong>Jugement :</strong>
+                    {% if decision.jugement_file %}
+                    <a href="{{ url_for('documents', filepath=decision.jugement_file | replace('app/documents/', '')) }}"
+                       class="btn btn-outline-primary btn-sm" target="_blank">
+                        <i class="fas fa-file-download mr-1"></i> Télécharger
+                    </a>
+                    {% else %}<span class="text-muted">Aucun jugement</span>{% endif %}
+                </p>
+                <a href="/dossiers/{{ dossier.id }}/decision_def" class="btn btn-info btn-sm mt-2"><i
+                        class="fas fa-pen mr-1"></i> Modifier</a>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-muted fst-italic">Aucune décision définitive enregistrée pour ce dossier.</p>
+            {% endif %}
+            <a href="/dossiers/{{ dossier.id }}/decision_def" class="btn btn-success btn-sm mt-2"><i
+                    class="fas fa-plus mr-1"></i> Ajouter Décision Définitive</a>
+        </div>
+
+        <div class="mt-4 p-4 bg-light rounded shadow-sm">
+            <h4 class="font-weight-semibold mb-3"><i class="fas fa-comment-alt text-secondary mr-2"></i> Commentaires
+            </h4>
+            <p class="fst-italic mb-0">{{ dossier.commentaire or "Aucun commentaire." }}</p>
+        </div>
+
+        <div class="mt-4">
+            <h4>Pièces jointes</h4>
+            {% set relative_path = dossier.dossier_path.replace('app/documents/', '') %}
+            {% if dossier.pieces_jointes %}
+            <div class="row">
+                {% for filename in dossier.pieces_jointes %}
+                <div class="col-sm-6 col-md-4 col-lg-3 mb-3">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-file-alt fa-2x text-primary mr-2"></i>
+                                <span class="text-truncate">{{ filename }}</span>
+                            </div>
+                            <a href="{{ url_for('documents', filepath=relative_path + '/' + filename) }}"
+                               target="_blank" class="btn btn-outline-primary btn-sm mt-2">
+                                <i class="fas fa-download mr-1"></i> Télécharger
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted fst-italic">Aucune pièce jointe pour ce dossier.</p>
+            {% endif %}
+        </div>
+
     </div>
-  </div>
 </div>
 {% endblock %}

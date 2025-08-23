@@ -1,9 +1,11 @@
 import os
 from datetime import datetime
 
+from app.core.workflow_enums import ProcessStage
 from app.models.dossier import Dossier
 from app.models.enrolement import Enrolement
-from app.repositories.enrolement import get_enrolement_by_dossier, update_enrolement, create_enrolement
+from app.repositories.enrolement import get_enrolement_by_dossier, update_enrolement, create_enrolement, \
+    get_enrolement_by_numero_role
 from app.schemas.enrolement import EnrolementCreate, EnrolementUpdate
 from typing import Optional
 
@@ -11,21 +13,28 @@ from fastapi import UploadFile, HTTPException
 from sqlalchemy.orm import Session
 from app.repositories.dossier import get_dossier_by_id
 from app.services.FileStorageService import save_uploaded_files
+from app.services.workflow_guard import WorkflowGuard
+
 
 def save_or_update_enrolement(
     db: Session,
     dossier_id: int,
     enrolement_in: EnrolementCreate
 ):
-    dossier = db.query(Dossier).filter(Dossier.id == dossier_id).first()
+    dossier = get_dossier_by_id(db, dossier_id)
     if not dossier:
         raise HTTPException(status_code=404, detail="Dossier non trouvé")
+
+    if dossier.current_stage != ProcessStage.INTRODUCTION_INSTANCE.value:
+        raise HTTPException(status_code=400, detail="Vous devez d'abord passer par l'Introduction d'instance.")
 
     enrolement = get_enrolement_by_dossier(db, dossier_id)
     if enrolement:
         return update_enrolement(db, enrolement, EnrolementUpdate(**enrolement_in.dict()))
     else:
-        return create_enrolement(db, dossier_id, enrolement_in)
+        enrolement = create_enrolement(db, dossier_id, enrolement_in)
+        WorkflowGuard.advance(dossier, ProcessStage.ENROLEMENT, db)
+        return enrolement
 
 def insert_enrolement_with_file(
     db: Session,
@@ -40,7 +49,10 @@ def insert_enrolement_with_file(
 
     dossier = get_dossier_by_id(db, dossier_id)
     if not dossier:
-        raise Exception("Dossier non trouvé")
+        raise HTTPException(status_code=404, detail="Dossier non trouvé")
+
+    if dossier.current_stage != ProcessStage.INTRODUCTION_INSTANCE.value:
+        raise HTTPException(status_code=400, detail="Vous devez d'abord passer par l'Introduction d'instance.")
 
     dossier_path = os.path.join("app/documents", avocat_nom, dossier.numero_dossier, "enrolement")
 
@@ -75,3 +87,6 @@ def insert_enrolement_with_file(
 
 def get_enrolement_by_dossier_service(db: Session, dossier_id: int) -> Enrolement | None:
     return get_enrolement_by_dossier(db, dossier_id)
+
+def get_enrolement_by_numero_role_service(db: Session, numero_role: int)  -> int | None:
+    return get_enrolement_by_numero_role(db, numero_role)

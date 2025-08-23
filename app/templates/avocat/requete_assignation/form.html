@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Requête & Assignation - Dossier #{{ dossier_id }}{% endblock %}
+
+{% block sidebar %}
+    {% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+    {% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    {% if error_msg %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>Erreur :</strong> {{ error_msg }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
+            <span aria-hidden="true">×</span>
+        </button>
+    </div>
+    {% endif %}
+    <div class="card shadow-lg rounded-4 border-0">
+        <div class="card-header bg-gradient-primary text-white py-3">
+            <h4 class="mb-0"><i class="fas fa-gavel me-2"></i> Requête & Assignation du dossier #{{ dossier_id }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" action="">
+                <div class="mb-3">
+                    <label for="nom_huissier" class="form-label fw-semibold">Nom de l’huissier <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="nom_huissier" name="nom_huissier" required
+                           value="{{ requete_assignation.nom_huissier if requete_assignation else '' }}">
+                </div>
+
+                <div class="mb-3">
+                    <label for="date_signification" class="form-label fw-semibold">Date de signification <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="date_signification" name="date_signification" required
+                           value="{{ requete_assignation.date_signification if requete_assignation else '' }}">
+                </div>
+
+                <div class="mb-3">
+                    <label for="date_audience" class="form-label fw-semibold">Date d’audience <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="date_audience" name="date_audience" required
+                           value="{{ requete_assignation.date_audience if requete_assignation else '' }}">
+                </div>
+
+                <div class="mb-3">
+                    <label for="assignation_file" class="form-label fw-semibold">Scan de l’assignation (PDF ou image)</label>
+                    {% if requete_assignation and requete_assignation.assignation_file %}
+                        <p>Fichier actuel :
+                            <a href="{{ url_for('documents', filepath=requete_assignation.assignation_file.split('app/documents/')[-1]) }}" target="_blank">
+                                {{ requete_assignation.assignation_file.split('/')[-1] }}
+                            </a>
+                        </p>
+                    {% endif %}
+                    <input type="file" class="form-control" id="assignation_file" name="assignation_file" accept=".pdf,.jpg,.jpeg,.png">
+                </div>
+
+                <div class="mb-3">
+                    <label for="preuve_signification_file" class="form-label fw-semibold">Preuve de signification (fichier)</label>
+                    {% if requete_assignation and requete_assignation.preuve_signification_file %}
+                        <p>Fichier actuel :
+                            <a href="{{ url_for('documents', filepath=requete_assignation.preuve_signification_file.split('app/documents/')[-1]) }}" target="_blank">
+                                {{ requete_assignation.preuve_signification_file.split('/')[-1] }}
+                            </a>
+                        </p>
+                    {% endif %}
+                    <input type="file" class="form-control" id="preuve_signification_file" name="preuve_signification_file" accept=".pdf,.jpg,.jpeg,.png">
+                </div>
+
+                <button type="submit" class="btn btn-primary rounded-pill px-4">
+                    <i class="fas fa-save me-2"></i> Enregistrer
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

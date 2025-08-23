@@ -1,23 +1,20 @@
 import json
 import os
-from typing import List, Optional, Union
+from typing import List, Union
 
 from fastapi import APIRouter, Depends, Request, Form, UploadFile, File
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.exc import SQLAlchemyError
-from starlette import status
+from sqlalchemy.orm import Session
 from starlette.responses import RedirectResponse, HTMLResponse, FileResponse
 
 from app.core.auth import get_current_avocat_user
+from app.db.session import get_db
 from app.models.user import User
-from fastapi.templating import Jinja2Templates
-
-from app.schemas.dossier import DossierOut, DossierCreate
+from app.schemas.dossier import DossierCreate
 from app.services.dossier import create_new_dossier_with_files, get_dossiers_by_avocat_service, \
     get_dossier_by_id_service, update_dossier_with_files_service
 from app.services.param_general import get_param_ordered, to_dict_list
-from sqlalchemy.orm import Session
-from app.db.session import get_db
-
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -26,7 +23,7 @@ templates = Jinja2Templates(directory="app/templates")
 @router.get("/dossiers")
 def list_dossiers(request: Request,db: Session = Depends(get_db), user: User = Depends(get_current_avocat_user)):
     dossiers = get_dossiers_by_avocat_service(db, user.id)
-    return templates.TemplateResponse("dossier/liste_dossier.html", {
+    return templates.TemplateResponse("dossier/list_dossier.html", {
         "request": request,
         "user": user,
         "dossiers": dossiers

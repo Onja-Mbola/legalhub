@@ -33,10 +33,10 @@ async def register_user_by_email(db, nom, email, role):
 
 def authenticate_user(email: str, password: str, db):
     user = get_user_by_email(db, email)
-    if not user or not verify_password(password, user.password):
-        raise HTTPException(status_code=400, detail="Email ou mot de passe incorrect")
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Compte inactif")
+    if not user or not verify_password(password, user.password):
+        raise HTTPException(status_code=400, detail="Email ou mot de passe incorrect")
     return user
 
 def decode_token(token: str):

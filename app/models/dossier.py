@@ -2,7 +2,12 @@ from datetime import datetime, timedelta
 
 from sqlalchemy import Column, Integer, String, ForeignKey, Date, Text, JSON, DateTime
 from sqlalchemy.orm import relationship
+
+from app.core.workflow_enums import ProcessStage
 from app.db.base_class import Base
+from app.models.requete_assignation import RequeteAssignation
+from app.models.premiere_audience import PremiereAudience
+
 
 class Dossier(Base):
     __tablename__ = "dossiers"
@@ -23,6 +28,8 @@ class Dossier(Base):
     commentaire = Column(Text, nullable=True)
     dossier_path = Column(String, nullable=True)
     pieces_jointes = Column(JSON, nullable=True)
+    current_stage = Column(String, default=ProcessStage.INTRODUCTION_INSTANCE.value, nullable=False)
+    last_completed_stage = Column(String, nullable=True)
 
     client_id = Column(Integer, ForeignKey("clients.id"))
     client = relationship("Client", back_populates="dossiers")
@@ -31,4 +38,13 @@ class Dossier(Base):
     sous_type_affaire_param = relationship("ParamGeneral", foreign_keys=[sous_type_affaire])
     urgence_param = relationship("ParamGeneral", foreign_keys=[urgence])
     enrolement = relationship("Enrolement", back_populates="dossier", uselist=False)
+    requete_assignation = relationship("RequeteAssignation", back_populates="dossier", uselist=False)
+    premieres_audiences = relationship("PremiereAudience", back_populates="dossier", cascade="all, delete-orphan")
+    echanges_conclusions = relationship("EchangeConclusion", back_populates="dossier", cascade="all, delete-orphan")
+    deliberations_decisions = relationship("Deliberation_Decision", back_populates="dossier", cascade="all, delete-orphan")
+    decisions_avant_dire_droit = relationship("DecisionAvantDireDroit", back_populates="dossier", cascade="all, delete-orphan")
+    decisions_definitives = relationship("DecisionDefinitive", back_populates="dossier", cascade="all, delete-orphan")
+
+
+
 

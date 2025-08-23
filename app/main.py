@@ -4,13 +4,14 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.responses import JSONResponse
-from starlette.status import HTTP_403_FORBIDDEN, HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND
+from starlette.status import HTTP_403_FORBIDDEN, HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 
 from app.db.init_db import init_db
 from app.api.routes import clarck
-from app.api.routes.avocat import dossier, avocat, enrolement
+from app.api.routes.avocat import dossier, avocat, enrolement, requete_assignation, premiere_audience, \
+    echange_conclusion, deliberation_decision, decision_definitive, decision_avant_dire_droit
 from app.api.routes.admin import admin, auth, param_general
 
 app = FastAPI()
@@ -26,6 +27,12 @@ app.include_router(avocat.router)
 app.include_router(clarck.router)
 app.include_router(dossier.router)
 app.include_router(enrolement.router)
+app.include_router(requete_assignation.router)
+app.include_router(premiere_audience.router)
+app.include_router(echange_conclusion.router)
+app.include_router(deliberation_decision.router)
+app.include_router(decision_avant_dire_droit.router)
+app.include_router(decision_definitive.router)
 
 documents_path = "app/documents"
 if not os.path.exists(documents_path):
@@ -52,5 +59,10 @@ async def custom_http_exception_handler(request: Request, exc: StarletteHTTPExce
             "request": request,
             "detail": exc.detail
         }, status_code=404)
+    elif exc.status_code == HTTP_400_BAD_REQUEST:
+        return templates.TemplateResponse("error/400.html", {
+            "request": request,
+            "detail": exc.detail
+        }, status_code=400)
 
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})

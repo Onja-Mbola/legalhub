@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Échange de conclusions - Dossier #{{ dossier.id }}{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+
+    {% if error_msg %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>Erreur :</strong> {{ error_msg }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
+            <span aria-hidden="true">x</span>
+        </button>
+    </div>
+    {% endif %}
+
+    <div class="card shadow-lg rounded-4 border-0 mb-4">
+        <div class="card-header bg-gradient-primary text-white py-3">
+            <h4 class="mb-0">
+                <i class="fas fa-file-signature me-2"></i>
+                {% if mode == "create" %}
+                    Nouveau échange de conclusions - Dossier #{{ dossier.id }}
+                {% else %}
+                    Mise à jour de l'échange - Dossier #{{ dossier.id }}
+                {% endif %}
+            </h4>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data"
+                  action="{% if mode == 'update' %}/dossiers/{{ dossier.id }}/echange_conclusions/{{ item.id }}/update{% else %}/dossiers/{{ dossier.id }}/echange_conclusions{% endif %}">
+
+                <div class="mb-3">
+                    <label for="partie" class="form-label fw-semibold">Partie qui a demandé <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="partie" name="partie" required
+                           value="{{ item.partie if item else '' }}">
+                </div>
+
+                <div class="mb-3">
+                    <label for="date_depot" class="form-label fw-semibold">Date de dépôt <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="date_depot" name="date_depot" required
+                           value="{{ item.date_depot if item else '' }}">
+                </div>
+
+                <div class="mb-3">
+                    <label for="contenu_resume" class="form-label fw-semibold">Contenu résumé</label>
+                    <textarea class="form-control" id="contenu_resume" name="contenu_resume">{{ item.contenu_resume if item else '' }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="motif_renvoi" class="form-label fw-semibold">Motif de renvoi</label>
+                    <textarea class="form-control" id="motif_renvoi" name="motif_renvoi">{{ item.motif_renvoi if item else '' }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="conclusions_file" class="form-label fw-semibold">Fichier de conclusion</label>
+                    {% if item and item.conclusions_file %}
+                        <p>Fichier actuel :
+                            <a href="{{ request.url_for('documents', filepath=item.conclusions_file.split('app/documents/')[-1]) }}"
+                               target="_blank">{{ item.conclusions_file.split('/')[-1] }}</a>
+                        </p>
+                    {% endif %}
+                    <input type="file" class="form-control" id="conclusions_file" name="conclusions_file"
+                           accept=".pdf,.jpg,.png,.jpeg">
+                </div>
+
+                <button type="submit" class="btn btn-primary rounded-pill px-4">
+                    <i class="fas fa-save me-2"></i>
+                    {% if mode == "create" %}Créer{% else %}Mettre à jour{% endif %}
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {% if mode == "create" and items %}
+        <h5>Échanges existants :</h5>
+        <ul class="list-group mb-4">
+            {% for echange in items %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ echange.partie }} - {{ echange.date_depot }}
+                    <a href="/dossiers/{{ dossier.id }}/echange_conclusions/{{ echange.id }}/update" class="btn btn-sm btn-outline-secondary">Modifier</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+</div>
+{% endblock %}

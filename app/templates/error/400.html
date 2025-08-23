@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Erreur 400 - Requête invalide{% endblock %}
+
+{% block content %}
+<style>
+    .error-container {
+        min-height: 70vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    .error-code {
+        font-size: 8rem;
+        font-weight: 700;
+        color: #dc3545;
+        line-height: 1;
+    }
+
+    .error-message {
+        font-size: 1.5rem;
+        color: #6c757d;
+    }
+
+    .error-description {
+        color: #495057;
+        margin-bottom: 30px;
+    }
+
+    .btn-home {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 0.5rem;
+    }
+</style>
+
+<div class="container error-container">
+    <div class="error-code">400</div>
+    <div class="error-message mb-3">Requête invalide</div>
+    <p class="error-description">
+        {{ detail or "La requête envoyée est incorrecte ou incomplète." }}
+    </p>
+    <a href="/" class="btn btn-outline-danger btn-home">Retour à l'accueil</a>
+</div>
+{% endblock %}

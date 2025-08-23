@@ -1,3 +1,4 @@
+import os
 from typing import List
 
 from fastapi import UploadFile, HTTPException
@@ -8,8 +9,6 @@ from app.models.client import Client
 from app.models.demandeur import Demandeur
 from app.models.dossier import Dossier
 from app.schemas.dossier import DossierCreate
-import os
-
 from app.services.FileStorageService import save_uploaded_files
 
 
@@ -118,13 +117,23 @@ def get_dossiers_by_avocat(db: Session, avocat_id: int):
 
 def get_dossier_by_id(db: Session, dossier_id: int):
     return (
-            db.query(Dossier)
-            .options(
-                joinedload(Dossier.client).joinedload(Client.role_client_param)
-            )
-            .filter(Dossier.id == dossier_id)
-            .first()
+        db.query(Dossier)
+        .options(
+            joinedload(Dossier.client).joinedload(Client.role_client_param),
+            joinedload(Dossier.type_affaire_param),
+            joinedload(Dossier.sous_type_affaire_param),
+            joinedload(Dossier.urgence_param),
+            joinedload(Dossier.enrolement),
+            joinedload(Dossier.requete_assignation),
+            joinedload(Dossier.premieres_audiences),
+            joinedload(Dossier.echanges_conclusions),
+            joinedload(Dossier.deliberations_decisions),
+            joinedload(Dossier.decisions_avant_dire_droit),
+            joinedload(Dossier.decisions_definitives)
         )
+        .filter(Dossier.id == dossier_id)
+        .first()
+    )
 
 
 def update_dossier_with_files(

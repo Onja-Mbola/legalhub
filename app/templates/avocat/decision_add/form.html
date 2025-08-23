@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Décision avant dire droit - Dossier #{{ dossier.id }}{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    {% if error_msg %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>Erreur :</strong> {{ error_msg }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
+            <span aria-hidden="true">x</span>
+        </button>
+    </div>
+    {% endif %}
+    <div class="card shadow-lg rounded-4 border-0">
+        <div class="card-header bg-gradient-primary text-white py-3">
+            <h4 class="mb-0"><i class="fas fa-file-contract me-2"></i> Décision avant dire droit - Dossier #{{ dossier.id }}</h4>
+        </div>
+        <div class="card-body">
+            {% if item %}
+            <form method="post" enctype="multipart/form-data" action="{{ url_for('decision_add_update', dossier_id=dossier.id, decision_id=item.id) }}">
+            {% else %}
+            <form method="post" enctype="multipart/form-data" action="{{ url_for('decision_add_create', dossier_id=dossier.id) }}">
+            {% endif %}
+
+                <div class="mb-3">
+                    <label for="date_decision" class="form-label fw-semibold">Date de décision <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="date_decision" name="date_decision" required
+                           value="{{ item.date_decision if item else '' }}">
+                </div>
+
+                <div class="mb-3">
+                    <label for="nature_incident" class="form-label fw-semibold">Nature de l'incident <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="nature_incident" name="nature_incident" required
+                           value="{{ item.nature_incident if item else '' }}">
+                </div>
+
+                <div class="mb-3">
+                    <label for="contenu" class="form-label fw-semibold">Contenu</label>
+                    <textarea class="form-control" id="contenu" name="contenu">{{ item.contenu if item else '' }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="ordonnance_file" class="form-label fw-semibold">Ordonnance (fichier)</label>
+                    {% if item and item.ordonnance_file %}
+                    <p>Fichier actuel : <a
+                            href="{{ request.url_for('documents', filepath=item.ordonnance_file.split('app/documents/')[-1]) }}"
+                            target="_blank">{{ item.ordonnance_file.split('/')[-1] }}</a></p>
+                    {% endif %}
+                    <input type="file" class="form-control" id="ordonnance_file" name="ordonnance_file"
+                           accept=".pdf,.jpg,.png,.jpeg">
+                </div>
+
+                <button type="submit" class="btn btn-primary rounded-pill px-4">
+                    <i class="fas fa-save me-2"></i> Enregistrer
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
