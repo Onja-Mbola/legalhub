@@ -10,3 +10,5 @@ passlib
 python-jose[cryptography]
 fastapi-mail
 alembic
+celery[redis]
+redis

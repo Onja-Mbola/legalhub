@@ -3,87 +3,88 @@
 {% block title %}Tableau de bord - Avocat{% endblock %}
 
 {% block sidebar %}
-    <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
-        <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">
-            <div class="sidebar-brand-icon rotate-n-15">
-                <i class="fas fa-laugh-wink"></i>
-            </div>
-            <div class="sidebar-brand-text mx-3">LegalHub</div>
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">
+        <div class="sidebar-brand-icon rotate-n-15">
+            <i class="fas fa-laugh-wink"></i>
+        </div>
+        <div class="sidebar-brand-text mx-3">LegalHub</div>
+    </a>
+    <hr class="sidebar-divider my-0">
+    <li class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+        <a class="nav-link" href="/">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Tableau de bord</span></a>
+    </li>
+
+    <hr class="sidebar-divider">
+
+    <div class="sidebar-heading">
+        Interface
+    </div>
+
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseDossiers"
+           aria-expanded="true" aria-controls="collapseDossiers">
+            <i class="fas fa-fw fa-folder"></i>
+            <span>Dossiers</span>
         </a>
-        <hr class="sidebar-divider my-0">
-        <li class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
-            <a class="nav-link" href="/">
-                <i class="fas fa-fw fa-tachometer-alt"></i>
-                <span>Tableau de bord</span></a>
-        </li>
-
-        <hr class="sidebar-divider">
-
-        <div class="sidebar-heading">
-            Interface
-        </div>
-
-        <li class="nav-item">
-            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseDossiers"
-                aria-expanded="true" aria-controls="collapseDossiers">
-                <i class="fas fa-fw fa-folder"></i>
-                <span>Dossiers</span>
-            </a>
-            <div id="collapseDossiers" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                <div class="bg-white py-2 collapse-inner rounded">
-                    <h6 class="collapse-header">Gestion des dossiers:</h6>
-                    <a class="collapse-item" href="/dossiers">Voir les dossiers</a>
-                    <a class="collapse-item" href="/dossiers/nouveau">Nouveau dossier</a>
-                </div>
+        <div id="collapseDossiers" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Gestion des dossiers:</h6>
+                <a class="collapse-item" href="/dossiers">Voir les dossiers</a>
+                <a class="collapse-item" href="/dossiers_archiver">Voir les dossiers archivés</a>
+                <a class="collapse-item" href="/dossiers/nouveau">Nouveau dossier</a>
             </div>
-        </li>
+        </div>
+    </li>
 
-        <li class="nav-item">
-            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseFacturation"
-                aria-expanded="true" aria-controls="collapseFacturation">
-                <i class="fas fa-fw fa-file-invoice-dollar"></i>
-                <span>Facturation</span>
-            </a>
-            <div id="collapseFacturation" class="collapse" aria-labelledby="headingUtilities"
-                data-parent="#accordionSidebar">
-                <div class="bg-white py-2 collapse-inner rounded">
-                    <h6 class="collapse-header">Gestion des factures:</h6>
-                    <a class="collapse-item" href="/factures">Voir les factures</a>
-                    <a class="collapse-item" href="/factures/nouvelle">Nouvelle facture</a>
-                </div>
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseFacturation"
+           aria-expanded="true" aria-controls="collapseFacturation">
+            <i class="fas fa-fw fa-file-invoice-dollar"></i>
+            <span>Facturation</span>
+        </a>
+        <div id="collapseFacturation" class="collapse" aria-labelledby="headingUtilities"
+             data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Gestion des factures:</h6>
+                <a class="collapse-item" href="/factures">Voir les factures</a>
+                <a class="collapse-item" href="/factures/nouvelle">Nouvelle facture</a>
             </div>
-        </li>
-
-        <hr class="sidebar-divider">
-
-        <div class="sidebar-heading">
-            Addons
         </div>
+    </li>
 
-        <li class="nav-item {% if request.endpoint == 'charts' %}active{% endif %}">
-            <a class="nav-link" href="/statistiques">
-                <i class="fas fa-fw fa-chart-area"></i>
-                <span>Statistiques</span></a>
-        </li>
+    <hr class="sidebar-divider">
 
-        <li class="nav-item {% if request.endpoint == 'tables' %}active{% endif %}">
-            <a class="nav-link" href="/utilisateurs"> {# Assuming you have a clients page #}
-                <i class="fas fa-fw fa-users"></i>
-                <span>Utilisateurs</span></a>
-        </li>
+    <div class="sidebar-heading">
+        Addons
+    </div>
 
-        <hr class="sidebar-divider d-none d-md-block">
+    <li class="nav-item {% if request.endpoint == 'charts' %}active{% endif %}">
+        <a class="nav-link" href="/statistiques">
+            <i class="fas fa-fw fa-chart-area"></i>
+            <span>Statistiques</span></a>
+    </li>
 
-        <div class="text-center d-none d-md-inline">
-            <button class="rounded-circle border-0" id="sidebarToggle"></button>
-        </div>
+    <li class="nav-item {% if request.endpoint == 'tables' %}active{% endif %}">
+        <a class="nav-link" href="/utilisateurs"> {# Assuming you have a clients page #}
+            <i class="fas fa-fw fa-users"></i>
+            <span>Utilisateurs</span></a>
+    </li>
 
-    </ul>
-    {% endblock %}
+    <hr class="sidebar-divider d-none d-md-block">
+
+    <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+    </div>
+
+</ul>
+{% endblock %}
 
 {% block topbar %}
-    {% include "partials/topbar.html" %}
+{% include "partials/topbar.html" %}
 {% endblock %}
 
 
@@ -102,8 +103,10 @@
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                            Dossiers Actifs (Mois)</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_cases_monthly }}</div> {# Replace with your actual data #}
+                            Dossiers Actifs (Mois)
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_cases_monthly }}</div>
+                        {# Replace with your actual data #}
                     </div>
                     <div class="col-auto">
                         <i class="fas fa-folder-open fa-2x text-gray-300"></i>
@@ -119,8 +122,10 @@
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                            Dossiers Clôturés (Annuel)</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ closed_cases_annual }}</div> {# Replace with your actual data #}
+                            Dossiers Clôturés (Annuel)
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ closed_cases_annual }}</div>
+                        {# Replace with your actual data #}
                     </div>
                     <div class="col-auto">
                         <i class="fas fa-check-circle fa-2x text-gray-300"></i>
@@ -139,13 +144,15 @@
                         </div>
                         <div class="row no-gutters align-items-center">
                             <div class="col-auto">
-                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{ tasks_percentage }}%</div> {# Example: 75% #}
+                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{ tasks_percentage }}%</div>
+                                {# Example: 75% #}
                             </div>
                             <div class="col">
                                 <div class="progress progress-sm mr-2">
                                     <div class="progress-bar bg-info" role="progressbar"
-                                        style="width: {{ tasks_percentage }}%" aria-valuenow="{{ tasks_percentage }}" aria-valuemin="0"
-                                        aria-valuemax="100"></div>
+                                         style="width: {{ tasks_percentage }}%" aria-valuenow="{{ tasks_percentage }}"
+                                         aria-valuemin="0"
+                                         aria-valuemax="100"></div>
                                 </div>
                             </div>
                         </div>
@@ -164,8 +171,10 @@
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                            Nouveaux Clients (Mois)</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ new_clients_monthly }}</div> {# Replace with your actual data #}
+                            Nouveaux Clients (Mois)
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ new_clients_monthly }}</div>
+                        {# Replace with your actual data #}
                     </div>
                     <div class="col-auto">
                         <i class="fas fa-user-plus fa-2x text-gray-300"></i>
@@ -180,15 +189,15 @@
     <div class="col-xl-8 col-lg-7">
         <div class="card shadow mb-4">
             <div
-                class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-primary">Aperçu des Revenus</h6>
                 <div class="dropdown no-arrow">
                     <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
                     </a>
                     <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                        aria-labelledby="dropdownMenuLink">
+                         aria-labelledby="dropdownMenuLink">
                         <div class="dropdown-header">Options:</div>
                         <a class="dropdown-item" href="#">Action 1</a>
                         <a class="dropdown-item" href="#">Action 2</a>
@@ -208,15 +217,15 @@
     <div class="col-xl-4 col-lg-5">
         <div class="card shadow mb-4">
             <div
-                class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-primary">Sources de Revenus</h6>
                 <div class="dropdown no-arrow">
                     <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
                     </a>
                     <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                        aria-labelledby="dropdownMenuLink">
+                         aria-labelledby="dropdownMenuLink">
                         <div class="dropdown-header">Options:</div>
                         <a class="dropdown-item" href="#">Action 1</a>
                         <a class="dropdown-item" href="#">Action 2</a>
@@ -257,31 +266,31 @@
                         class="float-right">20%</span></h4>
                 <div class="progress mb-4">
                     <div class="progress-bar bg-danger" role="progressbar" style="width: 20%"
-                        aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
+                         aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
                 <h4 class="small font-weight-bold">Dossier #5678 (Conseil) <span
                         class="float-right">40%</span></h4>
                 <div class="progress mb-4">
                     <div class="progress-bar bg-warning" role="progressbar" style="width: 40%"
-                        aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
+                         aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
                 <h4 class="small font-weight-bold">Dossier #9101 (Famille) <span
                         class="float-right">60%</span></h4>
                 <div class="progress mb-4">
                     <div class="progress-bar" role="progressbar" style="width: 60%"
-                        aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+                         aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
                 <h4 class="small font-weight-bold">Dossier #1122 (Pénal) <span
                         class="float-right">80%</span></h4>
                 <div class="progress mb-4">
                     <div class="progress-bar bg-info" role="progressbar" style="width: 80%"
-                        aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
+                         aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
                 <h4 class="small font-weight-bold">Dossier #3344 (Immobilier) <span
                         class="float-right">Complet!</span></h4>
                 <div class="progress">
                     <div class="progress-bar bg-success" role="progressbar" style="width: 100%"
-                        aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                         aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
             </div>
         </div>
@@ -292,31 +301,38 @@
             </div>
             <div class="card-body">
                 <div class="list-group list-group-flush">
-                    <a href="/dossiers" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2">
+                    <a href="/dossiers"
+                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2">
                         <span><i class="fas fa-folder-open me-2"></i> Voir et gérer mes dossiers</span>
                         <i class="fas fa-chevron-right"></i>
                     </a>
-                    <a href="/factures" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2">
+                    <a href="/factures"
+                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2">
                         <span><i class="fas fa-file-invoice-dollar me-2"></i> Gérer la facturation</span>
                         <i class="fas fa-chevron-right"></i>
                     </a>
-                    <a href="/statistiques" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2">
+                    <a href="/statistiques"
+                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2">
                         <span><i class="fas fa-chart-line me-2"></i> Rapports et statistiques détaillées</span>
                         <i class="fas fa-chevron-right"></i>
                     </a>
-                    <a href="/profil" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2">
+                    <a href="/profil"
+                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2">
                         <span><i class="fas fa-user-cog me-2"></i> Modifier mon profil</span>
                         <i class="fas fa-chevron-right"></i>
                     </a>
-                    <a href="/logout" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 text-danger">
+                    <a href="/logout"
+                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 text-danger">
                         <span><i class="fas fa-sign-out-alt me-2"></i> Se déconnecter</span>
                         <i class="fas fa-chevron-right"></i>
                     </a>
                 </div>
 
                 <div class="d-grid gap-2 mt-4">
-                    <a href="/dossiers/nouveau" class="btn btn-outline-primary"><i class="fas fa-plus-circle me-2"></i>Créer un nouveau dossier</a>
-                    <a href="/factures/nouvelle" class="btn btn-outline-secondary"><i class="fas fa-file-invoice me-2"></i>Ajouter une nouvelle facture</a>
+                    <a href="/dossiers/nouveau" class="btn btn-outline-primary"><i class="fas fa-plus-circle me-2"></i>Créer
+                        un nouveau dossier</a>
+                    <a href="/factures/nouvelle" class="btn btn-outline-secondary"><i
+                            class="fas fa-file-invoice me-2"></i>Ajouter une nouvelle facture</a>
                 </div>
             </div>
         </div>
@@ -332,10 +348,11 @@
             <div class="card-body">
                 <div class="text-center">
                     <img class="img-fluid px-3 px-sm-4 mt-3 mb-4" style="width: 25rem;"
-                        src="/static/img/undraw_posting_photo.svg" alt="...">
+                         src="/static/img/undraw_posting_photo.svg" alt="...">
                 </div>
                 <p>Ajoutez des illustrations SVG de qualité à votre projet gracieusement offertes par <a
-                        target="_blank" rel="nofollow" href="https://undraw.co/">unDraw</a>, une collection constamment mise à jour de superbes images SVG que vous pouvez utiliser
+                        target="_blank" rel="nofollow" href="https://undraw.co/">unDraw</a>, une collection constamment
+                    mise à jour de superbes images SVG que vous pouvez utiliser
                     entièrement gratuitement et sans attribution!</p>
                 <a target="_blank" rel="nofollow" href="https://undraw.co/">Parcourir les illustrations sur
                     unDraw &rarr;</a>
@@ -348,7 +365,8 @@
             </div>
             <div class="card-body">
                 <p>SB Admin 2 utilise de manière extensive les classes utilitaires de Bootstrap 4 afin de réduire
-                    le poids du CSS et d'améliorer les performances de la page. Des classes CSS personnalisées sont utilisées pour créer
+                    le poids du CSS et d'améliorer les performances de la page. Des classes CSS personnalisées sont
+                    utilisées pour créer
                     des composants personnalisés et des classes utilitaires personnalisées.</p>
                 <p class="mb-0">Avant de travailler avec ce thème, vous devriez vous familiariser avec le
                     framework Bootstrap, en particulier les classes utilitaires.</p>

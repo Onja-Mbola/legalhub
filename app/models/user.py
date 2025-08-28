@@ -15,4 +15,8 @@ class User(Base):
     created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
     created_by = relationship("User", remote_side=[id], backref="clarcks")
+    dossier = relationship("Dossier", back_populates="users")
+    action_logs = relationship("ActionLog", back_populates="user")
+
+
 

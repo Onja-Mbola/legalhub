@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Mise à jour du Jugement - Dossier #{{ dossier_id }}{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg rounded-4 border-0 mb-4">
+        <div class="card-header bg-gradient-primary text-white py-3">
+            <h5 class="mb-0"><i class="fas fa-gavel me-2"></i> Mettre à jour le jugement</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="texte_decision" class="form-label">Texte de la décision</label>
+                    <textarea class="form-control" id="texte_decision" name="texte_decision" rows="5">{{ jugement.texte_decision or '' }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="delai_appel" class="form-label">Délai d'appel (en jours)</label>
+                    <input type="number" class="form-control" id="delai_appel" name="delai_appel"
+                           value="{{ jugement.delai_appel or '' }}">
+                </div>
+
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="execution_provisoire"
+                           name="execution_provisoire" value="true" {% if jugement.execution_provisoire %}checked{%
+                           endif %}>
+                    <label class="form-check-label" for="execution_provisoire">
+                        Exécution provisoire
+                    </label>
+                </div>
+
+                <div class="mb-3">
+                    <label for="statut" class="form-label">Statut</label>
+                    <select class="form-select" id="statut" name="statut">
+                        <option value="">-- Sélectionner --</option>
+                        <option value="favorable" {% if jugement.statut==
+                        'favorable' %}selected{% endif %}>Favorable</option>
+                        <option value="defavorable" {% if jugement.statut==
+                        'defavorable' %}selected{% endif %}>Défavorable</option>
+                        <option value="defavorable" {% if jugement.statut==
+                        'en_attente_recours' %}selected{% endif %}>En Attente Recours</option>
+                        <option value="partiel" {% if jugement.statut==
+                        'partiel' %}selected{% endif %}>Partiel</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="jugement_file" class="form-label">Fichier du jugement (PDF/Word)</label>
+                    {% if jugement and jugement.fichier_jugement %}
+                    <p>Fichier actuel : <a
+                            href="{{ request.url_for('documents', filepath=jugement.fichier_jugement.split('app/documents/')[-1]) }}"
+                            target="_blank">{{ jugement.fichier_jugement.split('/')[-1] }}</a></p>
+                    {% endif %}
+                    <input class="form-control" type="file" id="jugement_file" name="jugement_file">
+                </div>
+
+                {% if jugement and jugement.scans_grosse %}
+                <div class="mb-3">
+                    <label for="scans_grosse" class="form-label">Scans de la grosse (plusieurs fichiers
+                        possibles)</label>
+                    {% for filepath in jugement.scans_grosse %}
+                    <p>Fichier actuel :
+                        <a href="{{ url_for('documents', filepath=filepath.split('app/documents/')[-1]) }}"
+                           target="_blank">
+                            {{ filepath.split('/')[-1] }}
+                        </a>
+                    </p>
+                    {% endfor %}
+                    <input class="form-control" type="file" id="scans_grosse" name="scans_grosse" multiple>
+                </div>
+                {% endif %}
+
+
+                <div class="d-flex justify-content-end">
+                    <a href="/dossiers/{{ dossier_id }}" class="btn btn-secondary me-2">Annuler</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i> Sauvegarder
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

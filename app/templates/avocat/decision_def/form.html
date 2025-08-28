@@ -21,49 +21,58 @@
     </div>
     {% endif %}
 
-    {% if items %}
-        <div class="card shadow-lg rounded-4 border-0 mb-4">
-            <div class="card-header bg-gradient-primary text-white py-3">
-                <h5 class="mb-0"><i class="fas fa-gavel me-2"></i> Décision #{{ items.id }}</h5>
-            </div>
-            <div class="card-body">
-                <form method="post" enctype="multipart/form-data">
-                    <input type="hidden" name="item_id" value="{{ items.id }}">
-
-                    <div class="mb-3">
-                        <label for="date_decision_{{ items.id }}" class="form-label fw-semibold">Date de décision <span class="text-danger">*</span></label>
-                        <input type="date" class="form-control" id="date_decision_{{ items.id }}" name="date_decision" required
-                               value="{{ items.date_decision }}">
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="type_decision_{{ items.id }}" class="form-label fw-semibold">Type de décision <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="type_decision_{{ items.id }}" name="type_decision" required
-                               value="{{ items.type_decision }}">
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="motivation_{{ items.id }}" class="form-label fw-semibold">Motivation</label>
-                        <textarea class="form-control" id="motivation_{{ items.id }}" name="motivation">{{ items.motivation }}</textarea>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="jugement_file_{{ items.id }}" class="form-label fw-semibold">Jugement (fichier)</label>
-                        {% if items.jugement_file %}
-                        <p>Fichier actuel : <a href="{{ request.url_for('documents', filepath=items.jugement_file.split('app/documents/')[-1]) }}" target="_blank">
-                            {{ items.jugement_file.split('/')[-1] }}</a></p>
-                        {% endif %}
-                        <input type="file" class="form-control" id="jugement_file_{{ items.id }}" name="jugement_file" accept=".pdf,.jpg,.png,.jpeg">
-                    </div>
-
-                    <button type="submit" class="btn btn-primary rounded-pill px-4">
-                        <i class="fas fa-save me-2"></i> Enregistrer
-                    </button>
-                </form>
-            </div>
+    <div class="card shadow-lg rounded-4 border-0 mb-4">
+        <div class="card-header bg-gradient-primary text-white py-3">
+            <h5 class="mb-0"><i class="fas fa-gavel me-2"></i> Décision #{{ items.id }}</h5>
         </div>
-    {% else %}
-        <p class="text-muted fst-italic">Aucune décision définitive enregistrée pour ce dossier.</p>
-    {% endif %}
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                <input type="hidden" name="item_id" value="{{ items.id }}">
+
+                <div class="mb-3">
+                    <label for="date_decision_{{ items.id }}" class="form-label fw-semibold">Date de décision <span
+                            class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="date_decision_{{ items.id }}" name="date_decision"
+                           required
+                           value="{{ items.date_decision }}">
+                </div>
+
+                <div class="mb-3">
+                    <label for="type_decision_{{ items.id }}" class="form-label fw-semibold">
+                        Type de décision <span class="text-danger">*</span>
+                    </label>
+                    <select class="form-select" id="type_decision_{{ items.id }}" name="type_decision" required>
+                        {% for type in JugementType %}
+                        <option value="{{ type.value }}" {% if items.type_decision== type.value %}selected{% endif %}>
+                            {{ type.name|capitalize }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+
+                <div class="mb-3">
+                    <label for="motivation_{{ items.id }}" class="form-label fw-semibold">Motivation</label>
+                    <textarea class="form-control" id="motivation_{{ items.id }}" name="motivation">{{ items.motivation }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="jugement_file_{{ items.id }}" class="form-label fw-semibold">Jugement (fichier)</label>
+                    {% if items.jugement_file %}
+                    <p>Fichier actuel : <a
+                            href="{{ request.url_for('documents', filepath=items.jugement_file.split('app/documents/')[-1]) }}"
+                            target="_blank">
+                        {{ items.jugement_file.split('/')[-1] }}</a></p>
+                    {% endif %}
+                    <input type="file" class="form-control" id="jugement_file_{{ items.id }}" name="jugement_file"
+                           accept=".pdf,.jpg,.png,.jpeg">
+                </div>
+
+                <button type="submit" class="btn btn-primary rounded-pill px-4">
+                    <i class="fas fa-save me-2"></i> Enregistrer
+                </button>
+            </form>
+        </div>
+    </div>
 </div>
 {% endblock %}

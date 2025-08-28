@@ -41,7 +41,7 @@
             </div>
             <div class="col-md-6">
                 <p><strong>Tribunal :</strong> {{ dossier.tribunal or '-' }}</p>
-                <p><strong>Avocat Responsable :</strong> Maître {{ dossier.avocat_nom }}</p>
+                <p><strong>Avocat Responsable :</strong> Maître {{ dossier.users.nom }}</p>
                 <p><strong>Avocat Adverse :</strong> {{ dossier.avocat_adverse or '-' }}</p>
                 <p><strong>Date de création :</strong> {{ dossier.date_creation.strftime('%d/%m/%Y %H:%M') if
                     dossier.date_creation else '-' }}</p>
@@ -293,6 +293,81 @@
             {% endif %}
             <a href="/dossiers/{{ dossier.id }}/decision_def" class="btn btn-success btn-sm mt-2"><i
                     class="fas fa-plus mr-1"></i> Ajouter Décision Définitive</a>
+        </div>
+
+        <div class="mt-4 p-4 bg-light rounded shadow-sm">
+            <h4 class="mb-3 font-weight-semibold">
+                <i class="fas fa-scale-balanced text-primary mr-2"></i> Jugements
+            </h4>
+
+            {% if dossier.jugements %}
+            {% for jugement in dossier.jugements %}
+            <div class="border rounded p-3 mb-3">
+                <p><strong>Date du jugement :</strong> {{ jugement.date_jugement.strftime('%d/%m/%Y') if
+                    jugement.date_jugement else '-' }}</p>
+                <p><strong>Texte de la décision :</strong> {{ jugement.texte_decision or '-' }}</p>
+                <p><strong>Délai d'appel :</strong>
+                    {% if jugement.delai_appel %}
+                    {{ jugement.delai_appel }} jours
+                    {% else %}
+                    <span class="text-muted">Non renseigné</span>
+                    {% endif %}
+                </p>
+                <p><strong>Exécution provisoire :</strong>
+                    {% if jugement.execution_provisoire %}
+                    ✅ Oui
+                    {% else %}
+                    ❌ Non
+                    {% endif %}
+                </p>
+                <p><strong>Statut :</strong>
+                    <span class="badge bg-info text-dark">{{ jugement.statut }}</span>
+                </p>
+
+                <p><strong>Fichier du jugement :</strong>
+                    {% if jugement.fichier_jugement %}
+                    <a href="{{ url_for('documents', filepath=jugement.fichier_jugement | replace('app/documents/', '')) }}"
+                       class="btn btn-outline-primary btn-sm" target="_blank">
+                        <i class="fas fa-file-download mr-1"></i> Télécharger
+                    </a>
+                    {% else %}
+                    <span class="text-muted">Aucun fichier</span>
+                    {% endif %}
+                </p>
+
+                <p><strong>Scans de la grosse :</strong></p>
+                {% if jugement.scans_grosse %}
+                <div class="d-flex flex-wrap">
+                    {% for scan in jugement.scans_grosse %}
+                    <a href="{{ url_for('documents', filepath=scan | replace('app/documents/', '')) }}"
+                       target="_blank" class="btn btn-outline-secondary btn-sm m-1">
+                        <i class="fas fa-file-alt mr-1"></i> Voir Scan {{ loop.index }}
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <span class="text-muted">Aucun scan enregistré</span>
+                <a href="/dossiers/{{ dossier.id }}/jugement/{{ jugement.id }}/enregistrer_grosse"
+                   class="btn btn-success btn-sm">
+                    <i class="fas fa-plus mr-1"></i> Ajouter un scan
+                </a>
+                {% endif %}
+
+                <div class="mt-3">
+                    <a href="/dossiers/{{ dossier.id }}/jugement_update/{{ jugement.id }}"
+                       class="btn btn-info btn-sm">
+                        <i class="fas fa-pen mr-1"></i> Modifier
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-muted fst-italic">Aucun jugement enregistré pour ce dossier.</p>
+            {% endif %}
+
+            <a href="/dossiers/{{ dossier.id }}/jugement_add" class="btn btn-success btn-sm mt-2">
+                <i class="fas fa-plus mr-1"></i> Ajouter un Jugement
+            </a>
         </div>
 
         <div class="mt-4 p-4 bg-light rounded shadow-sm">

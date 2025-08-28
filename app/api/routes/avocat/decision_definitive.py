@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from datetime import date
 
 from app.core.auth import get_current_avocat_user
+from app.core.jugement_enum import JugementType
 from app.db.session import get_db
 from app.models.user import User
 from app.models.dossier import Dossier
@@ -33,12 +34,13 @@ def def_form(
         user: User = Depends(get_current_avocat_user)
 ):
     dossier = _get_dossier_or_404(db, dossier_id)
-    items = get_decision_definitive_by_dossier_service(db, dossier_id)
+    decision  = get_decision_definitive_by_dossier_service(db, dossier_id)
     return templates.TemplateResponse("avocat/decision_def/form.html", {
         "request": request,
         "user": user,
         "dossier": dossier,
-        "items": items
+        "items": decision,
+        "JugementType": JugementType
     })
 
 @router.post("/dossiers/{dossier_id}/decision_def")

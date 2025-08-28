@@ -13,7 +13,8 @@ from app.db.session import get_db
 from app.models.user import User
 from app.schemas.dossier import DossierCreate
 from app.services.dossier import create_new_dossier_with_files, get_dossiers_by_avocat_service, \
-    get_dossier_by_id_service, update_dossier_with_files_service
+    get_dossier_by_id_service, update_dossier_with_files_service, get_dossiers_archiver_by_avocat_service
+from app.services.email import send_jugement_favorable_email_programmer
 from app.services.param_general import get_param_ordered, to_dict_list
 
 router = APIRouter()
@@ -21,9 +22,55 @@ templates = Jinja2Templates(directory="app/templates")
 
 
 @router.get("/dossiers")
-def list_dossiers(request: Request,db: Session = Depends(get_db), user: User = Depends(get_current_avocat_user)):
+def list_dossiers(
+    request: Request,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_avocat_user)
+):
     dossiers = get_dossiers_by_avocat_service(db, user.id)
+    dossier = get_dossier_by_id_service(db, 1)
+
+    dossier_data = {
+        "id": dossier.id,
+        "numero_dossier": dossier.numero_dossier,
+        "nom_dossier": dossier.nom_dossier,
+        "user": dossier.users.nom,
+    }
+
+    send_jugement_favorable_email_programmer.apply_async(
+        args=["onjambola61@gmail.com", dossier_data],
+        countdown=60
+    )
+
     return templates.TemplateResponse("dossier/list_dossier.html", {
+        "request": request,
+        "user": user,
+        "dossiers": dossiers
+    })
+
+
+@router.get("/dossiers_archiver")
+def list_dossiers_archiver(
+    request: Request,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_avocat_user)
+):
+    dossiers = get_dossiers_archiver_by_avocat_service(db, user.id)
+    dossier = get_dossier_by_id_service(db, 1)
+
+    dossier_data = {
+        "id": dossier.id,
+        "numero_dossier": dossier.numero_dossier,
+        "nom_dossier": dossier.nom_dossier,
+        "user": dossier.users.nom,
+    }
+
+    send_jugement_favorable_email_programmer.apply_async(
+        args=["onjambola61@gmail.com", dossier_data],
+        countdown=30
+    )
+
+    return templates.TemplateResponse("dossier/list_dossier_archiver.html", {
         "request": request,
         "user": user,
         "dossiers": dossiers
@@ -35,7 +82,7 @@ def list_dossiers(request: Request,db: Session = Depends(get_db), user: User = D
 def new_dossier_form(
     request: Request,
     db: Session = Depends(get_db),
-    user = Depends(get_current_avocat_user)
+    user: User = Depends(get_current_avocat_user)
 ):
     type_affaire = get_param_ordered(db, "type_affaire", "asc")
     urgences = get_param_ordered(db, "urgence", "asc")
@@ -62,13 +109,13 @@ async def create_dossier_endpoint(
     dossier_data: str = Form(...),
     files: List[UploadFile] = File(None),
     db: Session = Depends(get_db),
-    user = Depends(get_current_avocat_user)
+    user: User = Depends(get_current_avocat_user)
 ):
     avocat_nom = user.nom
     dossier_in = DossierCreate(**json.loads(dossier_data))
 
     try:
-        create_new_dossier_with_files(db, dossier_in, avocat_nom, files)
+        create_new_dossier_with_files(db, dossier_in, avocat_nom, files, user.id)
         return {"redirect_url": "/dossiers?success=1"}
 
     except SQLAlchemyError:
@@ -95,7 +142,7 @@ async def update_dossier(
     commentaire: str = Form(None),
     pieces_jointes: Union[List[UploadFile], UploadFile, None] = File(None),
     db: Session = Depends(get_db),
-    user = Depends(get_current_avocat_user)
+    user: User = Depends(get_current_avocat_user)
 ):
     if pieces_jointes is None:
         files = []
@@ -104,7 +151,7 @@ async def update_dossier(
     else:
         files = [pieces_jointes]
 
-    update_dossier_with_files_service(db, dossier_id, user.nom, nom_dossier, commentaire, files)
+    update_dossier_with_files_service(db, dossier_id, user.nom, nom_dossier, commentaire, files, user.id)
     return RedirectResponse(url=f"/dossiers/{dossier_id}", status_code=303)
 
 

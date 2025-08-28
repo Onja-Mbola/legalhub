@@ -9,9 +9,11 @@ from starlette.responses import RedirectResponse, HTMLResponse
 from app.core.auth import get_current_user, get_current_admin_user
 from app.core.enums import RoleEnum
 from app.db.session import get_db
+from app.models.action_log import ActionLog
 from app.models.user import User
 from app.repositories.user import get_user_by_id
 from app.schemas.user import UserCreate, UserOut
+from app.services.action_log import get_log_service
 from app.services.history import list_activation_history
 from app.services.user import list_users, register_user, toggle_activation
 
@@ -110,4 +112,13 @@ def view_history(
         "request": request,
         "user": current_user,
         "history": history
+    })
+
+@router.get("/admin/action_logs")
+def list_action_logs(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_admin_user)):
+    logs = get_log_service(db)
+    return templates.TemplateResponse("admin/historique.html", {
+        "request": request,
+        "user": user,
+        "logs": logs
     })

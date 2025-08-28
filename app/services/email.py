@@ -1,6 +1,11 @@
+import asyncio
+import os
+
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from pydantic import EmailStr
-import os
+from starlette.templating import Jinja2Templates
+
+from app.automatisation.celery_app import celery_app
 
 conf = ConnectionConfig(
     MAIL_USERNAME=os.getenv("SMTP_USERNAME"),
@@ -16,12 +21,14 @@ conf = ConnectionConfig(
 
 ENV = os.getenv("ENV", "development")
 
+templates = Jinja2Templates(directory="app/templates")
+
+
 async def send_activation_email(email: EmailStr, token: str):
     if ENV == "production":
         activation_link = f"https://legalhub.onrender.com/activate?token={token}"
     else:
         activation_link = f"http://localhost:8000/activate?token={token}"
-
 
     html_content = f"""
     <html>
@@ -158,3 +165,44 @@ async def send_activation(email: EmailStr):
 
     fm = FastMail(conf)
     await fm.send_message(message)
+
+
+async def send_email(email: EmailStr, subject: str, html_content: str):
+    message = MessageSchema(
+        subject=subject,
+        recipients=[email],
+        body=html_content,
+        subtype="html"
+    )
+    fm = FastMail(conf)
+    await fm.send_message(message)
+
+
+async def send_jugement_favorable_email(email: EmailStr, dossier):
+    html_content = templates.get_template("email/jugement_favorable.html").render(dossier=dossier)
+
+    message = MessageSchema(
+        subject=f"Jugement Favorable - Dossier {dossier.numero_dossier}",
+        recipients=[email],
+        body=html_content,
+        subtype="html"
+    )
+
+    fm = FastMail(conf)
+    await fm.send_message(message)
+
+@celery_app.task(name="send_jugement_favorable_email_programmer")
+def send_jugement_favorable_email_programmer(email: EmailStr, dossier: dict):
+    html_content = templates.get_template("email/rappel_grosse.html").render(dossier=dossier)
+
+    message = MessageSchema(
+        subject=f"Recuperation Grosse - Dossier {dossier.get('numero_dossier', '')}",
+        recipients=[email],
+        body=html_content,
+        subtype="html"
+    )
+
+    fm = FastMail(conf)
+    asyncio.run(fm.send_message(message))
+
+

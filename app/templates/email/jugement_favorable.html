@@ -1,0 +1,126 @@
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 700px;
+            margin: auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        h2 {
+            color: #28a745;
+            text-align: center;
+        }
+        p {
+            font-size: 16px;
+            color: #333;
+            line-height: 1.5;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .footer {
+            text-align: center;
+            color: #777;
+            font-size: 12px;
+            margin-top: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f1f1f1;
+        }
+        .important {
+            color: #dc3545;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Jugement Favorable</h2>
+        <p>Bonjour {{ dossier.client.nom }},</p>
+        <p>Nous avons le plaisir de vous informer que le jugement concernant votre dossier a été rendu favorable.</p>
+
+        <h3>Détails du dossier</h3>
+        <table>
+            <tr>
+                <th>Numéro du dossier</th>
+                <td class="highlight">{{ dossier.numero_dossier }}</td>
+            </tr>
+            <tr>
+                <th>Nom du dossier</th>
+                <td>{{ dossier.nom_dossier }}</td>
+            </tr>
+            <tr>
+                <th>Type d'affaire</th>
+                <td>{{ dossier.type_affaire_param.valeur if dossier.type_affaire_param else "N/A" }}</td>
+            </tr>
+            <tr>
+                <th>Sous-type d'affaire</th>
+                <td>{{ dossier.sous_type_affaire_param.valeur if dossier.sous_type_affaire_param else "N/A" }}</td>
+            </tr>
+            <tr>
+                <th>Juridiction / Tribunal</th>
+                <td>{{ dossier.juridiction }} / {{ dossier.tribunal }}</td>
+            </tr>
+            <tr>
+                <th>Avocat Responsable</th>
+                <td>{{ dossier.users.nom }}</td>
+            </tr>
+            <tr>
+                <th>Avocat Adverse</th>
+                <td>{{ dossier.avocat_adverse or "N/A" }}</td>
+            </tr>
+            <tr>
+                <th>Date de création</th>
+                <td>{{ dossier.date_creation.strftime("%d/%m/%Y %H:%M") }}</td>
+            </tr>
+        </table>
+
+        <h3>Décisions et Jugement</h3>
+        {% if dossier.jugements %}
+            <p class="important">Texte du jugement :</p>
+            <p>{{ dossier.jugements[0].texte_decision }}</p>
+            <p>Date du jugement : {{ dossier.jugements[0].date_jugement.strftime("%d/%m/%Y") }}</p>
+        {% else %}
+            <p>Aucun jugement enregistré pour le moment.</p>
+        {% endif %}
+
+        {% if dossier.pieces_jointes %}
+            <h3>Pièces jointes</h3>
+            <ul>
+                {% for piece in dossier.pieces_jointes %}
+                    <li>{{ piece }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <p>Nous vous notifierons à nouveau dès que nous obtenons la <span class="highlight">grosse</span> du jugement.</p>
+        <p>Si la partie adverse ne procède à aucune signification, nous prendrons les mesures nécessaires et vous tiendrons informé.</p>
+
+        <div class="footer">
+            <p>Cordialement,</p>
+            <p>L'équipe LegalHub</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -3,6 +3,8 @@ version: '3.8'
 services:
   legalhub:
     build: .
+    container_name: legalhub_app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
     volumes:
@@ -11,11 +13,13 @@ services:
       - .env
     depends_on:
       - db
+      - redis
     networks:
       - legalhub-network
 
   db:
     image: postgres:16
+    container_name: legalhub_db
     restart: always
     environment:
       POSTGRES_USER: legalhub_user
@@ -25,6 +29,43 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - legalhub-network
+
+  redis:
+    image: redis:7
+    container_name: redis_broker
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - legalhub-network
+
+  celery_worker:
+    build: .
+    container_name: legalhub_worker
+    command: celery -A app.automatisation.celery_app.celery_app worker --loglevel=info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - db
+    networks:
+      - legalhub-network
+
+  celery_beat:
+    build: .
+    container_name: legalhub_beat
+    command: celery -A app.automatisation.celery_app.celery_app beat --loglevel=info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - db
     networks:
       - legalhub-network
 

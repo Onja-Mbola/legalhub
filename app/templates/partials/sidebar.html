@@ -15,13 +15,13 @@
         </div>
         <div class="sidebar-brand-text mx-3">
             {% if role == 'clarck' %}
-                Clarck - {{ user.nom }}
+            Clarck - {{ user.nom }}
             {% elif role == 'admin' %}
-                Admin
+            Admin
             {% elif role == 'avocat' %}
-                LegalHub
+            LegalHub
             {% else %}
-                LegalHub
+            LegalHub
             {% endif %}
         </div>
     </a>
@@ -29,116 +29,125 @@
     <hr class="sidebar-divider {% if role == 'avocat' %}my-0{% endif %}">
 
     {% if role == 'admin' %}
-        <li class="nav-item">
-            <a class="nav-link" href="/admin/dashboard">
-                <i class="fas fa-tachometer-alt"></i>
-                <span>Dashboard Admin</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="/admin/users/create">
-                <i class="fas fa-user-plus"></i>
-                <span>Créer un compte</span>
-            </a>
-        </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/admin/dashboard">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard Admin</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/admin/users/create">
+            <i class="fas fa-user-plus"></i>
+            <span>Créer un compte</span>
+        </a>
+    </li>
 
-        <li class="nav-item">
-                <a class="nav-link" href="/admin/history">
-                    <i class="fas fa-history"></i>
-                    <span>Historique des activités</span>
-                </a>
-        </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/admin/history">
+            <i class="fas fa-history"></i>
+            <span>Historique des activations</span>
+        </a>
+    </li>
 
-        <li class="nav-item">
-            <a class="nav-link" href="/admin/params">
-                <i class="fas fa-cogs"></i>
-                <span>Paramètres généraux</span>
-            </a>
-        </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/admin/action_logs">
+            <i class="fas fa-history"></i>
+            <span>Historique des activités</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" href="/admin/params">
+            <i class="fas fa-cogs"></i>
+            <span>Paramètres généraux</span>
+        </a>
+    </li>
 
     {% elif role == 'avocat' %}
-        <li class="nav-item {% if request.url.path == '/' %}active{% endif %}">
-            <a class="nav-link" href="/avocat/dashboard">
-                <i class="fas fa-tachometer-alt"></i>
-                <span>Tableau de bord</span>
-            </a>
-        </li>
+    <li class="nav-item {% if request.url.path == '/' %}active{% endif %}">
+        <a class="nav-link" href="/avocat/dashboard">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Tableau de bord</span>
+        </a>
+    </li>
 
-        <hr class="sidebar-divider">
+    <hr class="sidebar-divider">
 
-        <div class="sidebar-heading">Interface</div>
+    <div class="sidebar-heading">Interface</div>
 
-        <li class="nav-item">
-            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseDossiers"
-               aria-expanded="true" aria-controls="collapseDossiers">
-                <i class="fas fa-folder"></i>
-                <span>Dossiers</span>
-            </a>
-            <div id="collapseDossiers" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                <div class="bg-white py-2 collapse-inner rounded">
-                    <h6 class="collapse-header">Gestion des dossiers:</h6>
-                    <a class="collapse-item" href="/dossiers">Voir les dossiers</a>
-                    <a class="collapse-item" href="/dossiers/nouveau">Nouveau dossier</a>
-                </div>
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseDossiers"
+           aria-expanded="true" aria-controls="collapseDossiers">
+            <i class="fas fa-folder"></i>
+            <span>Dossiers</span>
+        </a>
+        <div id="collapseDossiers" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Gestion des dossiers:</h6>
+                <a class="collapse-item" href="/dossiers">Voir les dossiers</a>
+                <a class="collapse-item" href="/dossiers_archiver">Voir les dossiers archivés</a>
+                <a class="collapse-item" href="/dossiers/nouveau">Nouveau dossier</a>
             </div>
-        </li>
+        </div>
+    </li>
 
-        <li class="nav-item">
-            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseFacturation"
-               aria-expanded="true" aria-controls="collapseFacturation">
-                <i class="fas fa-file-invoice-dollar"></i>
-                <span>Facturation</span>
-            </a>
-            <div id="collapseFacturation" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
-                <div class="bg-white py-2 collapse-inner rounded">
-                    <h6 class="collapse-header">Gestion des factures:</h6>
-                    <a class="collapse-item" href="/factures">Voir les factures</a>
-                    <a class="collapse-item" href="/factures/nouvelle">Nouvelle facture</a>
-                </div>
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseFacturation"
+           aria-expanded="true" aria-controls="collapseFacturation">
+            <i class="fas fa-file-invoice-dollar"></i>
+            <span>Facturation</span>
+        </a>
+        <div id="collapseFacturation" class="collapse" aria-labelledby="headingUtilities"
+             data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Gestion des factures:</h6>
+                <a class="collapse-item" href="/factures">Voir les factures</a>
+                <a class="collapse-item" href="/factures/nouvelle">Nouvelle facture</a>
             </div>
-        </li>
+        </div>
+    </li>
 
-        <hr class="sidebar-divider">
+    <hr class="sidebar-divider">
 
-        <div class="sidebar-heading">Addons</div>
+    <div class="sidebar-heading">Addons</div>
 
-        <li class="nav-item">
-            <a class="nav-link" href="/statistiques">
-                <i class="fas fa-chart-area"></i>
-                <span>Statistiques</span>
-            </a>
-        </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/statistiques">
+            <i class="fas fa-chart-area"></i>
+            <span>Statistiques</span>
+        </a>
+    </li>
 
-        <li class="nav-item">
-            <a class="nav-link" href="/utilisateurs">
-                <i class="fas fa-users"></i>
-                <span>Utilisateurs</span>
-            </a>
-        </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/utilisateurs">
+            <i class="fas fa-users"></i>
+            <span>Utilisateurs</span>
+        </a>
+    </li>
 
 
     {% elif role == 'clarck' %}
-        <li class="nav-item">
-            <a class="nav-link" href="/dossiers">
-                <i class="fas fa-folder"></i>
-                <span>Voir les dossiers</span>
-            </a>
-        </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/dossiers">
+            <i class="fas fa-folder"></i>
+            <span>Voir les dossiers</span>
+        </a>
+    </li>
 
-        <li class="nav-item">
-            <a class="nav-link" href="/profil">
-                <i class="fas fa-user-cog"></i>
-                <span>Mon Profil</span>
-            </a>
-        </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/profil">
+            <i class="fas fa-user-cog"></i>
+            <span>Mon Profil</span>
+        </a>
+    </li>
 
     {% else %}
-        <li class="nav-item">
-            <a class="nav-link" href="/clarck/dashboard">
-                <i class="fas fa-home"></i>
-                <span>Accueil</span>
-            </a>
-        </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/clarck/dashboard">
+            <i class="fas fa-home"></i>
+            <span>Accueil</span>
+        </a>
+    </li>
     {% endif %}
 
     <hr class="sidebar-divider">

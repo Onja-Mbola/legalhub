@@ -75,24 +75,8 @@
                         <span class="badge badge-warning text-dark">{{ dossier.urgence_param.valeur }}</span>
                     </td>
                     <td>
-                        {% if dossier.current_stage == 'introduction_instance' %}
-                        <span class="badge badge-secondary">Introduction de l'instance</span>
-                        {% elif dossier.current_stage == 'enrolement' %}
-                        <span class="badge badge-primary">Enrôlement</span>
-                        {% elif dossier.current_stage == 'requete_assignation' %}
-                        <span class="badge badge-info">Requête & Assignation</span>
-                        {% elif dossier.current_stage == 'premiere_audience' %}
-                        <span class="badge badge-warning">Première audience</span>
-                        {% elif dossier.current_stage == 'echange_conclusions' %}
-                        <span class="badge badge-secondary">Échange de conclusions</span>
-                        {% elif dossier.current_stage == 'deliberation' %}
-                        <span class="badge badge-primary">Délibération</span>
-                        {% elif dossier.current_stage == 'decision_avant_dire_droit' %}
-                        <span class="badge badge-info">Décision avant dire droit</span>
-                        {% elif dossier.current_stage == 'decision_definitive' %}
-                        <span class="badge badge-success">Décision définitive</span>
-                        {% else %}
-                        <span class="badge badge-dark">Processus terminé</span>
+                        {% if dossier.current_stage %}
+                        <span class="badge badge-secondary">{{dossier.current_stage}}</span>
                         {% endif %}
                     </td>
                     <td class="text-center">
@@ -131,6 +115,30 @@
                         <a href="/dossiers/{{ dossier.id }}/echange_conclusions"
                            class="btn btn-sm btn-outline-secondary mb-1">
                             <i class="fas fa-file-alt mr-1"></i> Échange de conclusions
+                        </a>
+                        {% elif dossier.current_stage == 'decision_definitive' %}
+                        <a href="/dossiers/{{ dossier.id }}/jugement_favorable"
+                           class="btn btn-sm btn-outline-success mb-1">
+                            <i class="fas fa-thumbs-up mr-1"></i> Jugement favorable
+                        </a>
+                        <a href="/dossiers/{{ dossier.id }}/jugement_defavorable"
+                           class="btn btn-sm btn-outline-danger mb-1">
+                            <i class="fas fa-thumbs-down mr-1"></i> Jugement défavorable
+                        </a>
+                        {% elif dossier.current_stage == 'jugement_favorable' %}
+                        <a href="/dossiers/{{ dossier.id }}/jugement_notification"
+                           class="btn btn-sm btn-outline-info mb-1">
+                            <i class="fas fa-envelope mr-1"></i> Notification Client
+                        </a>
+                        {% elif dossier.current_stage == 'notification_client' %}
+                        <a href="/dossiers/{{ dossier.id }}"
+                           class="btn btn-sm btn-outline-warning mb-1">
+                            <i class="fas fa-bell mr-1"></i> Enregistrement Grosse dans details
+                        </a>
+                        {% elif dossier.current_stage == 'recuperation_grosse' %}
+                        <a href="/dossiers/{{ dossier.id }}/jugement_archiver"
+                           class="btn btn-sm btn-outline-danger mb-1">
+                            <i class="fas fa-archive mr-1"></i> Archiver le dossier
                         </a>
                         {% endif %}
 

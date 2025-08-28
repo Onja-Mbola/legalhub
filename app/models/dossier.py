@@ -7,6 +7,8 @@ from app.core.workflow_enums import ProcessStage
 from app.db.base_class import Base
 from app.models.requete_assignation import RequeteAssignation
 from app.models.premiere_audience import PremiereAudience
+from app.models.jugement import Jugement
+
 
 
 class Dossier(Base):
@@ -44,6 +46,12 @@ class Dossier(Base):
     deliberations_decisions = relationship("Deliberation_Decision", back_populates="dossier", cascade="all, delete-orphan")
     decisions_avant_dire_droit = relationship("DecisionAvantDireDroit", back_populates="dossier", cascade="all, delete-orphan")
     decisions_definitives = relationship("DecisionDefinitive", back_populates="dossier", cascade="all, delete-orphan")
+    jugements = relationship("Jugement", back_populates="dossier", cascade="all, delete-orphan")
+    users = relationship("User", back_populates="dossier")
+    action_logs = relationship("ActionLog", back_populates="dossier")
+
+
+
 
 
 

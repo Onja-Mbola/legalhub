@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Dossiers Archivés - Avocat{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary font-weight-bold mb-0">Dossiers archivés de Maître {{ user.nom }}</h2>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-sm align-middle mb-0 text-truncate">
+                <thead class="thead-light small text-uppercase">
+                <tr>
+                    <th>Numéro</th>
+                    <th>Nom</th>
+                    <th>Type / Sous-type</th>
+                    <th>Date Archivage</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for dossier in dossiers %}
+                <tr>
+                    <td>{{ dossier.numero_dossier }}</td>
+                    <td class="text-truncate" style="max-width: 150px;">{{ dossier.nom_dossier }}</td>
+                    <td class="text-truncate" style="max-width: 180px;">
+                        {{ dossier.type_affaire_param.valeur }}
+                        {% if dossier.sous_type_affaire_param and dossier.sous_type_affaire_param.valeur %}
+                        <small class="text-muted">- {{ dossier.sous_type_affaire_param.valeur }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if dossier.date_archivage %}
+                            {{ dossier.date_archivage.strftime('%d/%m/%Y') }}
+                        {% else %}
+                            <span class="text-muted">Non renseignée</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <div class="dropdown d-inline ml-1">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                                    id="dropdownActions{{ dossier.id }}" data-toggle="dropdown" aria-haspopup="true"
+                                    aria-expanded="false">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right"
+                                 aria-labelledby="dropdownActions{{ dossier.id }}">
+                                <a class="dropdown-item" href="/dossiers/{{ dossier.id }}">
+                                    <i class="fas fa-eye mr-1"></i> Voir
+                                </a>
+                                <a class="dropdown-item" href="/dossiers/{{ dossier.id }}/modifier">
+                                    <i class="fas fa-edit mr-1"></i> Modifier
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">Aucun dossier archivé trouvé.</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <nav aria-label="Pagination" class="px-3 py-2 border-top d-flex justify-content-end">
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1">Précédent</a></li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item"><a class="page-link" href="#">Suivant</a></li>
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endblock %}

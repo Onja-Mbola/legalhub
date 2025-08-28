@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Admin - Historique des Activités{% endblock %}
+
+{% block sidebar %}
+    {% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4 mt-5">
+        <div>
+            <h1 class="h3 mb-1 text-gray-800">Historique des activités</h1>
+            <p class="text-muted small">Suivi de toutes les actions effectuées dans le système par les utilisateurs.</p>
+        </div>
+    </div>
+
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Dossier</th>
+                            <th>Action</th>
+                            <th>Effectué par</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td class="text-muted">{{ loop.index }}</td>
+                            <td>
+                                <strong>{{ log.dossier.titre if log.dossier else 'N/A' }}</strong><br>
+                                <small class="text-muted">#{{ log.dossier.id if log.dossier else '-' }}</small>
+                            </td>
+                            <td>
+                                {% set action = log.action.lower() %}
+                                {% if "archiv" in action %}
+                                    <span class="badge bg-dark">
+                                        <i class="fas fa-archive"></i> Archivage
+                                    </span>
+                                {% elif "jugement" in action %}
+                                    <span class="badge bg-primary">
+                                        <i class="fas fa-gavel"></i> Jugement
+                                    </span>
+                                {% elif "notification" in action %}
+                                    <span class="badge bg-info text-dark">
+                                        <i class="fas fa-bell"></i> Notification
+                                    </span>
+                                {% elif "grosse" in action %}
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="fas fa-file-upload"></i> Grosse
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary">
+                                        <i class="fas fa-tasks"></i> {{ log.action }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ log.actor.nom }}</strong><br>
+                                <small class="text-muted">{{ log.actor.email }}</small>
+                            </td>
+                            <td>
+                                <span class="text-muted">{{ log.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                                Aucune activité enregistrée pour le moment.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

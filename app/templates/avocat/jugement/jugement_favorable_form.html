@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Jugement favorable - Dossier #{{ dossier_id }}{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg rounded-4 border-0 mb-4">
+        <div class="card-header bg-gradient-primary text-white py-3">
+            <h5 class="mb-0"><i class="fas fa-gavel me-2"></i> Jugement #{{ jugement.id }}</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="date_jugement" class="form-label fw-semibold">Date du jugement <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="date_jugement" name="date_jugement" required
+                           value="{{ jugement.date_jugement }}">
+                </div>
+
+                <div class="mb-3">
+                    <label for="texte_decision" class="form-label fw-semibold">Texte de la décision</label>
+                    <textarea class="form-control" id="texte_decision" name="texte_decision">{{ jugement.texte_decision }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="delai_appel" class="form-label fw-semibold">Délai d'appel (jours)</label>
+                    <input type="number" class="form-control" id="delai_appel" name="delai_appel"
+                           value="{{ jugement.delai_appel }}">
+                </div>
+
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="execution_provisoire" name="execution_provisoire"
+                           {% if jugement.execution_provisoire %}checked{% endif %}>
+                    <label class="form-check-label" for="execution_provisoire">
+                        Exécution provisoire
+                    </label>
+                </div>
+
+                <div class="mb-3">
+                    <label for="jugement_file" class="form-label fw-semibold">Fichier du jugement</label>
+                    {% if jugement.jugement_file %}
+                        <p>Fichier actuel : <a href="{{ request.url_for('documents', filepath=jugement.jugement_file.split('app/documents/')[-1]) }}" target="_blank">
+                            {{ jugement.jugement_file.split('/')[-1] }}</a></p>
+                    {% endif %}
+                    <input type="file" class="form-control" id="jugement_file" name="jugement_file" accept=".pdf,.jpg,.png,.jpeg">
+                </div>
+
+                <button type="submit" class="btn btn-primary rounded-pill px-4">
+                    <i class="fas fa-save me-2"></i> Enregistrer
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

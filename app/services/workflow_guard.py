@@ -19,7 +19,10 @@ class WorkflowGuard:
                 ProcessStage.DECISION_DEFINITIVE
             ],
             ProcessStage.DECISION_AVANT_DIRE_DROIT: [ProcessStage.ECHANGE_CONCLUSIONS],
-            ProcessStage.DECISION_DEFINITIVE: [],
+            ProcessStage.DECISION_DEFINITIVE: [ProcessStage.JUGEMENT_FAVORABLE, ProcessStage.JUGEMENT_DEFAVORABLE],
+            ProcessStage.JUGEMENT_FAVORABLE: [ProcessStage.NOTIFICATION_CLIENT],
+            ProcessStage.NOTIFICATION_CLIENT: [ProcessStage.RECUPERATION_GROSSE],
+            ProcessStage.RECUPERATION_GROSSE: [ProcessStage.FIN_ARCHIVAGE],
         }
 
         if stage not in allowed[current]:
