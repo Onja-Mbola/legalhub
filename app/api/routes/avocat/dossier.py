@@ -66,7 +66,7 @@ def list_dossiers_archiver(
     }
 
     send_jugement_favorable_email_programmer.apply_async(
-        args=["onjambola61@gmail.com", dossier_data],
+        args=["onjambola9@gmail.com", dossier_data],
         countdown=30
     )
 

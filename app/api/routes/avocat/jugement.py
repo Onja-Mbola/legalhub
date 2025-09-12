@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse, HTMLResponse
 from sqlalchemy.orm import Session
 
-from app.core.auth import get_current_avocat_user
+from app.core.auth import get_current_avocat_user, get_current_user
 from app.core.workflow_enums import ProcessStage
 from app.db.session import get_db
 from app.models.user import User
@@ -15,8 +15,9 @@ from app.services.jugement_service import (
     create_jugement_service,
     update_jugement_service,
     get_jugement_by_dossier_service,
-    archiver_jugement, get_jugement_by_id_service, enregistrer_grosse_service,
+    archiver_jugement, get_jugement_by_id_service, enregistrer_grosse_service, create_jugement_defavorable_service,
 )
+from app.services.param_general import get_param_ordered, to_dict_list
 from app.services.workflow_guard import WorkflowGuard
 
 router = APIRouter()
@@ -47,6 +48,7 @@ async def create_jugement_favorable(
         jugement_file: Optional[UploadFile] = File(None),
         db: Session = Depends(get_db),
         user: User = Depends(get_current_avocat_user),
+        user1: User = Depends(get_current_user),
 ):
     data = JugementCreate(
         dossier_id=dossier_id,
@@ -61,6 +63,7 @@ async def create_jugement_favorable(
             dossier_id=dossier_id,
             avocat_nom=user.nom,
             data=data,
+            user_id=user1.id,
             jugement_file=jugement_file
         )
     except Exception as e:
@@ -145,13 +148,14 @@ async def archiver_jugement_route(
         dossier_id: int,
         db: Session = Depends(get_db),
         user: User = Depends(get_current_avocat_user),
+        user1: User = Depends(get_current_user),
 ):
     try:
         jugements = get_jugement_by_dossier_service(db, dossier_id)
         if not jugements:
             raise HTTPException(status_code=404, detail="Aucun jugement trouvé")
         jugement = jugements[0]
-        archiver_jugement(db, jugement.id, user.id)
+        archiver_jugement(db, jugement.id, user1.id)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -188,6 +192,7 @@ async def update_jugement_route(
         scans_grosse: Optional[List[UploadFile]] = File(None),
         db: Session = Depends(get_db),
         user: User = Depends(get_current_avocat_user),
+        user1: User = Depends(get_current_user),
 ):
     data = JugementUpdate(
         texte_decision=texte_decision,
@@ -201,6 +206,7 @@ async def update_jugement_route(
             jugement_id=jugement_id,
             avocat_nom=user.nom,
             data=data,
+            user_id=user1.id,
             jugement_file=jugement_file,
             scan_grosse=scans_grosse
         )
@@ -214,11 +220,11 @@ async def update_jugement_route(
 
 @router.get("/dossiers/{dossier_id}/jugement/{jugement_id}/enregistrer_grosse", response_class=HTMLResponse)
 def enregistrer_grosse_form(
-    dossier_id: int,
-    jugement_id: int,
-    request: Request,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_avocat_user),
+        dossier_id: int,
+        jugement_id: int,
+        request: Request,
+        db: Session = Depends(get_db),
+        user: User = Depends(get_current_avocat_user),
 ):
     jugement = get_jugement_by_id_service(db, jugement_id)
     if not jugement:
@@ -232,11 +238,12 @@ def enregistrer_grosse_form(
 
 @router.post("/dossiers/{dossier_id}/jugement/{jugement_id}/enregistrer_grosse")
 async def enregistrer_grosse_route(
-    dossier_id: int,
-    jugement_id: int,
-    scans_grosse: List[UploadFile] = File(...),
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_avocat_user),
+        dossier_id: int,
+        jugement_id: int,
+        scans_grosse: List[UploadFile] = File(...),
+        db: Session = Depends(get_db),
+        user: User = Depends(get_current_avocat_user),
+        user1: User = Depends(get_current_user),
 ):
     try:
         enregistrer_grosse_service(
@@ -244,7 +251,7 @@ async def enregistrer_grosse_route(
             jugement_id=jugement_id,
             avocat_nom=user.nom,
             scan_grosse=scans_grosse,
-            user_id=user.id
+            user_id=user1.id
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -252,3 +259,75 @@ async def enregistrer_grosse_route(
     return RedirectResponse(
         url=f"/dossiers/?grosse_saved=1", status_code=303
     )
+
+
+@router.get("/dossiers/{dossier_id}/jugement_defavorable", response_class=HTMLResponse)
+def jugement_defavorable_form(
+        dossier_id: int,
+        request: Request,
+        db: Session = Depends(get_db),
+        user: User = Depends(get_current_avocat_user),
+):
+    jugement = get_jugement_by_dossier_service(db, dossier_id)
+    sous_type = get_param_ordered(db, "sous_type_jugement_defavorable", "asc")
+    return templates.TemplateResponse(
+        "avocat/jugement/jugement_defavorable_form.html",
+        {"request": request, "user": user, "dossier_id": dossier_id, "jugement": jugement,
+         "sous_type": to_dict_list(sous_type), }
+    )
+
+
+@router.post("/dossiers/{dossier_id}/jugement_defavorable")
+async def create_jugement_defavorable(
+        dossier_id: int,
+        date_jugement: str = Form(...),
+        texte_decision: Optional[str] = Form(None),
+        sous_type: str = Form(...),
+        delai_appel: Optional[int] = Form(None),
+        execution_provisoire: Optional[bool] = Form(False),
+        jugement_file: Optional[UploadFile] = File(None),
+        db: Session = Depends(get_db),
+        user: User = Depends(get_current_avocat_user),
+        user1: User = Depends(get_current_user),
+
+):
+    data = JugementCreate(
+        dossier_id=dossier_id,
+        sous_type=sous_type,
+        date_jugement=date_jugement,
+        texte_decision=texte_decision,
+        delai_appel=delai_appel,
+        execution_provisoire=execution_provisoire,
+    )
+    try:
+        create_jugement_defavorable_service(
+            db=db,
+            dossier_id=dossier_id,
+            avocat_nom=user.nom,
+            data=data,
+            user_id=user1.id,
+            jugement_file=jugement_file
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    if sous_type == "contradictoire":
+        return RedirectResponse(
+            url=f"/dossiers/{dossier_id}/archiver", status_code=303
+        )
+    else:
+        return RedirectResponse(
+            url=f"/dossiers/{dossier_id}/procedure_tpi", status_code=303
+        )
+
+@router.post("/dossiers/{dossier_id}/jugement_contradictoire")
+def choix_contradictoire(dossier_id: int, db: Session = Depends(get_db)):
+    dossier = get_dossier_by_id_service(db, dossier_id)
+    WorkflowGuard.advance(dossier, ProcessStage.JUGEMENT_CONTRADICTOIRE, db)
+    return RedirectResponse(url=f"/dossiers", status_code=303)
+
+@router.post("/dossiers/{dossier_id}/jugement_par_defaut")
+def choix_par_defaut(dossier_id: int, db: Session = Depends(get_db)):
+    dossier = get_dossier_by_id_service(db, dossier_id)
+    WorkflowGuard.advance(dossier, ProcessStage.PAR_DEFAUT, db)
+    return RedirectResponse(url=f"/dossiers", status_code=303)

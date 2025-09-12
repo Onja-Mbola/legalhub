@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Créer Opposition - Avocat{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3>Créer une Opposition pour le dossier {{ dossier.numero_dossier }}</h3>
+    <form method="post" action="/dossiers/{{ dossier.id }}/opposition">
+        <div class="form-group">
+            <label for="jugement_id">Jugement concerné</label>
+            <input type="number" class="form-control" value="{{ dossier.jugements_defavorable.id }}" disabled>
+            <input type="hidden" name="jugement_id" value="{{ dossier.jugements_defavorable.id }}">
+        </div>
+
+        <div class="form-group">
+            <label for="date_notification">Date de Notification</label>
+            <input type="date" name="date_notification" class="form-control" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">Enregistrer Opposition</button>
+        <a href="/dossiers/{{ dossier.id }}" class="btn btn-secondary mt-3">Annuler</a>
+    </form>
+
+    <hr>
+    <h5>Oppositions existantes</h5>
+    <ul>
+        {% for opp in oppositions %}
+        <li>
+            Notifiée le {{ opp.date_notification.strftime("%d/%m/%Y") }},
+            échéance {{ opp.opposition_possible_jusqua.strftime("%d/%m/%Y") }}
+            {% if opp.alerte_envoyee %} ✅ alerte envoyée {% endif %}
+        </li>
+        {% else %}
+        <li>Aucune opposition enregistrée.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

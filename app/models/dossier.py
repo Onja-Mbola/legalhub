@@ -1,13 +1,11 @@
 from datetime import datetime, timedelta
 
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, Text, JSON, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, Text, JSON, DateTime
 from sqlalchemy.orm import relationship
 
 from app.core.workflow_enums import ProcessStage
 from app.db.base_class import Base
-from app.models.requete_assignation import RequeteAssignation
-from app.models.premiere_audience import PremiereAudience
-from app.models.jugement import Jugement
+from app.models import opposition,jugement_definitif
 
 
 
@@ -26,7 +24,7 @@ class Dossier(Base):
     tribunal = Column(String, nullable=True)
     avocat_responsable = Column(Integer, ForeignKey("users.id"), nullable=False)
     avocat_adverse = Column(String, nullable=True)
-    date_creation = Column(DateTime, default=datetime.utcnow() + timedelta(hours=3),nullable=True)
+    date_creation = Column(DateTime, default=datetime.utcnow() + timedelta(hours=3), nullable=True)
     commentaire = Column(Text, nullable=True)
     dossier_path = Column(String, nullable=True)
     pieces_jointes = Column(JSON, nullable=True)
@@ -43,16 +41,17 @@ class Dossier(Base):
     requete_assignation = relationship("RequeteAssignation", back_populates="dossier", uselist=False)
     premieres_audiences = relationship("PremiereAudience", back_populates="dossier", cascade="all, delete-orphan")
     echanges_conclusions = relationship("EchangeConclusion", back_populates="dossier", cascade="all, delete-orphan")
-    deliberations_decisions = relationship("Deliberation_Decision", back_populates="dossier", cascade="all, delete-orphan")
-    decisions_avant_dire_droit = relationship("DecisionAvantDireDroit", back_populates="dossier", cascade="all, delete-orphan")
+    deliberations_decisions = relationship("DeliberationDecision", back_populates="dossier",
+                                           cascade="all, delete-orphan")
+    decisions_avant_dire_droit = relationship("DecisionAvantDireDroit", back_populates="dossier",
+                                              cascade="all, delete-orphan")
     decisions_definitives = relationship("DecisionDefinitive", back_populates="dossier", cascade="all, delete-orphan")
     jugements = relationship("Jugement", back_populates="dossier", cascade="all, delete-orphan")
+    jugements_defavorables = relationship("JugementDefavorable", back_populates="dossier", cascade="all, delete-orphan")
     users = relationship("User", back_populates="dossier")
     action_logs = relationship("ActionLog", back_populates="dossier")
-
-
-
-
-
+    oppositions = relationship("Opposition", back_populates="dossier", cascade="all, delete-orphan")
+    retours_audiences = relationship("RetourAudience", back_populates="dossier", cascade="all, delete-orphan")
+    jugements_definitifs = relationship("JugementDefinitif", back_populates="dossier", cascade="all, delete-orphan")
 
 

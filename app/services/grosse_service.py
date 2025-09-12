@@ -1,5 +1,3 @@
-# app/tasks/jugement_tasks.py
-
 from fastapi_mail import FastMail
 from sqlalchemy.orm import Session
 

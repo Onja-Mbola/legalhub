@@ -9,3 +9,4 @@ class TypeDeCas(str, Enum):
     CONSULTATION = "CONSULTATION"
     CIVIL = "CIVIL"
     PENAL = "PÉNAL"
+

@@ -18,6 +18,9 @@ def get_echange_conclusion_by_id(db: Session, id: int):
 def get_echange_conclusion_by_dossier(db: Session, dossier_id: int):
     return db.query(EchangeConclusion).filter(EchangeConclusion.dossier_id == dossier_id).all()
 
+def get_echanges_by_retour(db: Session, retour_audience_id: int):
+    return db.query(EchangeConclusion).filter(EchangeConclusion.retour_audience_id == retour_audience_id).all()
+
 
 def update_echange_conclusion(db: Session, db_obj: EchangeConclusion, obj_in: EchangeConclusionUpdate):
     for k, v in obj_in.dict(exclude_unset=True).items():

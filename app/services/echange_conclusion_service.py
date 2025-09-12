@@ -7,7 +7,7 @@ from app.core.workflow_enums import ProcessStage
 from app.repositories.echange_conclusion import (
     create_echange_conclusion,
     update_echange_conclusion,
-    get_echange_conclusion_by_dossier, get_echange_conclusion_by_id
+    get_echange_conclusion_by_dossier, get_echange_conclusion_by_id, get_echanges_by_retour
 )
 from app.schemas.echange_conclusion import (
     EchangeConclusionCreate,
@@ -25,11 +25,16 @@ def create_echange_conclusion_service(
         data: EchangeConclusionCreate,
         conclusions_file: Optional[UploadFile] = None
 ):
+    stages_autorises = [
+        ProcessStage.PREMIERE_AUDIENCE.value,
+        ProcessStage.DECISION_AVANT_DIRE_DROIT.value,
+        ProcessStage.RETOUR_AUDIENCE.value
+    ]
     dossier = db.query(Dossier).filter(Dossier.id == dossier_id).first()
     if not dossier:
         raise HTTPException(status_code=404, detail="Dossier non trouvé")
 
-    if dossier.current_stage != ProcessStage.PREMIERE_AUDIENCE.value and dossier.current_stage != ProcessStage.DECISION_AVANT_DIRE_DROIT.value:
+    if dossier.current_stage not in stages_autorises:
         raise HTTPException(status_code=400, detail="Vous devez d'abord passer par la Première audience.")
 
     existing_list = get_echange_conclusion_by_dossier(db, dossier_id)
@@ -91,3 +96,6 @@ def get_echange_conclusion_by_id_service(db: Session, id: int):
 
 def get_echange_conclusion_by_dossier_service(db: Session, dossier_id: int):
     return get_echange_conclusion_by_dossier(db, dossier_id)
+
+def get_echanges_by_retour_service(db: Session, retour_audience_id: int):
+    return get_echanges_by_retour(db, retour_audience_id)

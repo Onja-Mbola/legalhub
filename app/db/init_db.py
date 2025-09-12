@@ -1,6 +1,7 @@
 import time
 from sqlalchemy.exc import OperationalError
 from app.db.session import engine, SessionLocal
+from app.models import action_log, activation_history
 from app.models.user import User
 from app.models.param_general import ParamGeneral
 from app.db.base_class import Base
@@ -44,7 +45,9 @@ def init_db(retries=5, delay=3):
                 {"nom": "qualite_type", "valeur": "Personne morale", "unite": None, "ordre": 15},
                 {"nom": "role_type", "valeur": "Demandeur", "unite": None, "ordre": 15},
                 {"nom": "role_type", "valeur": "Defendeur", "unite": None, "ordre": 10},
-                {"nom": "quota_echange_conclusion_civil", "valeur": "3", "unite": None, "ordre": 10}
+                {"nom": "quota_echange_conclusion_civil", "valeur": "3", "unite": None, "ordre": 10},
+                {"nom": "sous_type_jugement_defavorable", "valeur": "jugement_par_defaut", "unite": None, "ordre": 10},
+                {"nom": "sous_type_jugement_defavorable", "valeur": "jugement_contradictoire", "unite": None, "ordre": 5}
             ]
 
             for p in params_to_create:

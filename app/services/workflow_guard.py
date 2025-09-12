@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.models.dossier import Dossier
 from app.core.workflow_enums import ProcessStage
 
+
 class WorkflowGuard:
     @staticmethod
     def ensure_can_go_to(stage: ProcessStage, dossier: Dossier):
@@ -23,6 +24,15 @@ class WorkflowGuard:
             ProcessStage.JUGEMENT_FAVORABLE: [ProcessStage.NOTIFICATION_CLIENT],
             ProcessStage.NOTIFICATION_CLIENT: [ProcessStage.RECUPERATION_GROSSE],
             ProcessStage.RECUPERATION_GROSSE: [ProcessStage.FIN_ARCHIVAGE],
+            ProcessStage.JUGEMENT_DEFAVORABLE: [ProcessStage.JUGEMENT_CONTRADICTOIRE, ProcessStage.PAR_DEFAUT],
+            ProcessStage.PAR_DEFAUT: [ProcessStage.OPPOSITION],
+            ProcessStage.OPPOSITION: [ProcessStage.RETOUR_AUDIENCE],
+            ProcessStage.RETOUR_AUDIENCE: [ProcessStage.ECHANGE_CONCLUSIONS_JUGEMENT_PAR_DEFAUT],
+            ProcessStage.ECHANGE_CONCLUSIONS_JUGEMENT_PAR_DEFAUT: [ProcessStage.DELIBERATION_JUGEMENT_PAR_DEFAUT],
+            ProcessStage.DELIBERATION_JUGEMENT_PAR_DEFAUT: [ProcessStage.JUGEMENT_DEFINITIF],
+            ProcessStage.JUGEMENT_DEFINITIF: [ProcessStage.NOTIFICATION_CLIENT_JUGEMENT_PAR_DEFAUT],
+            ProcessStage.NOTIFICATION_CLIENT_JUGEMENT_PAR_DEFAUT: [ProcessStage.FIN_ARCHIVAGE],
+
         }
 
         if stage not in allowed[current]:
@@ -44,6 +54,3 @@ class WorkflowGuard:
         db.commit()
         db.refresh(dossier)
         return dossier
-
-
-

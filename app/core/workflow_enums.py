@@ -15,3 +15,13 @@ class ProcessStage(str, Enum):
     FIN_ARCHIVAGE = "dossier_archivé"
     NOTIFICATION_CLIENT = "notification_client"
     RECUPERATION_GROSSE = "recuperation_grosse"
+    JUGEMENT_CONTRADICTOIRE = "jugement_contradictoire"
+    PAR_DEFAUT = "jugement_par_defaut"
+    OPPOSITION = "opposition"
+    RETOUR_AUDIENCE = "retour_audience"
+    JUGEMENT_DEFINITIF= "jugement_definitif"
+    ECHANGE_CONCLUSIONS_JUGEMENT_PAR_DEFAUT = "echange_conclusions_jugement_par_defaut"
+    DELIBERATION_JUGEMENT_PAR_DEFAUT = "deliberation_jugement_par_defaut"
+    NOTIFICATION_CLIENT_JUGEMENT_PAR_DEFAUT = "notification_client_jugement_par_defaut"
+
+

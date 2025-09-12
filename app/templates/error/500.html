@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Erreur 500 - Erreur interne{% endblock %}
+
+{% block content %}
+<style>
+    .error-container {
+        min-height: 70vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    .error-code {
+        font-size: 8rem;
+        font-weight: 700;
+        color: #dc3545;
+        line-height: 1;
+    }
+
+    .error-message {
+        font-size: 1.5rem;
+        color: #6c757d;
+    }
+
+    .error-description {
+        color: #495057;
+        margin-bottom: 30px;
+    }
+
+    .btn-home {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 0.5rem;
+    }
+</style>
+
+<div class="container error-container">
+    <div class="error-code">500</div>
+    <div class="error-message mb-3">Erreur interne du serveur</div>
+    <p class="error-description">
+        {{ detail or "Une erreur inattendue s'est produite. Veuillez réessayer plus tard." }}
+    </p>
+    <a href="/" class="btn btn-outline-primary btn-home">Retour à l’accueil</a>
+</div>
+{% endblock %}

@@ -49,7 +49,8 @@ def create_jugement_service(
 
     WorkflowGuard.advance(dossier, ProcessStage.JUGEMENT_FAVORABLE, db)
 
-    log_action_service(db, user_id, f"Création du jugement pour le dossier {dossier.numero_dossier}", dossier.id)
+    log_action_service(db, user_id, f"Création du jugement favorable pour le dossier {dossier.numero_dossier}",
+                       dossier.id)
 
     return obj
 
@@ -88,7 +89,8 @@ def update_jugement_service(
     db.commit()
     db.refresh(updated)
 
-    log_action_service(db, user_id, f"Mise à jour du jugement pour le dossier {existing.dossier.numero_dossier}", existing.dossier.id)
+    log_action_service(db, user_id, f"Mise à jour du jugement pour le dossier {existing.dossier.numero_dossier}",
+                       existing.dossier.id)
 
     return updated
 
@@ -129,7 +131,8 @@ def archiver_jugement(db: Session, jugement_id: int, user_id: int):
     if not dossier:
         raise HTTPException(status_code=404, detail="Dossier non trouvé")
     if dossier.current_stage not in [ProcessStage.JUGEMENT_FAVORABLE.value, ProcessStage.RECUPERATION_GROSSE.value]:
-        raise HTTPException(status_code=400, detail="L'archivage n'est accessible qu'après un jugement favorable ou défavorable ou Recuperation Grosse faite")
+        raise HTTPException(status_code=400,
+                            detail="L'archivage n'est accessible qu'après un jugement favorable ou défavorable ou Recuperation Grosse faite")
 
     jugement.statut = ProcessStage.FIN_ARCHIVAGE.value
     db.commit()
@@ -144,5 +147,42 @@ def archiver_jugement(db: Session, jugement_id: int, user_id: int):
 def get_jugement_by_id_service(db: Session, id: int):
     return get_jugement_by_id(db, id)
 
+
 def get_jugement_by_dossier_service(db: Session, dossier_id: int):
     return get_jugements_by_dossier(db, dossier_id)
+
+
+def create_jugement_defavorable_service(
+        db: Session,
+        dossier_id: int,
+        avocat_nom: str,
+        data: JugementCreate,
+        user_id: int,
+        jugement_file: Optional[UploadFile] = None,
+):
+    dossier = db.query(Dossier).filter(Dossier.id == dossier_id).first()
+    if not dossier:
+        raise HTTPException(status_code=404, detail="Dossier non trouvé")
+
+    if dossier.current_stage != ProcessStage.DECISION_DEFINITIVE.value:
+        raise HTTPException(status_code=400,
+                            detail="Le jugement défavorable n'est accessible qu'après la décision définitive.")
+
+    base = os.path.join("app/documents", avocat_nom, dossier.numero_dossier, "jugement_defavorable")
+    jugement_path = None
+
+    if jugement_file and jugement_file.filename:
+        saved_files = save_uploaded_files([jugement_file], base)
+        jugement_path = os.path.join(base, saved_files[0])
+
+    obj = create_jugement(db, data)
+    if jugement_path:
+        obj.jugement_file = jugement_path
+
+    WorkflowGuard.advance(dossier, ProcessStage.JUGEMENT_DEFAVORABLE, db)
+
+    db.commit()
+    db.refresh(obj)
+    log_action_service(db, user_id, f"Création du jugement défavorable pour le dossier {dossier.numero_dossier}",
+                       dossier.id)
+    return obj

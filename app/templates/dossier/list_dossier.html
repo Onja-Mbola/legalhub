@@ -19,6 +19,7 @@
     ('echange_updated', "Echange de Conclusions mise à jour."),
     ('update_success', "Décision Avant Dire Droit mise à jour."),
     ('decision_finale', "Action décision définitive faite avec succès.."),
+    ('opposition_success', "Opposition faite avec succès.."),
     ('delib_update_success', "Délibération mise à jour."),
     ('echange_success', "Echange de Conclusions crée avec succès."),
     ('add_success', "Décision Avant Dire Droit crée avec succès."),
@@ -117,13 +118,30 @@
                             <i class="fas fa-file-alt mr-1"></i> Échange de conclusions
                         </a>
                         {% elif dossier.current_stage == 'decision_definitive' %}
+                        {% if dossier.decisions_definitives %}
+                        {% set decision = dossier.decisions_definitives[-1] %}
+
+                        {% if decision.type_decision == 'jugement_favorable' %}
                         <a href="/dossiers/{{ dossier.id }}/jugement_favorable"
                            class="btn btn-sm btn-outline-success mb-1">
                             <i class="fas fa-thumbs-up mr-1"></i> Jugement favorable
                         </a>
+                        {% elif decision.type_decision == 'jugement_defavorable' %}
                         <a href="/dossiers/{{ dossier.id }}/jugement_defavorable"
                            class="btn btn-sm btn-outline-danger mb-1">
                             <i class="fas fa-thumbs-down mr-1"></i> Jugement défavorable
+                        </a>
+                        {% endif %}
+                        {% endif %}
+
+                        {% elif dossier.current_stage == 'jugement_defavorable' %}
+                        <a href="/dossiers/{{ dossier.id }}/jugement_contradictoire"
+                           class="btn btn-sm btn-outline-primary mb-1">
+                            <i class="fas fa-balance-scale-left mr-1"></i> Jugement Contradictoire
+                        </a>
+                        <a href="/dossiers/{{ dossier.id }}/jugement_par_defaut"
+                           class="btn btn-sm btn-outline-secondary mb-1">
+                            <i class="fas fa-balance-scale-right mr-1"></i> Jugement Par Défaut
                         </a>
                         {% elif dossier.current_stage == 'jugement_favorable' %}
                         <a href="/dossiers/{{ dossier.id }}/jugement_notification"

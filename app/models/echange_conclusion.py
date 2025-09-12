@@ -1,12 +1,14 @@
 from sqlalchemy import Column, Integer, String, Date, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
+from app.models import retour_audience
 
 class EchangeConclusion(Base):
     __tablename__ = "echanges_conclusions"
 
     id = Column(Integer, primary_key=True, index=True)
     dossier_id = Column(Integer, ForeignKey("dossiers.id"), nullable=False)
+    retour_audience_id = Column(Integer, ForeignKey("retours_audiences.id", ondelete="CASCADE"), nullable=True)
 
     # Qui a déposé / déposé conjoint ?
     partie = Column(String, nullable=False)
@@ -17,3 +19,5 @@ class EchangeConclusion(Base):
     conclusions_file = Column(String, nullable=True)
 
     dossier = relationship("Dossier", back_populates="echanges_conclusions")
+    retour_audience = relationship("RetourAudience", back_populates="echanges_conclusions")
+

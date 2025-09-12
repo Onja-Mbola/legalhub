@@ -12,6 +12,7 @@ class Jugement(Base):
 
     date_jugement = Column(Date, nullable=False)
     texte_decision = Column(Text, nullable=True)
+    sous_type = Column(String, nullable=True)
 
     delai_appel = Column(Integer, nullable=True)
     execution_provisoire = Column(Boolean, default=False)
