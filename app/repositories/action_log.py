@@ -1,6 +1,6 @@
 from app.models.action_log import ActionLog
 from sqlalchemy.orm import Session, joinedload
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 def log_action(db: Session, user_id: int, action_type: str, description: str, dossier_id: int = None):
@@ -21,7 +21,7 @@ def get_log(db: Session):
     logs = (
         db.query(ActionLog)
         .join(ActionLog.user)
-        .join(ActionLog.dossier)
+        .outerjoin(ActionLog.dossier)
         .options(
             joinedload(ActionLog.user),
             joinedload(ActionLog.dossier)
@@ -29,4 +29,8 @@ def get_log(db: Session):
         .order_by(ActionLog.created_at.desc())
         .all()
     )
+
+    for log in logs:
+        log.created_at = log.created_at + timedelta(hours=3)
+
     return logs

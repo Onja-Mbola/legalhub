@@ -146,7 +146,7 @@ def get_dossier_by_id(db: Session, dossier_id: int):
             joinedload(Dossier.decisions_avant_dire_droit),
             joinedload(Dossier.decisions_definitives),
             joinedload(Dossier.jugements),
-            joinedload(Dossier.jugements_defavorable)
+            joinedload(Dossier.jugements_defavorables)
         )
         .filter(Dossier.id == dossier_id)
         .first()

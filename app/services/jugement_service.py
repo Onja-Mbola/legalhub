@@ -49,7 +49,8 @@ def create_jugement_service(
 
     WorkflowGuard.advance(dossier, ProcessStage.JUGEMENT_FAVORABLE, db)
 
-    log_action_service(db, user_id, f"Création du jugement favorable pour le dossier {dossier.numero_dossier}",
+    log_action_service(db, user_id, "Création jugement favorable",
+                       f"Création du jugement favorable pour le dossier {dossier.numero_dossier}",
                        dossier.id)
 
     return obj
@@ -89,7 +90,7 @@ def update_jugement_service(
     db.commit()
     db.refresh(updated)
 
-    log_action_service(db, user_id, f"Mise à jour du jugement pour le dossier {existing.dossier.numero_dossier}",
+    log_action_service(db, user_id, "Mise à jour jugement", f"Mise à jour du jugement pour le dossier {existing.dossier.numero_dossier}",
                        existing.dossier.id)
 
     return updated
@@ -118,7 +119,7 @@ def enregistrer_grosse_service(
     db.refresh(jugement)
     WorkflowGuard.advance(dossier, ProcessStage.RECUPERATION_GROSSE, db)
 
-    log_action_service(db, user_id, f"Récupération de la grosse pour le dossier {dossier.numero_dossier}", dossier.id)
+    log_action_service(db, user_id, "Récupération grosse", f"Récupération de la grosse pour le dossier {dossier.numero_dossier}", dossier.id)
 
     return jugement
 
@@ -139,7 +140,7 @@ def archiver_jugement(db: Session, jugement_id: int, user_id: int):
     db.refresh(jugement)
     WorkflowGuard.advance(dossier, ProcessStage.FIN_ARCHIVAGE, db)
 
-    log_action_service(db, user_id, f"Archivage du jugement pour le dossier {dossier.numero_dossier}", dossier.id)
+    log_action_service(db, user_id, "Archivage jugement", f"Archivage du jugement pour le dossier {dossier.numero_dossier}", dossier.id)
 
     return jugement
 
@@ -160,7 +161,7 @@ def create_jugement_defavorable_service(
         user_id: int,
         jugement_file: Optional[UploadFile] = None,
 ):
-    dossier = db.query(Dossier).filter(Dossier.id == dossier_id).first()
+    dossier = get_dossier_by_id_service(db, dossier_id)
     if not dossier:
         raise HTTPException(status_code=404, detail="Dossier non trouvé")
 
@@ -183,6 +184,6 @@ def create_jugement_defavorable_service(
 
     db.commit()
     db.refresh(obj)
-    log_action_service(db, user_id, f"Création du jugement défavorable pour le dossier {dossier.numero_dossier}",
+    log_action_service(db, user_id, "Création jugement défavorable", f"Création du jugement défavorable pour le dossier {dossier.numero_dossier}",
                        dossier.id)
     return obj
