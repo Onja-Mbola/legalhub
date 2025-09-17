@@ -27,24 +27,35 @@
             <h4 class="mb-0">
                 <i class="fas fa-file-signature me-2"></i>
                 {% if mode == "create" %}
-                    Nouveau échange de conclusions - Dossier #{{ dossier.id }}
+                Nouveau échange de conclusions - Dossier #{{ dossier.id }}
                 {% else %}
-                    Mise à jour de l'échange - Dossier #{{ dossier.id }}
+                Mise à jour de l'échange - Dossier #{{ dossier.id }}
                 {% endif %}
             </h4>
         </div>
         <div class="card-body">
             <form method="post" enctype="multipart/form-data"
-                  action="{% if mode == 'update' %}/dossiers/{{ dossier.id }}/echange_conclusions/{{ item.id }}/update{% else %}/dossiers/{{ dossier.id }}/echange_conclusions{% endif %}">
+                  action="{% if mode == 'update' %}
+                /dossiers/{{ dossier.id }}/echange_conclusions/{{ item.id }}/update
+                {% elif mode == 'create' %}
+                /dossiers/{{ dossier.id }}/echange_conclusions
+                {% elif mode == 'creates' %}
+                /dossiers/{{ dossier.id }}/echange_conclusions/retour_audience/{{ retour_audience_id }}
+                {% endif %}">
 
                 <div class="mb-3">
-                    <label for="partie" class="form-label fw-semibold">Partie qui a demandé <span class="text-danger">*</span></label>
+                    <label for="partie" class="form-label fw-semibold">Partie qui a demandé <span
+                            class="text-danger">*</span></label>
                     <input type="text" class="form-control" id="partie" name="partie" required
                            value="{{ item.partie if item else '' }}">
                 </div>
+                <input type="hidden" name="retour_audience_id"
+                       value="{{ retour_audience.id if retour_audience else '' }}">
+
 
                 <div class="mb-3">
-                    <label for="date_depot" class="form-label fw-semibold">Date de dépôt <span class="text-danger">*</span></label>
+                    <label for="date_depot" class="form-label fw-semibold">Date de dépôt <span
+                            class="text-danger">*</span></label>
                     <input type="date" class="form-control" id="date_depot" name="date_depot" required
                            value="{{ item.date_depot if item else '' }}">
                 </div>
@@ -62,13 +73,20 @@
                 <div class="mb-3">
                     <label for="conclusions_file" class="form-label fw-semibold">Fichier de conclusion</label>
                     {% if item and item.conclusions_file %}
-                        <p>Fichier actuel :
-                            <a href="{{ request.url_for('documents', filepath=item.conclusions_file.split('app/documents/')[-1]) }}"
-                               target="_blank">{{ item.conclusions_file.split('/')[-1] }}</a>
-                        </p>
+                    <p>Fichiers actuels :</p>
+                    <ul>
+                        {% for f in item.conclusions_file %}
+                        <li>
+                            <a href="{{ request.url_for('documents', filepath=f.split('app/documents/')[-1]) }}"
+                               target="_blank">
+                                {{ f.split('/')[-1] }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
                     {% endif %}
                     <input type="file" class="form-control" id="conclusions_file" name="conclusions_file"
-                           accept=".pdf,.jpg,.png,.jpeg">
+                           accept=".pdf,.jpg,.png,.jpeg" multiple>
                 </div>
 
                 <button type="submit" class="btn btn-primary rounded-pill px-4">
@@ -80,16 +98,32 @@
     </div>
 
     {% if mode == "create" and items %}
-        <h5>Échanges existants :</h5>
-        <ul class="list-group mb-4">
-            {% for echange in items %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ echange.partie }} - {{ echange.date_depot }}
-                    <a href="/dossiers/{{ dossier.id }}/echange_conclusions/{{ echange.id }}/update" class="btn btn-sm btn-outline-secondary">Modifier</a>
-                </li>
-            {% endfor %}
-        </ul>
+    <h5>Échanges existants :</h5>
+    <ul class="list-group mb-4">
+        {% for echange in items %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ echange.partie }} - {{ echange.date_depot }}
+            <a href="/dossiers/{{ dossier.id }}/echange_conclusions/{{ echange.id }}/update"
+               class="btn btn-sm btn-outline-secondary">Modifier</a>
+        </li>
+        {% endfor %}
+    </ul>
     {% endif %}
 
+    {% if mode == "creates" and retour_audience and retour_audience.echanges_conclusions %}
+    <div class="mt-3 bg-light p-3 rounded">
+
+        <h5>Échanges de conclusions liés à cette audience :</h5>
+        {% for echange in retour_audience.echanges_conclusions %}
+        <ul class="list-group mb-4">
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ echange.partie }} - {{ echange.date_depot }}
+                <a href="/dossiers/{{ dossier.id }}/echange_conclusions/{{ echange.id }}/update"
+                   class="btn btn-sm btn-outline-secondary">Modifier</a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

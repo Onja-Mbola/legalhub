@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Jugement définitif - Dossier #{{ dossier_id }}{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    {% if error_msg %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>Erreur :</strong> {{ error_msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+    </div>
+    {% endif %}
+
+    <div class="card shadow-lg rounded-4 border-0">
+        <div class="card-header bg-gradient-primary text-white py-3">
+            <h4 class="mb-0">
+                <i class="fas fa-gavel me-2"></i>
+                Jugement définitif - Dossier #{{ dossier_id }}
+            </h4>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" action="/dossiers/{{ dossier_id }}/jugement_definitif">
+
+                <div class="mb-3">
+                    <label for="date_jugement" class="form-label fw-semibold">
+                        Date du jugement <span class="text-danger">*</span>
+                    </label>
+                    <input type="date" class="form-control" id="date_jugement" name="date_jugement" required
+                           value="{{ jugement.date_jugement if jugement else '' }}">
+                </div>
+                <div class="mb-3 d-none">
+                    <label for="jugement_id" class="form-label fw-semibold">ID Jugement</label>
+                    <input type="text" class="form-control" id="jugement_id" name="jugement_id"
+                           value="{{ jugement.id if jugement else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="texte_jugement" class="form-label fw-semibold">Texte du jugement</label>
+                    <textarea class="form-control" id="texte_jugement" name="texte_jugement" rows="5">{{ jugement.texte_jugement if jugement else '' }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="observations" class="form-label fw-semibold">Observations</label>
+                    <textarea class="form-control" id="observations" name="observations" rows="3">{{ jugement.observations if jugement else '' }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="jugement_file" class="form-label fw-semibold">Pièce jointe (PDF, image)</label>
+                    {% if jugement and jugement.jugement_file %}
+                    <div class="mb-2">
+                        {% for f in jugement.jugement_file %}
+                        <p>
+                            <a href="{{ url_for('documents', filepath=f.split('app/documents/')[-1]) }}"
+                               target="_blank">
+                                <i class="fas fa-file me-1"></i> {{ f.split('/')[-1] }}
+                            </a>
+                        </p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <input type="file" class="form-control" id="jugement_file" name="fichiers" multiple
+                           accept=".pdf,.jpg,.png,.jpeg">
+                </div>
+
+                <button type="submit" class="btn btn-success rounded-pill px-4">
+                    Enregistrer
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

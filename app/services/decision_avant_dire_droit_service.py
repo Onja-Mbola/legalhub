@@ -14,6 +14,7 @@ from app.schemas.decision_avant_dire_droit import (
     DecisionAvantDireDroitCreate,
     DecisionAvantDireDroitUpdate
 )
+from app.services.dossier import get_dossier_by_id_service
 from app.services.param_general import get_param
 from app.services.workflow_guard import WorkflowGuard
 from app.services.FileStorageService import save_uploaded_files
@@ -27,7 +28,7 @@ def create_decision_avant_dire_droit_service(
         ordonnance_file: Optional[UploadFile] = None,
         retour_echange: bool = True
 ):
-    dossier = db.query(Dossier).filter(Dossier.id == dossier_id).first()
+    dossier = get_dossier_by_id_service(db, dossier_id)
     if not dossier:
         raise HTTPException(status_code=404, detail="Dossier non trouvé")
 

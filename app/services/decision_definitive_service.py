@@ -13,6 +13,7 @@ from app.schemas.decision_definitive import (
     DecisionDefinitiveCreate,
     DecisionDefinitiveUpdate
 )
+from app.services.dossier import get_dossier_by_id_service
 from app.services.workflow_guard import WorkflowGuard
 from app.services.FileStorageService import save_uploaded_files
 
@@ -24,7 +25,7 @@ def save_or_update_decision_definitive(
         data: DecisionDefinitiveCreate,
         jugement_file: Optional[UploadFile] = None
 ):
-    dossier = db.query(Dossier).filter(Dossier.id == dossier_id).first()
+    dossier = get_dossier_by_id_service(db, dossier_id)
     if not dossier:
         raise HTTPException(status_code=404, detail="Dossier non trouvé")
 

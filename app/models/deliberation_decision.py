@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Date, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
+from app.models import jugement_definitif, retour_audience
 
 
 class DeliberationDecision(Base):

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier Opposition - Avocat{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    {% for key, message in [
+    ('success', 'Opposition modifié avec succès.'),
+    ] %}
+    {% if request.query_params.get(key) == '1' %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <strong>Succès !</strong> {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
+            <span aria-hidden="true">x</span>
+        </button>
+    </div>
+    {% endif %}
+    {% endfor %}
+    <h3>Modifier l'Opposition (ID: {{ opposition.id }})</h3>
+    <form method="post">
+
+        <div class="form-group">
+            <label for="date_notification">Date de Notification</label>
+            <input type="date" name="date_notification" class="form-control"
+                   value="{{ opposition.date_notification.strftime('%Y-%m-%d') }}" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">Mettre à jour</button>
+        <a href="/dossiers/{{ opposition.dossier.id }}" class="btn btn-secondary mt-3">Annuler</a>
+    </form>
+
+    <hr>
+    <h5>Détails de l'opposition</h5>
+    <p>
+        Notification initiale : {{ opposition.date_notification.strftime("%d/%m/%Y") }}<br>
+        Opposition possible jusqu’au : {{ opposition.opposition_possible_jusqua.strftime("%d/%m/%Y") }}<br>
+        {% if opposition.alerte_envoyee %}
+            ✅ Alerte déjà envoyée
+        {% else %}
+            ⏳ Alerte non encore envoyée
+        {% endif %}
+    </p>
+</div>
+{% endblock %}

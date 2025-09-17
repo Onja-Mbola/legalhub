@@ -34,10 +34,10 @@ def insert_or_update_retour_audience_with_file(
     if not dossier:
         raise HTTPException(status_code=404, detail="Dossier non trouvé")
 
-    if dossier.current_stage != ProcessStage.OPPOSITION.value:
+    if dossier.current_stage not in [ProcessStage.OPPOSITION.value, ProcessStage.RETOUR_AUDIENCE.value]:
         raise HTTPException(
             status_code=400,
-            detail="Vous devez d'abord passer par l'Opposition avant d'enregistrer un retour."
+            detail="Vous devez d'abord passer par l'Opposition ou être en Retour Audience pour enregistrer un retour."
         )
 
     dossier_path = os.path.join(
@@ -56,6 +56,7 @@ def insert_or_update_retour_audience_with_file(
             fichier_path = retour_exist.pv_audience
 
     retour_in = RetourAudienceCreate(
+        dossier_id=dossier_id,
         date_audience=date_audience,
         nom_judge=nom_judge,
         observations_judge=observations_judge,
@@ -66,11 +67,11 @@ def insert_or_update_retour_audience_with_file(
 
     if retour_exist:
         updated = update_retour_audience(
-            db, retour_exist.id, RetourAudienceUpdate(**retour_in.dict())
+            db, retour_exist.id, RetourAudienceUpdate(**retour_in.dict(exclude={"dossier_id", "jugement_id"}))
         )
         return updated
     else:
-        new = create_retour_audience(db, dossier_id, retour_in)
+        new = create_retour_audience(db, retour_in)
         WorkflowGuard.advance(dossier, ProcessStage.RETOUR_AUDIENCE, db)
         return new
 

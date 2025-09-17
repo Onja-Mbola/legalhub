@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import date
-from typing import Optional
+from typing import Optional, List
 
 
 class EchangeConclusionBase(BaseModel):
@@ -25,7 +25,7 @@ class EchangeConclusionUpdate(BaseModel):
 class EchangeConclusionOut(EchangeConclusionBase):
     id: int
     dossier_id: int
-    conclusions_file: Optional[str] = None
+    conclusions_file: Optional[List[str]]
 
     class Config:
         orm_mode = True

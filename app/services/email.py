@@ -192,6 +192,21 @@ async def send_jugement_favorable_email(email: EmailStr, dossier):
     fm = FastMail(conf)
     await fm.send_message(message)
 
+
+async def send_jugement_definitif_email(email: EmailStr, dossier):
+    html_content = templates.get_template("email/jugement_definitif.html").render(dossier=dossier)
+
+    message = MessageSchema(
+        subject=f"Jugement Définitif - Dossier {dossier.numero_dossier}",
+        recipients=[email],
+        body=html_content,
+        subtype="html"
+    )
+
+    fm = FastMail(conf)
+    await fm.send_message(message)
+
+
 @celery_app.task(name="send_jugement_favorable_email_programmer")
 def send_jugement_favorable_email_programmer(email: EmailStr, dossier: dict):
     html_content = templates.get_template("email/rappel_grosse.html").render(dossier=dossier)
@@ -209,7 +224,6 @@ def send_jugement_favorable_email_programmer(email: EmailStr, dossier: dict):
 
 @celery_app.task(name="send_opposition_email_programmer")
 def send_opposition_email_programmer(email: str, dossier: dict):
-
     html_content = templates.get_template("email/rappel_opposition.html").render(dossier=dossier)
 
     message = MessageSchema(

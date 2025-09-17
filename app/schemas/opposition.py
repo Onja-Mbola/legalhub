@@ -12,6 +12,8 @@ class OppositionCreate(OppositionBase):
     pass
 
 class OppositionUpdate(BaseModel):
+    date_notification: Optional[datetime] = None
+    opposition_possible_jusqua: Optional[datetime] = None
     alerte_envoyee: Optional[bool] = None
 
 class OppositionOut(OppositionBase):

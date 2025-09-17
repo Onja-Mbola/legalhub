@@ -31,19 +31,20 @@ def list_dossiers(
     dossiers = get_dossiers_by_avocat_service(db, user.id)
     dossier = get_dossier_by_id_service(db, 1)
 
-    dossier_data = {
-        "id": dossier.id,
-        "numero_dossier": dossier.numero_dossier,
-        "nom_dossier": dossier.nom_dossier,
-        "user": dossier.users.nom,
-    }
+    if dossier:
+        dossier_data = {
+            "id": dossier.id,
+            "numero_dossier": dossier.numero_dossier,
+            "nom_dossier": dossier.nom_dossier,
+            "user": dossier.users.nom,
+        }
 
-    send_jugement_favorable_email_programmer.apply_async(
-        args=["onjambola61@gmail.com", dossier_data],
-        countdown=60
-    )
+        send_jugement_favorable_email_programmer.apply_async(
+            args=["onjambola61@gmail.com", dossier_data],
+            countdown=60
+        )
 
-    log_action_service(db, user.id, "Consulation Dossier", f"Affichage liste dossier {dossier.numero_dossier}", dossier.id)
+    log_action_service(db, user.id, "Consulation Dossier", f"Affichage liste dossier", dossier_id=None)
 
     return templates.TemplateResponse("dossier/list_dossier.html", {
         "request": request,

@@ -9,6 +9,7 @@ from app.core.workflow_enums import ProcessStage
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.jugement import JugementCreate, JugementUpdate
+from app.services.action_log import log_action_service
 from app.services.dossier import get_dossier_by_id_service
 from app.services.email import send_email, send_jugement_favorable_email
 from app.services.jugement_service import (
@@ -101,7 +102,7 @@ async def send_jugement_notification(
     print(f"Notification envoyée - Email: {notify_email}")
 
     return RedirectResponse(
-        url=f"/dossiers/{dossier_id}/jugement_rappel", status_code=303
+        url=f"/dossiers", status_code=303
     )
 
 
@@ -317,17 +318,26 @@ async def create_jugement_defavorable(
         )
     else:
         return RedirectResponse(
-            url=f"/dossiers/{dossier_id}/procedure_tpi", status_code=303
+            url=f"/dossiers", status_code=303
         )
 
+
 @router.post("/dossiers/{dossier_id}/jugement_contradictoire")
-def choix_contradictoire(dossier_id: int, db: Session = Depends(get_db)):
+def choix_contradictoire(dossier_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_avocat_user)
+                         ):
     dossier = get_dossier_by_id_service(db, dossier_id)
     WorkflowGuard.advance(dossier, ProcessStage.JUGEMENT_CONTRADICTOIRE, db)
+    log_action_service(db, user.id, "Création jugement contradictoire",
+                       f"Création du jugement contradictoire pour le dossier {dossier.numero_dossier}",
+                       dossier.id)
     return RedirectResponse(url=f"/dossiers", status_code=303)
 
+
 @router.post("/dossiers/{dossier_id}/jugement_par_defaut")
-def choix_par_defaut(dossier_id: int, db: Session = Depends(get_db)):
+def choix_par_defaut(dossier_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_avocat_user)):
     dossier = get_dossier_by_id_service(db, dossier_id)
     WorkflowGuard.advance(dossier, ProcessStage.PAR_DEFAUT, db)
+    log_action_service(db, user.id, "Création jugement par defaut",
+                       f"Création du jugement par defaut pour le dossier {dossier.numero_dossier}",
+                       dossier.id)
     return RedirectResponse(url=f"/dossiers", status_code=303)

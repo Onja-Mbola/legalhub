@@ -25,50 +25,46 @@
             <h4 class="mb-0"><i class="fas fa-gavel me-2"></i> Délibération - Dossier #{{ dossier.id }}</h4>
         </div>
         <div class="card-body">
-            {% if item %}
-            <form method="post" enctype="multipart/form-data"
-                  action="{{ url_for('delib_update', dossier_id=dossier.id, decision_id=item.id) }}">
-                {% else %}
-                <form method="post" enctype="multipart/form-data"
-                      action="{{ url_for('delib_create', dossier_id=dossier.id) }}">
+            <form method="post" enctype="multipart/form-data" action="{{ request.url }}">
+
+                <div class="mb-3">
+                    <label for="date_mise_en_delibere" class="form-label fw-semibold">Date de mise en délibéré <span
+                            class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="date_mise_en_delibere" name="date_mise_en_delibere"
+                           required
+                           value="{{ item.date_mise_en_delibere if item else '' }}">
+                </div>
+                <input type="hidden" name="retour_audience_id"
+                       value="{{ retour_audience.id if retour_audience else '' }}">
+
+                <div class="mb-3">
+                    <label for="type_decision_attendue" class="form-label fw-semibold">Type de décision attendue
+                        <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="type_decision_attendue"
+                           name="type_decision_attendue" required
+                           value="{{ item.type_decision_attendue if item else '' }}">
+                </div>
+
+                <div class="mb-3">
+                    <label for="observations_juge" class="form-label fw-semibold">Observations du juge</label>
+                    <textarea class="form-control" id="observations_juge" name="observations_juge">{{ item.observations_juge if item else '' }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="note_file" class="form-label fw-semibold">Note du juge (fichier)</label>
+                    {% if item and item.note_audience_file %}
+                    <p>Fichier actuel : <a
+                            href="{{ request.url_for('documents', filepath=item.note_audience_file.split('app/documents/')[-1]) }}"
+                            target="_blank">{{ item.note_audience_file.split('/')[-1] }}</a></p>
                     {% endif %}
+                    <input type="file" class="form-control" id="note_file" name="note_file"
+                           accept=".pdf,.jpg,.png,.jpeg">
+                </div>
 
-                    <div class="mb-3">
-                        <label for="date_mise_en_delibere" class="form-label fw-semibold">Date de mise en délibéré <span
-                                class="text-danger">*</span></label>
-                        <input type="date" class="form-control" id="date_mise_en_delibere" name="date_mise_en_delibere"
-                               required
-                               value="{{ item.date_mise_en_delibere if item else '' }}">
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="type_decision_attendue" class="form-label fw-semibold">Type de décision attendue
-                            <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="type_decision_attendue"
-                               name="type_decision_attendue" required
-                               value="{{ item.type_decision_attendue if item else '' }}">
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="observations_juge" class="form-label fw-semibold">Observations du juge</label>
-                        <textarea class="form-control" id="observations_juge" name="observations_juge">{{ item.observations_juge if item else '' }}</textarea>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="note_file" class="form-label fw-semibold">Note du juge (fichier)</label>
-                        {% if item and item.note_audience_file %}
-                        <p>Fichier actuel : <a
-                                href="{{ request.url_for('documents', filepath=item.note_audience_file.split('app/documents/')[-1]) }}"
-                                target="_blank">{{ item.note_audience_file.split('/')[-1] }}</a></p>
-                        {% endif %}
-                        <input type="file" class="form-control" id="note_file" name="note_file"
-                               accept=".pdf,.jpg,.png,.jpeg">
-                    </div>
-
-                    <button type="submit" class="btn btn-primary rounded-pill px-4">
-                        <i class="fas fa-save me-2"></i> Enregistrer
-                    </button>
-                </form>
+                <button type="submit" class="btn btn-primary rounded-pill px-4">
+                    <i class="fas fa-save me-2"></i> Enregistrer
+                </button>
+            </form>
         </div>
     </div>
 </div>

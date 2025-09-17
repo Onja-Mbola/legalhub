@@ -8,7 +8,7 @@ class Opposition(Base):
     __tablename__ = "oppositions"
 
     id = Column(Integer, primary_key=True, index=True)
-    jugement_id = Column(Integer, ForeignKey("jugements_defavorables.id", ondelete="CASCADE"), nullable=False)
+    jugement_id = Column(Integer, ForeignKey("jugements.id", ondelete="CASCADE"), nullable=False)
     dossier_id = Column(Integer, ForeignKey("dossiers.id", ondelete="CASCADE"), nullable=False)
 
     date_notification = Column(Date, nullable=False)
@@ -17,5 +17,5 @@ class Opposition(Base):
 
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    jugement = relationship("JugementDefavorable", back_populates="oppositions")
+    jugement = relationship("Jugement", back_populates="oppositions")
     dossier = relationship("Dossier", back_populates="oppositions")

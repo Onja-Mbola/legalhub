@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Archiver le dossier - Dossier #{{ dossier_id }}{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg rounded-4 border-0 mb-4">
+        <div class="card-header bg-gradient-danger text-white py-3">
+            <h5 class="mb-0"><i class="fas fa-archive me-2"></i> Archiver le dossier</h5>
+        </div>
+        <div class="card-body">
+            <p class="mb-4">
+                Vous êtes sur le point d’archiver définitivement le <strong>dossier #{{ dossier_id }}</strong>.
+                Cette action marquera la fin du traitement de ce dossier et il sera déplacé dans les archives.
+            </p>
+            <form method="post">
+                <div class="alert alert-warning rounded-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Attention :</strong> Cette action est irréversible. Confirmez-vous l’archivage ?
+                </div>
+
+                <button type="submit" class="btn btn-danger rounded-pill px-4">
+                    <i class="fas fa-archive me-2"></i> Archiver le dossier
+                </button>
+                <a href="/dossiers" class="btn btn-secondary rounded-pill px-4 ms-2">
+                    <i class="fas fa-times me-2"></i> Annuler
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

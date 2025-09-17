@@ -1,0 +1,138 @@
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 700px;
+            margin: auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        h2 {
+            color: #dc3545;
+            text-align: center;
+        }
+        p {
+            font-size: 16px;
+            color: #333;
+            line-height: 1.5;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .footer {
+            text-align: center;
+            color: #777;
+            font-size: 12px;
+            margin-top: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f1f1f1;
+        }
+        .important {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        ul {
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Jugement Définitif</h2>
+        <p>Bonjour {{ dossier.client.nom }},</p>
+        <p>Nous vous informons que le jugement définitif concernant votre dossier a été rendu. Le dossier est désormais clos.</p>
+
+        <h3>Détails du dossier</h3>
+        <table>
+            <tr>
+                <th>Numéro du dossier</th>
+                <td class="highlight">{{ dossier.numero_dossier }}</td>
+            </tr>
+            <tr>
+                <th>Nom du dossier</th>
+                <td>{{ dossier.nom_dossier }}</td>
+            </tr>
+            <tr>
+                <th>Type d'affaire</th>
+                <td>{{ dossier.type_affaire_param.valeur if dossier.type_affaire_param else "N/A" }}</td>
+            </tr>
+            <tr>
+                <th>Sous-type d'affaire</th>
+                <td>{{ dossier.sous_type_affaire_param.valeur if dossier.sous_type_affaire_param else "N/A" }}</td>
+            </tr>
+            <tr>
+                <th>Juridiction / Tribunal</th>
+                <td>{{ dossier.juridiction }} / {{ dossier.tribunal }}</td>
+            </tr>
+            <tr>
+                <th>Avocat Responsable</th>
+                <td>{{ dossier.avocat_responsable_user.nom }}</td>
+            </tr>
+            <tr>
+                <th>Avocat Adverse</th>
+                <td>{{ dossier.avocat_adverse or "N/A" }}</td>
+            </tr>
+            <tr>
+                <th>Date de création</th>
+                <td>{{ dossier.date_creation.strftime("%d/%m/%Y %H:%M") }}</td>
+            </tr>
+        </table>
+
+        <h3>Décisions et Jugement Définitif</h3>
+        {% if dossier.jugements_definitifs %}
+            {% set jugement = dossier.jugements_definitifs[-1] %}
+            <p class="important">Type de décision :</p>
+            <p>{{ jugement.type_decision }}</p>
+
+            <p class="important">Texte du jugement :</p>
+            <p>{{ jugement.texte_jugement }}</p>
+
+            {% if jugement.observations %}
+                <p class="important">Observations :</p>
+                <p>{{ jugement.observations }}</p>
+            {% endif %}
+
+            <p>Date du jugement : {{ jugement.date_jugement.strftime("%d/%m/%Y") }}</p>
+
+            {% if jugement.jugement_file %}
+                <h4>Pièces jointes du jugement</h4>
+                <ul>
+                    {% for f in jugement.jugement_file %}
+                        <li>{{ f.split('/')[-1] }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% else %}
+            <p>Aucun jugement définitif enregistré pour le moment.</p>
+        {% endif %}
+
+        <p>Nous vous invitons à passer au bureau pour toute information complémentaire.</p>
+
+        <div class="footer">
+            <p>Cordialement,</p>
+            <p>L'équipe LegalHub</p>
+        </div>
+    </div>
+</body>
+</html>

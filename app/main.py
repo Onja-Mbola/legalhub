@@ -11,7 +11,8 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.db.init_db import init_db
 from app.api.routes import clarck
 from app.api.routes.avocat import dossier, avocat, enrolement, requete_assignation, premiere_audience, \
-    echange_conclusion, deliberation_decision, decision_definitive, decision_avant_dire_droit, jugement
+    echange_conclusion, deliberation_decision, decision_definitive, decision_avant_dire_droit, jugement, opposition, \
+    retour_audience, jugement_definitif
 from app.api.routes.admin import admin, auth, param_general
 
 app = FastAPI()
@@ -36,6 +37,9 @@ app.include_router(deliberation_decision.router)
 app.include_router(decision_avant_dire_droit.router)
 app.include_router(decision_definitive.router)
 app.include_router(jugement.router)
+app.include_router(opposition.router)
+app.include_router(retour_audience.router)
+app.include_router(jugement_definitif.router)
 
 documents_path = "app/documents"
 if not os.path.exists(documents_path):

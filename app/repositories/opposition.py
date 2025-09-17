@@ -18,6 +18,10 @@ def get_opposition_by_id(db: Session, id: int):
 def get_oppositions_by_dossier(db: Session, dossier_id: int):
     return db.query(Opposition).filter(Opposition.dossier_id == dossier_id).all()
 
+def get_all_opposition(db :Session):
+    return db.query(Opposition).filter(Opposition.alerte_envoyee == False).all()
+
+
 
 def update_opposition(db: Session, id: int, obj: OppositionUpdate):
     opposition = get_opposition_by_id(db, id)

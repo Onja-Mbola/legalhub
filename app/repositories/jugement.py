@@ -15,6 +15,13 @@ def create_jugement(db: Session, jugement: JugementCreate):
     db.refresh(db_jugement)
     return db_jugement
 
+def create_jugement_defavorable(db: Session, jugement: JugementCreate):
+    db_jugement = Jugement(**jugement.dict())
+    db.add(db_jugement)
+    db.commit()
+    db.refresh(db_jugement)
+    return db_jugement
+
 def get_jugement_by_id(db: Session, jugement_id: int):
     return db.query(Jugement).filter(Jugement.id == jugement_id).first()
 

@@ -21,13 +21,18 @@
     ('decision_finale', "Action décision définitive faite avec succès.."),
     ('opposition_success', "Opposition faite avec succès.."),
     ('delib_update_success', "Délibération mise à jour."),
+    ('delib_retour_audience_success', "Délibération Retour audience faite avec succès."),
     ('echange_success', "Echange de Conclusions crée avec succès."),
     ('add_success', "Décision Avant Dire Droit crée avec succès."),
     ('delib_success', "Délibération crée avec succès."),
     ('requete_assignation_success', "Action de Requête et Assignation faite avec succès."),
     ('premiere_audience_success', "Première audience faite avec succès."),
+    ('retour_audience_success', "Retour audience faite avec succès."),
     ('echange_conclusions_success', "Échange de conclusions fait avec succès."),
+    ('jugement_definitif_update_success', "Jugements Definitif mise à jour avec succès."),
+    ('jugement_definitif_create_success', "Jugements Definitif fait avec succès."),
     ('deliberation_success', "Délibération faite avec succès."),
+    ('echange_retour_success', "Echange Retour Audience faite avec succès."),
     ('decision_add_success', "Décision avant dire droit faite avec succès."),
     ('decision_finale', "Décision définitive faite avec succès.")
     ] %}
@@ -94,7 +99,7 @@
                         {% elif dossier.current_stage == 'requete_assignation' %}
                         <a href="/dossiers/{{ dossier.id }}/premiere_audience"
                            class="btn btn-sm btn-outline-warning mb-1">
-                            <i class="fas fa-gavel mr-1"></i> Créer Première Audience
+                            <i class="fas fa-gavel mr-1"></i> Première Audience
                         </a>
                         {% elif dossier.current_stage == 'premiere_audience' %}
                         <a href="/dossiers/{{ dossier.id }}/echange_conclusions"
@@ -105,9 +110,13 @@
                         <a href="/dossiers/{{ dossier.id }}/deliberation" class="btn btn-sm btn-outline-primary mb-1">
                             <i class="fas fa-clipboard-list mr-1"></i> Délibération
                         </a>
+                        <a href="/dossiers/{{ dossier.id }}/echange_conclusions"
+                           class="btn btn-sm btn-outline-secondary mb-1">
+                            <i class="fas fa-file-alt mr-1"></i> Échange de conclusions
+                        </a>
                         {% elif dossier.current_stage == 'deliberation' %}
                         <a href="/dossiers/{{ dossier.id }}/decision_add" class="btn btn-sm btn-outline-info mb-1">
-                            <i class="fas fa-balance-scale mr-1"></i> Décision avant dire droit
+                            <i class="fas fa-balance-scale mr-1"></i> Décision ADD
                         </a>
                         <a href="/dossiers/{{ dossier.id }}/decision_def" class="btn btn-sm btn-outline-success mb-1">
                             <i class="fas fa-gavel mr-1"></i> Décision définitive
@@ -124,24 +133,67 @@
                         {% if decision.type_decision == 'jugement_favorable' %}
                         <a href="/dossiers/{{ dossier.id }}/jugement_favorable"
                            class="btn btn-sm btn-outline-success mb-1">
-                            <i class="fas fa-thumbs-up mr-1"></i> Jugement favorable
+                            Jugement Favorable
                         </a>
                         {% elif decision.type_decision == 'jugement_defavorable' %}
                         <a href="/dossiers/{{ dossier.id }}/jugement_defavorable"
                            class="btn btn-sm btn-outline-danger mb-1">
-                            <i class="fas fa-thumbs-down mr-1"></i> Jugement défavorable
+                            Jugement Défavorable
                         </a>
                         {% endif %}
                         {% endif %}
 
                         {% elif dossier.current_stage == 'jugement_defavorable' %}
-                        <a href="/dossiers/{{ dossier.id }}/jugement_contradictoire"
+                        {% if dossier.jugements|length > 0 %}
+                        {% set decision = dossier.jugements[-1] %}
+
+                        {% if decision.sous_type == 'jugement_contradictoire' %}
+                        <a href="/dossiers/{{ dossier.id }}/test"
                            class="btn btn-sm btn-outline-primary mb-1">
-                            <i class="fas fa-balance-scale-left mr-1"></i> Jugement Contradictoire
+                            <i class="fas fa-balance-scale-left mr-1"></i> Contradictoire
                         </a>
-                        <a href="/dossiers/{{ dossier.id }}/jugement_par_defaut"
-                           class="btn btn-sm btn-outline-secondary mb-1">
-                            <i class="fas fa-balance-scale-right mr-1"></i> Jugement Par Défaut
+                        {% elif decision.sous_type == 'jugement_par_defaut' %}
+                        <a href="/dossiers/{{ dossier.id }}/opposition"
+                           class="btn btn-sm btn-outline-primary mb-1">
+                            <i class="fas fa-balance-scale-right mr-1"></i> Par Défaut
+                        </a>
+                        {% endif %}
+                        {% else %}
+                        <span class="text-muted">Aucun jugement défavorable</span>
+                        {% endif %}
+                        {% elif dossier.current_stage == 'opposition' %}
+                        <a href="/dossiers/{{ dossier.id }}/retour_audience"
+                           class="btn btn-sm btn-outline-info mb-1">
+                            Retour Audience
+                        </a>
+                        {% elif dossier.current_stage == 'retour_audience' %}
+                        <a href="/dossiers/{{ dossier.id }}/echange_conclusions/retour_audience/{{ dossier.retours_audiences[0].id }}"
+                           class="btn btn-sm btn-outline-info mb-1">
+                            Echange de Conclusions
+                        </a>
+                        {% elif dossier.current_stage == 'echange_conclusions_jugement_par_defaut' %}
+                        <a href="/dossiers/{{ dossier.id }}/echange_conclusions/retour_audience/{{ dossier.retours_audiences[0].id }}"
+                           class="btn btn-sm btn-outline-info mb-1">
+                            Echange de Conclusions
+                        </a>
+                        <a href="/dossiers/{{ dossier.id }}/deliberation/retour_audience/{{ dossier.retours_audiences[0].id }}"
+                           class="btn btn-sm btn-outline-info mb-1">
+                            Deliberation
+                        </a>
+                        {% elif dossier.current_stage == 'deliberation_jugement_par_defaut' %}
+                        <a href="/dossiers/{{ dossier.id }}/jugement_definitif/{{ dossier.deliberations_decisions[-1].id }}"
+                           class="btn btn-sm btn-outline-info mb-1">
+                            Jugement Definitif
+                        </a>
+                        {% elif dossier.current_stage == 'jugement_definitif' %}
+                        <a href="/dossiers/{{ dossier.id }}/jugement_definitif_notification"
+                           class="btn btn-sm btn-outline-info mb-1">
+                            <i class="fas fa-envelope mr-1"></i> Notification Client
+                        </a>
+                        {% elif dossier.current_stage == 'notification_client_jugement_par_defaut' %}
+                        <a href="/dossiers/{{ dossier.id }}/jugement_definitif_archiver"
+                           class="btn btn-sm btn-outline-danger mb-1">
+                            <i class="fas fa-archive mr-1"></i> Archiver le dossier
                         </a>
                         {% elif dossier.current_stage == 'jugement_favorable' %}
                         <a href="/dossiers/{{ dossier.id }}/jugement_notification"

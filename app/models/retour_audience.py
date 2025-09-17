@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, DateTime, String, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.db.base_class import Base
-from app.models.jugement_defavorable import JugementDefavorable
+from app.models import jugement, deliberation_decision, echange_conclusion
 
 
 
@@ -11,7 +11,7 @@ class RetourAudience(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     dossier_id = Column(Integer, ForeignKey("dossiers.id", ondelete="CASCADE"), nullable=False)
-    jugement_id = Column(Integer, ForeignKey("jugements_defavorables.id", ondelete="CASCADE"), nullable=True)
+    jugement_id = Column(Integer, ForeignKey("jugements.id", ondelete="CASCADE"), nullable=True)
 
     date_audience = Column(DateTime, nullable=False)
     nom_judge = Column(String, nullable=True)
@@ -22,7 +22,7 @@ class RetourAudience(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     dossier = relationship("Dossier", back_populates="retours_audiences")
-    jugement = relationship("JugementDefavorable", back_populates="retours_audiences")
+    jugement = relationship("Jugement", back_populates="retours_audiences")
     echanges_conclusions = relationship("EchangeConclusion", back_populates="retour_audience", cascade="all, delete-orphan")
     deliberations_decisions = relationship("DeliberationDecision", back_populates="retour_audience",
                                            cascade="all, delete-orphan")

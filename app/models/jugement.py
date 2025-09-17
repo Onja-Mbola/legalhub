@@ -22,3 +22,5 @@ class Jugement(Base):
     scans_grosse = Column(JSON, nullable=True)
 
     dossier = relationship("Dossier", back_populates="jugements")
+    oppositions = relationship("Opposition", back_populates="jugement", cascade="all, delete-orphan")
+    retours_audiences = relationship("RetourAudience", back_populates="jugement", cascade="all, delete-orphan")

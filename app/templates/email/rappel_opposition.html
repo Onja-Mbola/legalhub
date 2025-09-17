@@ -56,7 +56,7 @@
             <p>Date de notification : <strong>{{ dossier.date_notification.strftime("%d/%m/%Y") }}</strong></p>
             <p>Date limite d'opposition : <strong>{{ dossier.opposition_possible_jusqua.strftime("%d/%m/%Y") }}</strong></p>
 
-            <p class="badge">Il vous reste 5 jours pour agir !</p>
+            <p class="badge">Il vous reste {{ dossier.days_left }} jours pour agir !</p>
 
             <p>Merci de votre attention.</p>
 

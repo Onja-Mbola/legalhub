@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, Text, JSON
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 from app.models import retour_audience
@@ -16,7 +16,7 @@ class EchangeConclusion(Base):
     motif_renvoi = Column(Text, nullable=True)
 
     date_depot = Column(Date, nullable=False)
-    conclusions_file = Column(String, nullable=True)
+    conclusions_file = Column(JSON, nullable=True)
 
     dossier = relationship("Dossier", back_populates="echanges_conclusions")
     retour_audience = relationship("RetourAudience", back_populates="echanges_conclusions")

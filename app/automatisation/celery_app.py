@@ -1,4 +1,6 @@
 import os
+from datetime import timedelta
+
 from celery import Celery
 from celery.schedules import crontab
 
@@ -12,6 +14,7 @@ celery_app = Celery(
     include=[
         "app.services.email",
         "app.services.grosse_service",
+        "app.services.opposition_service",
     ],
 )
 
@@ -30,7 +33,11 @@ celery_app.conf.beat_schedule = {
         "schedule": crontab(hour=0, minute=0),
     },
     "check_and_send_alerts": {
-        "task": "app.services.opposition_service.check_oppositions_rappel",
+        "task": "app.services.opposition_service.check_and_send_alerts",
         "schedule": crontab(hour=0, minute=0),
+    },
+    "check_and_send_alerts_1": {
+        "task": "app.services.opposition_service.check_and_send_alerts_1",
+        "schedule": timedelta(minutes=1),
     },
 }

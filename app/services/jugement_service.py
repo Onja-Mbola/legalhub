@@ -26,7 +26,7 @@ def create_jugement_service(
         user_id: int,
         jugement_file: Optional[UploadFile] = None
 ):
-    dossier = db.query(Dossier).filter(Dossier.id == dossier_id).first()
+    dossier = get_dossier_by_id_service(db, dossier_id)
     if not dossier:
         raise HTTPException(status_code=404, detail="Dossier non trouvé")
 
@@ -77,13 +77,13 @@ def update_jugement_service(
         saved_files = save_uploaded_files([jugement_file], base)
         jugement_path = os.path.join(base, saved_files[0])
 
-    if scan_grosse:
+    if scan_grosse and any(f.filename for f in scan_grosse):
         saved_files = save_uploaded_files(scan_grosse, base)
         grosses_paths = [os.path.join(base, f) for f in saved_files]
 
-    updated = update_jugement(db, existing, data)
+    updated = update_jugement(db, existing.id, data)
     if jugement_path:
-        updated.jugement_file = jugement_path
+        updated.fichier_jugement = jugement_path
     if grosses_paths:
         updated.scan_grosse = grosses_paths
 
@@ -131,9 +131,9 @@ def archiver_jugement(db: Session, jugement_id: int, user_id: int):
         raise HTTPException(status_code=404, detail="Jugement non trouvé")
     if not dossier:
         raise HTTPException(status_code=404, detail="Dossier non trouvé")
-    if dossier.current_stage not in [ProcessStage.JUGEMENT_FAVORABLE.value, ProcessStage.RECUPERATION_GROSSE.value]:
+    if dossier.current_stage not in [ProcessStage.JUGEMENT_FAVORABLE.value, ProcessStage.RECUPERATION_GROSSE.value, ProcessStage.NOTIFICATION_CLIENT_JUGEMENT_PAR_DEFAUT]:
         raise HTTPException(status_code=400,
-                            detail="L'archivage n'est accessible qu'après un jugement favorable ou défavorable ou Recuperation Grosse faite")
+                            detail="L'archivage n'est accessible qu'après un jugement favorable ou notification client de jugement definitf ou défavorable ou Recuperation Grosse faite")
 
     jugement.statut = ProcessStage.FIN_ARCHIVAGE.value
     db.commit()

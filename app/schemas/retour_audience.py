@@ -10,6 +10,7 @@ class RetourAudienceBase(BaseModel):
     nom_judge: Optional[str] = None
     observations_judge: Optional[str] = None
     observations_internes: Optional[str] = None
+    pv_audience: Optional[str] = None
 
 
 class RetourAudienceCreate(RetourAudienceBase):
@@ -21,6 +22,7 @@ class RetourAudienceUpdate(BaseModel):
     nom_judge: Optional[str] = None
     observations_judge: Optional[str] = None
     observations_internes: Optional[str] = None
+    pv_audience: Optional[str] = None
 
 
 class RetourAudienceOut(RetourAudienceBase):

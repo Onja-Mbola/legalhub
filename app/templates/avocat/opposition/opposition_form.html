@@ -15,9 +15,13 @@
     <h3>Créer une Opposition pour le dossier {{ dossier.numero_dossier }}</h3>
     <form method="post" action="/dossiers/{{ dossier.id }}/opposition">
         <div class="form-group">
-            <label for="jugement_id">Jugement concerné</label>
-            <input type="number" class="form-control" value="{{ dossier.jugements_defavorable.id }}" disabled>
-            <input type="hidden" name="jugement_id" value="{{ dossier.jugements_defavorable.id }}">
+            <select name="jugement_id" class="form-control">
+                {% for jugement in dossier.jugements %}
+                <option value="{{ jugement.id }}">
+                    Jugement du {{ jugement.date_jugement }} (ID: {{ jugement.id }})
+                </option>
+                {% endfor %}
+            </select>
         </div>
 
         <div class="form-group">

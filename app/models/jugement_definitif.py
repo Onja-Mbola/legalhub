@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Date, ForeignKey, Text, DateTime
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.db.base_class import Base
+from app.models import deliberation_decision
 
 
 class JugementDefinitif(Base):

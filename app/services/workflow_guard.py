@@ -14,7 +14,7 @@ class WorkflowGuard:
             ProcessStage.ENROLEMENT: [ProcessStage.REQUETE_ASSIGNATION],
             ProcessStage.REQUETE_ASSIGNATION: [ProcessStage.PREMIERE_AUDIENCE],
             ProcessStage.PREMIERE_AUDIENCE: [ProcessStage.ECHANGE_CONCLUSIONS],
-            ProcessStage.ECHANGE_CONCLUSIONS: [ProcessStage.DELIBERATION],
+            ProcessStage.ECHANGE_CONCLUSIONS: [ProcessStage.DELIBERATION, ProcessStage.ECHANGE_CONCLUSIONS],
             ProcessStage.DELIBERATION: [
                 ProcessStage.DECISION_AVANT_DIRE_DROIT,
                 ProcessStage.DECISION_DEFINITIVE

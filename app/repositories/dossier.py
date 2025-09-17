@@ -102,7 +102,8 @@ def create_dossier_with_files(db: Session, dossier_in: DossierCreate, avocat_nom
     db.commit()
     db.refresh(dossier)
 
-    log_action_service(db, user_id, f"Création du dossier avec fichiers {dossier.numero_dossier}", dossier.id)
+    log_action_service(db, user_id, "Création dossier", f"Création du dossier avec fichiers {dossier.numero_dossier}",
+                       dossier.id)
 
     return dossier
 
@@ -112,11 +113,15 @@ def get_dossiers_by_avocat(db: Session, avocat_id: int):
         db.query(Dossier)
         .options(
             joinedload(Dossier.client).joinedload(Client.role_client_param),
-            joinedload(Dossier.decisions_definitives)
+            joinedload(Dossier.decisions_definitives),
+            joinedload(Dossier.jugements),
+            joinedload(Dossier.retours_audiences),
+            joinedload(Dossier.deliberations_decisions)
         )
         .filter(Dossier.avocat_responsable == avocat_id)
         .all()
     )
+
 
 def get_dossiers_archiver_by_avocat(db: Session, avocat_id: int):
     return (
@@ -128,6 +133,7 @@ def get_dossiers_archiver_by_avocat(db: Session, avocat_id: int):
                 Dossier.current_stage == ProcessStage.FIN_ARCHIVAGE.value)
         .all()
     )
+
 
 def get_dossier_by_id(db: Session, dossier_id: int):
     return (
@@ -146,11 +152,14 @@ def get_dossier_by_id(db: Session, dossier_id: int):
             joinedload(Dossier.decisions_avant_dire_droit),
             joinedload(Dossier.decisions_definitives),
             joinedload(Dossier.jugements),
-            joinedload(Dossier.jugements_defavorables)
+            joinedload(Dossier.oppositions),
+            joinedload(Dossier.retours_audiences),
+            joinedload(Dossier.jugements_definitifs)
         )
         .filter(Dossier.id == dossier_id)
         .first()
     )
+
 
 def update_dossier_with_files(
         db: Session,
