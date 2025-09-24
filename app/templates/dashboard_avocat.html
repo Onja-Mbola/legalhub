@@ -3,110 +3,127 @@
 {% block title %}Tableau de bord - Avocat{% endblock %}
 
 {% block sidebar %}
-<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-
-    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">
-        <div class="sidebar-brand-icon rotate-n-15">
-            <i class="fas fa-laugh-wink"></i>
-        </div>
-        <div class="sidebar-brand-text mx-3">LegalHub</div>
-    </a>
-    <hr class="sidebar-divider my-0">
-    <li class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
-        <a class="nav-link" href="/">
-            <i class="fas fa-fw fa-tachometer-alt"></i>
-            <span>Tableau de bord</span></a>
-    </li>
-
-    <hr class="sidebar-divider">
-
-    <div class="sidebar-heading">
-        Interface
-    </div>
-
-    <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseDossiers"
-           aria-expanded="true" aria-controls="collapseDossiers">
-            <i class="fas fa-fw fa-folder"></i>
-            <span>Dossiers</span>
-        </a>
-        <div id="collapseDossiers" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-            <div class="bg-white py-2 collapse-inner rounded">
-                <h6 class="collapse-header">Gestion des dossiers:</h6>
-                <a class="collapse-item" href="/dossiers">Voir les dossiers</a>
-                <a class="collapse-item" href="/dossiers_archiver">Voir les dossiers archivés</a>
-                <a class="collapse-item" href="/dossiers/nouveau">Nouveau dossier</a>
-            </div>
-        </div>
-    </li>
-
-    <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseFacturation"
-           aria-expanded="true" aria-controls="collapseFacturation">
-            <i class="fas fa-fw fa-file-invoice-dollar"></i>
-            <span>Facturation</span>
-        </a>
-        <div id="collapseFacturation" class="collapse" aria-labelledby="headingUtilities"
-             data-parent="#accordionSidebar">
-            <div class="bg-white py-2 collapse-inner rounded">
-                <h6 class="collapse-header">Gestion des factures:</h6>
-                <a class="collapse-item" href="/factures">Voir les factures</a>
-                <a class="collapse-item" href="/factures/nouvelle">Nouvelle facture</a>
-            </div>
-        </div>
-    </li>
-
-    <hr class="sidebar-divider">
-
-    <div class="sidebar-heading">
-        Addons
-    </div>
-
-    <li class="nav-item {% if request.endpoint == 'charts' %}active{% endif %}">
-        <a class="nav-link" href="/statistiques">
-            <i class="fas fa-fw fa-chart-area"></i>
-            <span>Statistiques</span></a>
-    </li>
-
-    <li class="nav-item {% if request.endpoint == 'tables' %}active{% endif %}">
-        <a class="nav-link" href="/utilisateurs"> {# Assuming you have a clients page #}
-            <i class="fas fa-fw fa-users"></i>
-            <span>Utilisateurs</span></a>
-    </li>
-
-    <hr class="sidebar-divider d-none d-md-block">
-
-    <div class="text-center d-none d-md-inline">
-        <button class="rounded-circle border-0" id="sidebarToggle"></button>
-    </div>
-
-</ul>
+    {% include "partials/sidebar.html" %}
 {% endblock %}
 
 {% block topbar %}
-{% include "partials/topbar.html" %}
-{% endblock %}
+    <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+        <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+            <i class="fa fa-bars"></i>
+        </button>
 
+        <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+            <div class="input-group">
+                <input type="text" class="form-control bg-light border-0 small" placeholder="Rechercher..."
+                    aria-label="Search" aria-describedby="basic-addon2">
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="button">
+                        <i class="fas fa-search fa-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item dropdown no-arrow d-sm-none">
+                <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-search fa-fw"></i>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
+                    aria-labelledby="searchDropdown">
+                    <form class="form-inline mr-auto w-100 navbar-search">
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-light border-0 small"
+                                placeholder="Rechercher..." aria-label="Search"
+                                aria-describedby="basic-addon2">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="button">
+                                    <i class="fas fa-search fa-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </li>
+
+            <li class="nav-item dropdown no-arrow mx-1">
+                <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-bell fa-fw"></i>
+                    <span class="badge badge-danger badge-counter">{{ factures_en_retard|length }}+</span>
+                </a>
+                <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                    aria-labelledby="alertsDropdown">
+                    <h6 class="dropdown-header">
+                        Alertes Facturation
+                    </h6>
+                    {% for facture in factures_en_retard[:3] %}
+                    <a class="dropdown-item d-flex align-items-center" href="/factures/{{ facture.id }}">
+                        <div class="mr-3">
+                            <div class="icon-circle bg-danger">
+                                <i class="fas fa-exclamation-triangle text-white"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="small text-gray-500">{{ facture.date_echeance.strftime('%d/%m/%Y') }}</div>
+                            <span class="font-weight-bold">Facture {{ facture.numero_facture }} en retard</span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                    <a class="dropdown-item text-center small text-gray-500" href="/factures?statut=en_retard">Voir toutes les factures en retard</a>
+                </div>
+            </li>
+
+            <li class="nav-item dropdown no-arrow">
+                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="mr-2 d-none d-lg-inline text-gray-600 small">Maître {{ user.nom }}</span>
+                    <img class="img-profile rounded-circle" src="/static/img/undraw_profile.svg">
+                </a>
+                <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                    aria-labelledby="userDropdown">
+                    <a class="dropdown-item" href="/profil">
+                        <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                        Profil
+                    </a>
+                    <a class="dropdown-item" href="/settings">
+                        <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+                        Paramètres
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                        <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                        Déconnexion
+                    </a>
+                </div>
+            </li>
+        </ul>
+    </nav>
+{% endblock %}
 
 {% block content %}
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h1 class="h3 mb-0 text-gray-800">Tableau de bord</h1>
-    <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
-            class="fas fa-download fa-sm text-white-50"></i> Générer un rapport</a>
+    <div>
+        <a href="/factures/nouveau" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm mr-2">
+            <i class="fas fa-file-invoice fa-sm text-white-50"></i> Nouvelle Facture
+        </a>
+        <a href="/api/reports/facturation" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-download fa-sm text-white-50"></i> Générer un rapport
+        </a>
+    </div>
 </div>
 
 <div class="row">
-
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card border-left-primary shadow h-100 py-2">
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                            Dossiers Actifs (Mois)
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_cases_monthly }}</div>
-                        {# Replace with your actual data #}
+                            Dossiers Actifs (Mois)</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_cases_monthly or 0 }}</div>
                     </div>
                     <div class="col-auto">
                         <i class="fas fa-folder-open fa-2x text-gray-300"></i>
@@ -122,13 +139,13 @@
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                            Dossiers Clôturés (Annuel)
+                            Revenus du Mois</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {{ "%.0f"|format(stats_facturation.total_paye if stats_facturation else 0) }} Ariary
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ closed_cases_annual }}</div>
-                        {# Replace with your actual data #}
                     </div>
                     <div class="col-auto">
-                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        <i class="fas fa-euro-sign fa-2x text-gray-300"></i>
                     </div>
                 </div>
             </div>
@@ -140,19 +157,19 @@
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Tâches en Cours
-                        </div>
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Taux de Recouvrement</div>
                         <div class="row no-gutters align-items-center">
                             <div class="col-auto">
-                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{ tasks_percentage }}%</div>
-                                {# Example: 75% #}
+                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">
+                                    {{ "%.0f"|format(stats_facturation.taux_recouvrement if stats_facturation else 0) }}%
+                                </div>
                             </div>
                             <div class="col">
                                 <div class="progress progress-sm mr-2">
                                     <div class="progress-bar bg-info" role="progressbar"
-                                         style="width: {{ tasks_percentage }}%" aria-valuenow="{{ tasks_percentage }}"
-                                         aria-valuemin="0"
-                                         aria-valuemax="100"></div>
+                                        style="width: {{ stats_facturation.taux_recouvrement if stats_facturation else 0 }}%"
+                                        aria-valuenow="{{ stats_facturation.taux_recouvrement if stats_facturation else 0 }}"
+                                        aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
                             </div>
                         </div>
@@ -171,13 +188,13 @@
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                            Nouveaux Clients (Mois)
+                            Factures Impayées</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {{ stats_facturation.nombre_factures_impayees if stats_facturation else 0 }}
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ new_clients_monthly }}</div>
-                        {# Replace with your actual data #}
                     </div>
                     <div class="col-auto">
-                        <i class="fas fa-user-plus fa-2x text-gray-300"></i>
+                        <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
                     </div>
                 </div>
             </div>
@@ -188,21 +205,18 @@
 <div class="row">
     <div class="col-xl-8 col-lg-7">
         <div class="card shadow mb-4">
-            <div
-                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-primary">Aperçu des Revenus</h6>
                 <div class="dropdown no-arrow">
                     <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
                     </a>
                     <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                         aria-labelledby="dropdownMenuLink">
+                        aria-labelledby="dropdownMenuLink">
                         <div class="dropdown-header">Options:</div>
-                        <a class="dropdown-item" href="#">Action 1</a>
-                        <a class="dropdown-item" href="#">Action 2</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">Autre option</a>
+                        <a class="dropdown-item" href="/statistiques/facturation">Voir détails</a>
+                        <a class="dropdown-item" href="/factures">Gérer factures</a>
                     </div>
                 </div>
             </div>
@@ -216,38 +230,24 @@
 
     <div class="col-xl-4 col-lg-5">
         <div class="card shadow mb-4">
-            <div
-                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-primary">Sources de Revenus</h6>
                 <div class="dropdown no-arrow">
                     <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
                     </a>
                     <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                         aria-labelledby="dropdownMenuLink">
+                        aria-labelledby="dropdownMenuLink">
                         <div class="dropdown-header">Options:</div>
-                        <a class="dropdown-item" href="#">Action 1</a>
-                        <a class="dropdown-item" href="#">Action 2</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">Autre option</a>
+                        <a class="dropdown-item" href="/factures">Voir toutes les factures</a>
+                        <a class="dropdown-item" href="/factures?statut=en_retard">Factures en retard</a>
                     </div>
                 </div>
             </div>
             <div class="card-body">
                 <div class="chart-pie pt-4 pb-2">
                     <canvas id="myPieChart"></canvas>
-                </div>
-                <div class="mt-4 text-center small">
-                    <span class="mr-2">
-                        <i class="fas fa-circle text-primary"></i> Honoraires directs
-                    </span>
-                    <span class="mr-2">
-                        <i class="fas fa-circle text-success"></i> Consultations
-                    </span>
-                    <span class="mr-2">
-                        <i class="fas fa-circle text-info"></i> Autres
-                    </span>
                 </div>
             </div>
         </div>
@@ -256,42 +256,20 @@
 
 <div class="row">
     <div class="col-lg-6 mb-4">
-
         <div class="card shadow mb-4">
             <div class="card-header py-3">
                 <h6 class="m-0 font-weight-bold text-primary">Progression des Dossiers Clés</h6>
             </div>
             <div class="card-body">
-                <h4 class="small font-weight-bold">Dossier #1234 (Contentieux) <span
-                        class="float-right">20%</span></h4>
+                {% for dossier in dossiers_recents[:5] %}
+                <h4 class="small font-weight-bold">{{ dossier.numero_dossier }} ({{ dossier.type_affaire_param.libelle if dossier.type_affaire_param else 'N/A' }})
+                    <span class="float-right">{{ dossier.progress or 20 }}%</span></h4>
                 <div class="progress mb-4">
-                    <div class="progress-bar bg-danger" role="progressbar" style="width: 20%"
-                         aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
+                    <div class="progress-bar {% if dossier.progress >= 80 %}bg-success{% elif dossier.progress >= 50 %}bg-info{% elif dossier.progress >= 30 %}bg-warning{% else %}bg-danger{% endif %}"
+                         role="progressbar" style="width: {{ dossier.progress or 20 }}%"
+                         aria-valuenow="{{ dossier.progress or 20 }}" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
-                <h4 class="small font-weight-bold">Dossier #5678 (Conseil) <span
-                        class="float-right">40%</span></h4>
-                <div class="progress mb-4">
-                    <div class="progress-bar bg-warning" role="progressbar" style="width: 40%"
-                         aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-                <h4 class="small font-weight-bold">Dossier #9101 (Famille) <span
-                        class="float-right">60%</span></h4>
-                <div class="progress mb-4">
-                    <div class="progress-bar" role="progressbar" style="width: 60%"
-                         aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-                <h4 class="small font-weight-bold">Dossier #1122 (Pénal) <span
-                        class="float-right">80%</span></h4>
-                <div class="progress mb-4">
-                    <div class="progress-bar bg-info" role="progressbar" style="width: 80%"
-                         aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-                <h4 class="small font-weight-bold">Dossier #3344 (Immobilier) <span
-                        class="float-right">Complet!</span></h4>
-                <div class="progress">
-                    <div class="progress-bar bg-success" role="progressbar" style="width: 100%"
-                         aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
+                {% endfor %}
             </div>
         </div>
 
@@ -301,85 +279,354 @@
             </div>
             <div class="card-body">
                 <div class="list-group list-group-flush">
-                    <a href="/dossiers"
-                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2">
+                    <a href="/dossiers" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2">
                         <span><i class="fas fa-folder-open me-2"></i> Voir et gérer mes dossiers</span>
                         <i class="fas fa-chevron-right"></i>
                     </a>
-                    <a href="/factures"
-                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2">
+                    <a href="/factures" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2">
                         <span><i class="fas fa-file-invoice-dollar me-2"></i> Gérer la facturation</span>
                         <i class="fas fa-chevron-right"></i>
                     </a>
-                    <a href="/statistiques"
-                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2">
+                    <a href="/statistiques/facturation" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2">
                         <span><i class="fas fa-chart-line me-2"></i> Rapports et statistiques détaillées</span>
                         <i class="fas fa-chevron-right"></i>
                     </a>
-                    <a href="/profil"
-                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2">
+                    <a href="/profil" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2">
                         <span><i class="fas fa-user-cog me-2"></i> Modifier mon profil</span>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                    <a href="/logout"
-                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 text-danger">
-                        <span><i class="fas fa-sign-out-alt me-2"></i> Se déconnecter</span>
                         <i class="fas fa-chevron-right"></i>
                     </a>
                 </div>
 
                 <div class="d-grid gap-2 mt-4">
-                    <a href="/dossiers/nouveau" class="btn btn-outline-primary"><i class="fas fa-plus-circle me-2"></i>Créer
-                        un nouveau dossier</a>
-                    <a href="/factures/nouvelle" class="btn btn-outline-secondary"><i
-                            class="fas fa-file-invoice me-2"></i>Ajouter une nouvelle facture</a>
+                    <a href="/dossiers/nouveau" class="btn btn-outline-primary">
+                        <i class="fas fa-plus-circle me-2"></i>Créer un nouveau dossier
+                    </a>
+                    <a href="/factures/nouveau" class="btn btn-outline-success">
+                        <i class="fas fa-file-invoice me-2"></i>Ajouter une nouvelle facture
+                    </a>
                 </div>
             </div>
         </div>
-
     </div>
 
     <div class="col-lg-6 mb-4">
-
         <div class="card shadow mb-4">
             <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Illustrations</h6>
+                <h6 class="m-0 font-weight-bold text-primary">Factures Récentes</h6>
             </div>
             <div class="card-body">
-                <div class="text-center">
-                    <img class="img-fluid px-3 px-sm-4 mt-3 mb-4" style="width: 25rem;"
-                         src="/static/img/undraw_posting_photo.svg" alt="...">
+                {% if factures_recentes %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>N° Facture</th>
+                                <th>Client</th>
+                                <th>Montant</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for facture in factures_recentes[:5] %}
+                            <tr>
+                                <td><a href="/factures/{{ facture.id }}">{{ facture.numero_facture }}</a></td>
+                                <td>{{ facture.nom_client_anonyme[:15] }}...</td>
+                                <td>{{ "%.0f"|format(facture.montant_ttc) }} Ariary</td>
+                                <td>
+                                    {% if facture.statut.value == 'payee' %}
+                                        <span class="badge badge-success">Payée</span>
+                                    {% elif facture.statut.value == 'en_retard' %}
+                                        <span class="badge badge-danger">Retard</span>
+                                    {% else %}
+                                        <span class="badge badge-warning">En attente</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-                <p>Ajoutez des illustrations SVG de qualité à votre projet gracieusement offertes par <a
-                        target="_blank" rel="nofollow" href="https://undraw.co/">unDraw</a>, une collection constamment
-                    mise à jour de superbes images SVG que vous pouvez utiliser
-                    entièrement gratuitement et sans attribution!</p>
-                <a target="_blank" rel="nofollow" href="https://undraw.co/">Parcourir les illustrations sur
-                    unDraw &rarr;</a>
+                <div class="text-center mt-3">
+                    <a href="/factures" class="btn btn-sm btn-primary">Voir toutes les factures</a>
+                </div>
+                {% else %}
+                <p class="text-center text-muted">Aucune facture récente</p>
+                <div class="text-center">
+                    <a href="/factures/nouveau" class="btn btn-primary">Créer votre première facture</a>
+                </div>
+                {% endif %}
             </div>
         </div>
 
         <div class="card shadow mb-4">
             <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Approche de Développement</h6>
+                <h6 class="m-0 font-weight-bold text-success">Résumé Financier</h6>
             </div>
             <div class="card-body">
-                <p>SB Admin 2 utilise de manière extensive les classes utilitaires de Bootstrap 4 afin de réduire
-                    le poids du CSS et d'améliorer les performances de la page. Des classes CSS personnalisées sont
-                    utilisées pour créer
-                    des composants personnalisés et des classes utilitaires personnalisées.</p>
-                <p class="mb-0">Avant de travailler avec ce thème, vous devriez vous familiariser avec le
-                    framework Bootstrap, en particulier les classes utilitaires.</p>
+                {% if stats_facturation %}
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 class="text-success">{{ "%.0f"|format(stats_facturation.total_paye) }} Ariary</h4>
+                        <small class="text-muted">Encaissé</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-warning">{{ "%.0f"|format(stats_facturation.total_impaye) }} Ariary</h4>
+                        <small class="text-muted">En attente</small>
+                    </div>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <p class="mb-1"><strong>Total facturé:</strong> {{ "%.0f"|format(stats_facturation.total_facture) }} Ariary</p>
+                    <p class="mb-0"><strong>Taux de recouvrement:</strong> {{ "%.1f"|format(stats_facturation.taux_recouvrement) }}%</p>
+                </div>
+                {% else %}
+                <p class="text-center text-muted">Aucune donnée financière</p>
+                {% endif %}
             </div>
         </div>
-
     </div>
 </div>
 
 {% endblock %}
 
 {% block extra_js %}
-<script src="/static/js/demo/chart-area-demo.js"></script>
-<script src="/static/js/demo/chart-pie-demo.js"></script>
+<!--<script src="/static/js/demo/chart-area-demo.js"></script>-->
+<!--<script src="/static/js/demo/chart-pie-demo.js"></script>-->
 <script src="/static/js/dashboard.js"></script>
+
+<script>
+var revenusData = {{ revenus_mensuels|tojson if revenus_mensuels else '{}' }};
+var sourcesRevenus = {{ sources_revenus|tojson if sources_revenus else '{}' }};
+
+var facturesData = {
+    'payees': {{ stats_facturation.nombre_factures_payees if stats_facturation else 0 }},
+    'impayees': {{ stats_facturation.nombre_factures_impayees if stats_facturation else 0 }},
+    'total': {{ stats_facturation.nombre_factures_total if stats_facturation else 0 }}
+};
+
+Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
+Chart.defaults.global.defaultFontColor = '#858796';
+
+function number_format(number, decimals, dec_point, thousands_sep) {
+  number = (number + '').replace(',', '').replace(' ', '');
+  var n = !isFinite(+number) ? 0 : +number,
+    prec = !isFinite(+decimals) ? 0 : Math.abs(decimals),
+    sep = (typeof thousands_sep === 'undefined') ? ',' : thousands_sep,
+    dec = (typeof dec_point === 'undefined') ? '.' : dec_point,
+    s = '',
+    toFixedFix = function(n, prec) {
+      var k = Math.pow(10, prec);
+      return '' + Math.round(n * k) / k;
+    };
+  s = (prec ? toFixedFix(n, prec) : '' + Math.round(n)).split('.');
+  if (s[0].length > 3) {
+    s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, sep);
+  }
+  if ((s[1] || '').length < prec) {
+    s[1] = s[1] || '';
+    s[1] += new Array(prec - s[1].length + 1).join('0');
+  }
+  return s.join(dec);
+}
+
+var ctx = document.getElementById("myAreaChart");
+if (ctx) {
+  var myLineChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"],
+      datasets: [{
+        label: "Revenus",
+        lineTension: 0.3,
+        backgroundColor: "rgba(78, 115, 223, 0.05)",
+        borderColor: "rgba(78, 115, 223, 1)",
+        pointRadius: 3,
+        pointBackgroundColor: "rgba(78, 115, 223, 1)",
+        pointBorderColor: "rgba(78, 115, 223, 1)",
+        pointHoverRadius: 3,
+        pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
+        pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+        pointHitRadius: 10,
+        pointBorderWidth: 2,
+        data: [
+          revenusData['1'] || 0, revenusData['2'] || 0, revenusData['3'] || 0,
+          revenusData['4'] || 0, revenusData['5'] || 0, revenusData['6'] || 0,
+          revenusData['7'] || 0, revenusData['8'] || 0, revenusData['9'] || 0,
+          revenusData['10'] || 0, revenusData['11'] || 0, revenusData['12'] || 0
+        ],
+      }],
+    },
+    options: {
+      maintainAspectRatio: false,
+      layout: {
+        padding: {
+          left: 10,
+          right: 25,
+          top: 25,
+          bottom: 0
+        }
+      },
+      scales: {
+        xAxes: [{
+          time: {
+            unit: 'date'
+          },
+          gridLines: {
+            display: false,
+            drawBorder: false
+          },
+          ticks: {
+            maxTicksLimit: 12
+          }
+        }],
+        yAxes: [{
+          ticks: {
+            maxTicksLimit: 5,
+            padding: 10,
+            callback: function(value, index, values) {
+              return number_format(value) + ' Ariary';
+            }
+          },
+          gridLines: {
+            color: "rgb(234, 236, 244)",
+            zeroLineColor: "rgb(234, 236, 244)",
+            drawBorder: false,
+            borderDash: [2],
+            zeroLineBorderDash: [2]
+          }
+        }],
+      },
+      legend: {
+        display: false
+      },
+      tooltips: {
+        backgroundColor: "rgb(255,255,255)",
+        bodyFontColor: "#858796",
+        titleMarginBottom: 10,
+        titleFontColor: '#6e707e',
+        titleFontSize: 14,
+        borderColor: '#dddfeb',
+        borderWidth: 1,
+        xPadding: 15,
+        yPadding: 15,
+        displayColors: false,
+        intersect: false,
+        mode: 'index',
+        caretPadding: 10,
+        callbacks: {
+          label: function(tooltipItem, chart) {
+            var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
+            return datasetLabel + ': ' + number_format(tooltipItem.yLabel) + ' Ariary';
+          }
+        }
+      }
+    }
+  });
+}
+
+var ctx2 = document.getElementById("myPieChart");
+if (ctx2) {
+    var sourcesRevenus = {{ sources_revenus | tojson }};
+
+    var typeAffaireLabels = {
+        "consultation": "Consultation",
+        "civil": "Droit Civil",
+        "penal": "Droit Pénal"
+    };
+
+    var sourcesLabels = Object.keys(sourcesRevenus || {}).map(key => typeAffaireLabels[key] || key);
+    var sourcesValues = Object.values(sourcesRevenus || {});
+
+    var colors = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#5a5c69'];
+    var hoverColors = ['#2e59d9', '#17a673', '#2c9faf', '#f4b619', '#e02d1b', '#484848'];
+
+    var myPieChart = new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+            labels: sourcesLabels.length > 0 ? sourcesLabels : ["Aucune donnée"],
+            datasets: [{
+                data: sourcesValues.length > 0 ? sourcesValues : [1],
+                backgroundColor: sourcesLabels.length > 0 ? colors.slice(0, sourcesLabels.length) : ['#dddfeb'],
+                hoverBackgroundColor: sourcesLabels.length > 0 ? hoverColors.slice(0, sourcesLabels.length) : ['#dddfeb'],
+                hoverBorderColor: "rgba(234, 236, 244, 1)",
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            tooltips: {
+                backgroundColor: "rgb(255,255,255)",
+                bodyFontColor: "#858796",
+                borderColor: '#dddfeb',
+                borderWidth: 1,
+                xPadding: 15,
+                yPadding: 15,
+                displayColors: false,
+                caretPadding: 10,
+                callbacks: {
+                    label: function(tooltipItem, chart) {
+                        if (sourcesLabels.length === 0) return "Aucune donnée disponible";
+
+                        var datasetLabel = chart.data.labels[tooltipItem.index] || '';
+                        var value = chart.data.datasets[0].data[tooltipItem.index];
+                        var total = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                        var percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                        return datasetLabel + ': ' + value + ' Ariary (' + percentage + '%)';
+                    }
+                }
+            },
+            legend: {
+                display: true,
+                position: 'bottom',
+            },
+            cutoutPercentage: 60,
+        },
+    });
+}
+
+function animateCounters() {
+  $('.counter').each(function() {
+    var $this = $(this);
+    var countTo = parseFloat($this.attr('data-count')) || 0;
+    var suffix = $this.text().includes('Ariary') ? ' Ariary' : '';
+
+    $({ countNum: 0 }).animate({
+      countNum: countTo
+    }, {
+      duration: 2000,
+      easing: 'swing',
+      step: function() {
+        if (suffix === ' Ariary') {
+          $this.text(Math.floor(this.countNum).toLocaleString('fr-FR') + suffix);
+        } else {
+          $this.text(Math.floor(this.countNum));
+        }
+      },
+      complete: function() {
+        if (suffix === ' Ariary') {
+          $this.text(countTo.toLocaleString('fr-FR') + suffix);
+        } else {
+          $this.text(Math.round(countTo));
+        }
+      }
+    });
+  });
+}
+
+$(document).ready(function() {
+  $('.h5:contains("Ariary")').each(function() {
+    var value = $(this).text().replace(/[^\d.,]/g, '').replace(',', '.');
+    if (value) {
+      $(this).addClass('counter').attr('data-count', parseFloat(value));
+    }
+  });
+
+  setTimeout(function() {
+    animateCounters();
+  }, 500);
+});
+
+console.log('Données revenus mensuels:', revenusData);
+console.log('Données sources revenus:', sourcesRevenus);
+console.log('Données factures:', facturesData);
+</script>
 {% endblock %}

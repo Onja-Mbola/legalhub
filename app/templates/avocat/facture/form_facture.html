@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+{% block title %}{% if facture %}Modifier Facture{% else %}Nouvelle Facture{% endif %}{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            {% if facture %}
+            Modifier Facture {{ facture.numero_facture }}
+            {% else %}
+            Nouvelle Facture
+            {% endif %}
+        </h1>
+        <a href="/factures" class="btn btn-secondary">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour à la liste
+        </a>
+    </div>
+
+    {% if error_msg %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle"></i> {{ error_msg }}
+        <button type="button" class="close" data-dismiss="alert">
+            <span>&times;</span>
+        </button>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        {% if facture %}Informations de la Facture{% else %}Créer une Nouvelle Facture{% endif %}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+
+                        {% if not facture %}
+                        <div class="form-group">
+                            <label for="dossier_id">Dossier associé *</label>
+                            <select class="form-control" id="dossier_id" name="dossier_id" required>
+                                <option value="">-- Sélectionner un dossier --</option>
+                                {% for dossier in dossiers %}
+                                <option value="{{ dossier.id }}"
+                                        {% if selected_dossier_id== dossier.id %}selected{% endif %}>
+                                    {{ dossier.numero_dossier }} - {{ dossier.nom_dossier }}
+                                    {% if dossier.client and dossier.client.demandeurs %}
+                                    (
+                                    {%- for demandeur in dossier.client.demandeurs -%}
+                                    {{ demandeur.nom }}{% if not loop.last %}, {% endif %}
+                                    {%- endfor -%}
+                                    )
+                                    {% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">Choisissez le dossier pour lequel créer cette
+                                facture</small>
+                        </div>
+                        {% endif %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="nom_client_anonyme">Référence Client *</label>
+                                    <input type="text" class="form-control" id="nom_client_anonyme"
+                                           name="nom_client_anonyme" required
+                                           value="{% if facture %}{{ facture.nom_client_anonyme }}{% endif %}"
+                                           placeholder="ex: CLIENT-2024-001">
+                                    <small class="form-text text-muted">Référence anonymisée du client</small>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="date_echeance">Date d'échéance *</label>
+                                    <input type="date" class="form-control" id="date_echeance"
+                                           name="date_echeance" required
+                                           value="{% if facture %}{{ facture.date_echeance.strftime('%Y-%m-%d') }}{% endif %}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Description des prestations *</label>
+                            <textarea class="form-control" id="description" name="description"
+                                      rows="4" required placeholder="Décrivez les prestations facturées...">{% if facture %}{{ facture.description }}{% endif %}</textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="montant_ht">Montant HT (Ariary) *</label>
+                                    <input type="number" class="form-control" id="montant_ht"
+                                           name="montant_ht" step="0.01" min="0" required
+                                           value="{% if facture %}{{ facture.montant_ht }}{% endif %}"
+                                           oninput="calculateTTC()">
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="taux_tva">Taux TVA (%)</label>
+                                    <input type="number" class="form-control" id="taux_tva"
+                                           name="taux_tva" step="0.01" min="0" max="100"
+                                           value="{% if facture %}{{ facture.taux_tva }}{% else %}20.0{% endif %}"
+                                           oninput="calculateTTC()">
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="montant_ttc_display">Montant TTC (Ariary)</label>
+                                    <input type="text" class="form-control" id="montant_ttc_display" readonly
+                                           style="background-color: #f8f9fc;"
+                                           value="{% if facture %}{{ '%.2f'|format(facture.montant_ttc) }}{% endif %}">
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if facture %}
+                        <div class="form-group">
+                            <label for="statut">Statut de la facture</label>
+                            <select class="form-control" id="statut" name="statut">
+                                {% for statut in StatutFacture %}
+                                <option value="{{ statut.value }}"
+                                        {% if facture.statut== statut %}selected{% endif %}>
+                                    {{ statut.value.replace('_', ' ').title() }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% endif %}
+
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h6 class="m-0 font-weight-bold text-secondary">Système de Rappels</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox"
+                                           id="rappel_active" name="rappel_active" value="true"
+                                           {% if facture and facture.rappel_active %}checked{% endif %}
+                                           onchange="toggleRappelOptions()">
+                                    <label class="form-check-label" for="rappel_active">
+                                        Activer les rappels automatiques
+                                    </label>
+                                </div>
+
+                                <div id="rappel_options"
+                                     class="{% if not (facture and facture.rappel_active) %}d-none{% endif %}">
+                                    <div class="form-group">
+                                        <label for="type_rappel">Fréquence des rappels</label>
+                                        <select class="form-control" id="type_rappel" name="type_rappel">
+                                            {% for type_rappel in TypeRappel %}
+                                            <option value="{{ type_rappel.value }}"
+                                                    {% if facture and facture.type_rappel== type_rappel %}selected{%
+                                                    endif %}>
+                                                {% if type_rappel.value == 'hebdomadaire' %}Hebdomadaire
+                                                {% elif type_rappel.value == 'mensuel' %}Mensuel
+                                                {% elif type_rappel.value == 'fin_mois' %}Chaque fin de mois
+                                                {% else %}Aucun{% endif %}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                        <small class="form-text text-muted">
+                                            Les rappels commenceront après la date d'échéance
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <label for="notes_internes">Notes internes</label>
+                            <textarea class="form-control" id="notes_internes" name="notes_internes"
+                                      rows="3" placeholder="Notes privées (ne s'affichent pas sur la facture)">{% if facture %}{{ facture.notes_internes or '' }}{% endif %}</textarea>
+                        </div>
+
+                        {% if facture %}
+                        <div class="form-group">
+                            <label for="preuve_paiement">Preuve de paiement</label>
+                            <input type="file" class="form-control-file" id="preuve_paiement"
+                                   name="preuve_paiement" accept=".pdf,.jpg,.jpeg,.png">
+                            <small class="form-text text-muted">
+                                Téléchargez une preuve de paiement (PDF, JPG, PNG)
+                                {% if facture.preuve_paiement %}
+                                <br><i class="fas fa-paperclip text-success"></i> Fichier actuel: {{
+                                facture.preuve_paiement.split('/')[-1] }}
+                                {% endif %}
+                            </small>
+                        </div>
+                        {% endif %}
+
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                {% if facture %}Mettre à jour{% else %}Créer la facture{% endif %}
+                            </button>
+                            <a href="/factures" class="btn btn-secondary ml-2">
+                                <i class="fas fa-times"></i> Annuler
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">Aide</h6>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-primary">Référence Client</h6>
+                    <p class="small text-muted mb-3">
+                        Utilisez une référence anonyme pour respecter la confidentialité
+                        (ex: CLIENT-2024-001, CLI-DOC-001).
+                    </p>
+
+                    <h6 class="text-primary">Rappels Automatiques</h6>
+                    <p class="small text-muted mb-3">
+                        <strong>Hebdomadaire:</strong> Rappel chaque semaine après échéance<br>
+                        <strong>Mensuel:</strong> Rappel tous les mois<br>
+                        <strong>Fin de mois:</strong> Rappel à chaque fin de mois
+                    </p>
+
+                    <h6 class="text-primary">Calcul TVA</h6>
+                    <p class="small text-muted mb-3">
+                        Le montant TTC est calculé automatiquement.
+                        Taux standard: 20%. Pour certaines prestations juridiques,
+                        le taux peut être de 0%.
+                    </p>
+
+                    {% if facture %}
+                    <h6 class="text-primary">Statuts Disponibles</h6>
+                    <p class="small text-muted">
+                        <strong>Brouillon:</strong> Facture non finalisée<br>
+                        <strong>Envoyée:</strong> Facture transmise au client<br>
+                        <strong>Payée:</strong> Paiement reçu<br>
+                        <strong>En retard:</strong> Échéance dépassée<br>
+                        <strong>Annulée:</strong> Facture annulée
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if facture %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">Informations de Suivi</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>N° Facture:</strong> {{ facture.numero_facture }}</p>
+                    <p><strong>Créée le:</strong> {{ facture.date_creation.strftime('%d/%m/%Y à %H:%M') }}</p>
+
+                    {% if facture.date_emission %}
+                    <p><strong>Émise le:</strong> {{ facture.date_emission.strftime('%d/%m/%Y à %H:%M') }}</p>
+                    {% endif %}
+
+                    {% if facture.date_paiement %}
+                    <p><strong>Payée le:</strong> {{ facture.date_paiement.strftime('%d/%m/%Y à %H:%M') }}</p>
+                    {% endif %}
+
+                    {% if facture.nombre_relances > 0 %}
+                    <p><strong>Nombre de relances:</strong>
+                        <span class="badge badge-warning">{{ facture.nombre_relances }}</span>
+                    </p>
+                    {% endif %}
+
+                    {% if facture.prochaine_relance %}
+                    <p><strong>Prochaine relance:</strong> {{ facture.prochaine_relance.strftime('%d/%m/%Y') }}</p>
+                    {% endif %}
+
+                    {% if facture.fichier_facture %}
+                    <hr>
+                    <a href="/factures/{{ facture.id }}/download" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-download"></i> Télécharger PDF
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function calculateTTC() {
+        const montantHT = parseFloat(document.getElementById('montant_ht').value) || 0;
+        const tauxTVA = parseFloat(document.getElementById('taux_tva').value) || 0;
+        const montantTTC = montantHT * (1 + tauxTVA / 100);
+
+        document.getElementById('montant_ttc_display').value = montantTTC.toFixed(2);
+    }
+
+    function toggleRappelOptions() {
+        const rappelActive = document.getElementById('rappel_active').checked;
+        const options = document.getElementById('rappel_options');
+
+        if (rappelActive) {
+            options.style.display = 'block';
+        } else {
+            options.style.display = 'none';
+            document.getElementById('type_rappel').value = 'aucun';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        calculateTTC();
+    });
+</script>
+{% endblock %}

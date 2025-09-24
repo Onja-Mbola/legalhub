@@ -1,0 +1,125 @@
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #dc3545;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #dc3545;
+            margin: 0;
+        }
+
+        .alert {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .facture-info {
+            background-color: #f8f9fc;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .montant {
+            font-size: 24px;
+            font-weight: bold;
+            color: #dc3545;
+            text-align: center;
+            padding: 15px;
+            background-color: #f8d7da;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .footer {
+            text-align: center;
+            color: #777;
+            font-size: 12px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Rappel de Facture</h1>
+        <p>{{ CABINET_NOM }}</p>
+    </div>
+
+    <p>Madame, Monsieur,</p>
+
+    <div class="alert">
+        <strong>⚠️ RAPPEL :</strong> La facture ci-dessous n'a pas été réglée à la date d'échéance.
+    </div>
+
+    <p>Nous vous rappelons que votre facture <strong>{{ facture.numero_facture }}</strong> d'un montant de <strong>{{
+        "%.2f"|format(facture.montant_ttc) }} Ariary</strong> était due le <strong>{{ facture.date_echeance }}</strong>.
+    </p>
+
+    <div class="facture-info">
+        <p><strong>Numéro de facture :</strong> {{ facture.numero_facture }}</p>
+        <p><strong>Date d'échéance :</strong> {{ facture.date_echeance }}</p>
+        <p><strong>Jours de retard :</strong> {{ facture.jours_retard }} jour(s)</p>
+        <p><strong>Nombre de relances :</strong> {{ facture.nombre_relances }}</p>
+        <p><strong>Description :</strong> {{ facture.description }}</p>
+    </div>
+
+    <div class="montant">
+        Montant en souffrance : {{ "%.2f"|format(facture.montant_ttc) }} Ariary
+    </div>
+
+    <p><strong>Nous vous demandons de bien vouloir régulariser cette situation dans les plus brefs délais.</strong></p>
+
+    <p><strong>Modalités de règlement :</strong></p>
+    <ul>
+        <li>Par virement bancaire (IBAN : {{ IBAN }}, BIC : {{ BIC }})</li>
+        <li>Par Mobile Money (Nom : {{ NOM_MOBILE }}, Numéro : {{ NUMERO_MOBILE }})</li>
+        <li>Par chèque à l'ordre du cabinet</li>
+    </ul>
+
+    <p><strong>Rappel légal :</strong></p>
+    <ul>
+        <li>Pénalités de retard : 3 fois le taux d'intérêt légal</li>
+        <li>Indemnité forfaitaire pour frais de recouvrement : 40 Ariary</li>
+    </ul>
+
+    <p>Pour toute question, contactez-nous à <strong>{{ MAIL_CABINET }}</strong> ou au <strong>{{ CABINET_TELEPHONE
+        }}</strong>.</p>
+
+    <div class="footer">
+        <p>Cordialement,</p>
+        <p><strong>{{ CABINET_NOM }}</strong></p>
+        <p>Adresse : {{ CABINET_ADRESSE }}</p>
+        <p>Ceci est un rappel automatique généré par notre système de gestion.</p>
+    </div>
+</div>
+</body>
+</html>

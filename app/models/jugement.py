@@ -17,6 +17,7 @@ class Jugement(Base):
     delai_appel = Column(Integer, nullable=True)
     execution_provisoire = Column(Boolean, default=False)
     statut = Column(String, default="en_attente_recours")
+    date_notification = Column(Date, nullable=True)
 
     fichier_jugement = Column(String, nullable=True)
     scans_grosse = Column(JSON, nullable=True)

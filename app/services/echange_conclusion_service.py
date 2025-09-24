@@ -48,7 +48,7 @@ def create_echange_conclusion_service(
 
     base = os.path.join("app/documents", avocat_nom, dossier.numero_dossier, "echange_conclusions")
     file_path = None
-    if conclusions_file:
+    if conclusions_file and any(f.filename.strip() for f in conclusions_file):
         saved_files = save_uploaded_files(conclusions_file, base)
         file_path = [os.path.join(base, f) for f in saved_files]
 
@@ -92,7 +92,7 @@ def create_echange_conclusion_service_retour_audience(
 
     base = os.path.join("app/documents", avocat_nom, dossier.numero_dossier, "echange_conclusions_par_defaut")
     file_path = None
-    if conclusions_file:
+    if conclusions_file and any(f.filename.strip() for f in conclusions_file):
         saved_files = save_uploaded_files(conclusions_file, base)
         file_path = [os.path.join(base, f) for f in saved_files]
 

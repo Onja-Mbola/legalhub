@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if mode == 'create' %}Nouvel appel - Dossier #{{ dossier.numero_dossier }}
+{% else %}Modifier appel - Dossier #{{ dossier.numero_dossier }}{% endif %}
+{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg rounded-4 border-0">
+        <div class="card-header bg-gradient-primary text-white py-3">
+            <h5 class="mb-0">
+                <i class="fas fa-balance-scale me-2"></i>
+                {% if mode == 'create' %}Créer un nouvel appel{% else %}Modifier l'appel{% endif %}
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if error_msg %}
+            <div class="alert alert-danger">{{ error_msg }}</div>
+            {% endif %}
+            <form method="post">
+                <div class="mb-3">
+                    <label for="motif" class="form-label fw-semibold">Motif <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="motif" name="motif"
+                           value="{{ appel.motif if appel else '' }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="date_depot" class="form-label fw-semibold">Date de dépôt</label>
+                    <input type="date" class="form-control" id="date_depot" name="date_depot"
+                           value="{{ appel.date_depot.strftime('%Y-%m-%d') if appel.date_depot else '' }}">
+                </div>
+
+                {% if mode == 'update' %}
+                <div class="mb-3">
+                    <label for="statut" class="form-label fw-semibold">Sous-type <span
+                            class="text-danger">*</span></label>
+                    <select class="form-select" id="statut" name="statut" required>
+                        <option value="">-- Sélectionner --</option>
+                        {% for st in sous_type_options %}
+                        <option value="{{ st.valeur }}" {% if appel and appel.statut== st.valeur %}selected{% endif %}>
+                            {{ st.valeur }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+                <button type="submit" class="btn btn-primary rounded-pill px-4">
+                    <i class="fas fa-save me-2"></i> Enregistrer
+                </button>
+                <a href="/dossiers/{{ dossier.id }}/appels" class="btn btn-outline-secondary rounded-pill px-4">
+                    <i class="fas fa-arrow-left me-2"></i> Retour
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

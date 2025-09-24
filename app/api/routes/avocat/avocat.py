@@ -10,7 +10,7 @@ router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
 
-@router.get("/avocat/dashboard")
+@router.get("/avocats/dashboard")
 def dashboard_avocat(
     request: Request,
     user: User = Depends(get_current_avocat_user)

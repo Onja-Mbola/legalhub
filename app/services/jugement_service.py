@@ -5,8 +5,10 @@ from typing import Optional
 from fastapi import HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
-from app.automatisation import celery_app
+from app.automatisation.celery_app import celery_app
 from app.core.workflow_enums import ProcessStage
+from app.db.session import SessionLocal
+from app.models.jugement import Jugement
 from app.repositories.jugement import create_jugement, update_jugement, get_jugements_by_dossier, get_jugement_by_id
 from app.schemas.jugement import JugementCreate, JugementUpdate
 from app.models.dossier import Dossier
@@ -14,8 +16,10 @@ from app.models.action_log import ActionLog
 from app.services.FileStorageService import save_uploaded_files
 from app.services.action_log import log_action_service
 from app.services.dossier import get_dossier_by_id_service
-from app.services.email import send_jugement_favorable_email_programmer
+from app.services.email import send_jugement_favorable_email_programmer, send_appel_email_programmer
 from app.services.workflow_guard import WorkflowGuard
+from sqlalchemy import not_
+
 
 
 def create_jugement_service(
@@ -90,7 +94,8 @@ def update_jugement_service(
     db.commit()
     db.refresh(updated)
 
-    log_action_service(db, user_id, "Mise à jour jugement", f"Mise à jour du jugement pour le dossier {existing.dossier.numero_dossier}",
+    log_action_service(db, user_id, "Mise à jour jugement",
+                       f"Mise à jour du jugement pour le dossier {existing.dossier.numero_dossier}",
                        existing.dossier.id)
 
     return updated
@@ -119,7 +124,8 @@ def enregistrer_grosse_service(
     db.refresh(jugement)
     WorkflowGuard.advance(dossier, ProcessStage.RECUPERATION_GROSSE, db)
 
-    log_action_service(db, user_id, "Récupération grosse", f"Récupération de la grosse pour le dossier {dossier.numero_dossier}", dossier.id)
+    log_action_service(db, user_id, "Récupération grosse",
+                       f"Récupération de la grosse pour le dossier {dossier.numero_dossier}", dossier.id)
 
     return jugement
 
@@ -131,7 +137,8 @@ def archiver_jugement(db: Session, jugement_id: int, user_id: int):
         raise HTTPException(status_code=404, detail="Jugement non trouvé")
     if not dossier:
         raise HTTPException(status_code=404, detail="Dossier non trouvé")
-    if dossier.current_stage not in [ProcessStage.JUGEMENT_FAVORABLE.value, ProcessStage.RECUPERATION_GROSSE.value, ProcessStage.NOTIFICATION_CLIENT_JUGEMENT_PAR_DEFAUT]:
+    if dossier.current_stage not in [ProcessStage.JUGEMENT_FAVORABLE.value, ProcessStage.RECUPERATION_GROSSE.value,
+                                     ProcessStage.NOTIFICATION_CLIENT_JUGEMENT_PAR_DEFAUT]:
         raise HTTPException(status_code=400,
                             detail="L'archivage n'est accessible qu'après un jugement favorable ou notification client de jugement definitf ou défavorable ou Recuperation Grosse faite")
 
@@ -140,7 +147,8 @@ def archiver_jugement(db: Session, jugement_id: int, user_id: int):
     db.refresh(jugement)
     WorkflowGuard.advance(dossier, ProcessStage.FIN_ARCHIVAGE, db)
 
-    log_action_service(db, user_id, "Archivage jugement", f"Archivage du jugement pour le dossier {dossier.numero_dossier}", dossier.id)
+    log_action_service(db, user_id, "Archivage jugement",
+                       f"Archivage du jugement pour le dossier {dossier.numero_dossier}", dossier.id)
 
     return jugement
 
@@ -184,6 +192,86 @@ def create_jugement_defavorable_service(
 
     db.commit()
     db.refresh(obj)
-    log_action_service(db, user_id, "Création jugement défavorable", f"Création du jugement défavorable pour le dossier {dossier.numero_dossier}",
+    log_action_service(db, user_id, "Création jugement défavorable",
+                       f"Création du jugement défavorable pour le dossier {dossier.numero_dossier}",
                        dossier.id)
     return obj
+
+
+@celery_app.task()
+def check_and_send_appel_alerts():
+    db = SessionLocal()
+    try:
+        today = datetime.utcnow().date()
+        jugements = db.query(Jugement).filter(Jugement.date_notification is not None).all()
+
+        for jugement in jugements:
+            if jugement.delai_appel and 15 <= jugement.delai_appel <= 30:
+                date_limite = jugement.date_notification + timedelta(days=jugement.delai_appel)
+                days_left = (date_limite - today).days
+
+                if days_left == 5 and jugement.statut != "alerte_appel_envoyee":
+                    try:
+                        email_avocat = jugement.dossier.avocat_responsable_user.email
+                        dossier_info = {
+                            "nom_dossier": jugement.dossier.nom_dossier,
+                            "numero_dossier": jugement.dossier.numero_dossier,
+                            "date_notification": jugement.date_notification,
+                            "date_limite": date_limite,
+                            "days_left": days_left
+                        }
+
+                        send_appel_email_programmer.delay(
+                            email=email_avocat,
+                            dossier=dossier_info
+                        )
+
+                        jugement.statut = "alerte_appel_envoyee"
+                        db.commit()
+
+                    except Exception as e:
+                        raise HTTPException(
+                            status_code=500,
+                            detail=f"Erreur lors de l'envoi du mail pour le jugement {jugement.id} : {str(e)}"
+                        )
+    finally:
+        db.close()
+
+
+@celery_app.task()
+def check_and_send_appel_alerts_1():
+    db = SessionLocal()
+    try:
+        today = datetime.utcnow().date()
+        jugements = db.query(Jugement).filter(Jugement.date_notification is not None).all()
+
+        for jugement in jugements:
+            date_limite = jugement.date_notification + timedelta(days=jugement.delai_appel)
+            days_left = (date_limite - today).days
+
+            if jugement.statut != "alerte_appel_envoyee":
+                try:
+                    email_avocat = jugement.dossier.avocat_responsable_user.email
+                    dossier_info = {
+                        "nom_dossier": jugement.dossier.nom_dossier,
+                        "numero_dossier": jugement.dossier.numero_dossier,
+                        "date_notification": jugement.date_notification,
+                        "date_limite": date_limite,
+                        "days_left": days_left
+                    }
+
+                    send_appel_email_programmer.delay(
+                        email=email_avocat,
+                        dossier=dossier_info
+                    )
+
+                    jugement.statut = "alerte_appel_envoyee"
+                    db.commit()
+
+                except Exception as e:
+                    raise HTTPException(
+                        status_code=500,
+                        detail=f"Erreur lors de l'envoi du mail pour le jugement {jugement.id} : {str(e)}"
+                    )
+    finally:
+        db.close()

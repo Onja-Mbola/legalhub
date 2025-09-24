@@ -12,3 +12,4 @@ fastapi-mail
 alembic
 celery[redis]
 redis
+reportlab

@@ -41,7 +41,7 @@ def create_jugement_definitif_service(
     base = os.path.join("app/documents", avocat_nom, dossier.numero_dossier, "jugement_definitif")
     fichiers_paths = []
 
-    if fichiers and any(f.filename for f in fichiers):
+    if fichiers and any(f.filename.strip() for f in fichiers):
         saved_files = save_uploaded_files(fichiers, base)
         fichiers_paths = [os.path.join(base, f) for f in saved_files]
 

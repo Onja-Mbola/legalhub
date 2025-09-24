@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block title %}Facturation{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_paiement.css">
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Gestion de la Facturation</h1>
+        <div>
+            <a href="/factures/nouveau" class="btn btn-primary shadow-sm">
+                <i class="fas fa-plus fa-sm text-white-50"></i> Nouvelle Facture
+            </a>
+            <a href="/statistiques/facturation" class="btn btn-info shadow-sm">
+                <i class="fas fa-chart-pie fa-sm text-white-50"></i> Statistiques
+            </a>
+        </div>
+    </div>
+
+    {% if stats %}
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Facturé
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ "%.2f"|format(stats.total_facture) }}
+                                Ariary
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-euro-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total Payé
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ "%.2f"|format(stats.total_paye) }}
+                                Ariary
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Total Impayé
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ "%.2f"|format(stats.total_impaye) }}
+                                Ariary
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Taux de Recouvrement
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{
+                                "%.1f"|format(stats.taux_recouvrement) }}%
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-percentage fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filtres et Recherche</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row align-items-end">
+                <div class="col-md-4">
+                    <label for="search" class="form-label">Rechercher</label>
+                    <input type="text" id="search" name="search" class="form-control"
+                           value="{{ search_filter or '' }}" placeholder="N° facture, client...">
+                </div>
+
+                <div class="col-md-3">
+                    <label for="statut" class="form-label">Statut</label>
+                    <select id="statut" name="statut" class="form-control">
+                        <option value="">Tous les statuts</option>
+                        {% for statut in StatutFacture %}
+                        <option value="{{ statut.value }}" {% if statut_filter== statut %}selected{% endif %}>
+                            {{ statut.value.replace('_', ' ').title() }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3 form-actions d-flex align-items-end">
+                    <div class="d-flex w-100 gap-2">
+                        <button type="submit" class="btn btn-primary flex-grow-1">
+                            <i class="fas fa-search"></i> Filtrer
+                        </button>
+                        <a href="/factures" class="btn btn-secondary flex-grow-1" role="button">
+                            <i class="fas fa-times"></i> Reset
+                        </a>
+                    </div>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Liste des Factures</h6>
+        </div>
+        <div class="card-body">
+            {% if factures %}
+            <div class="table-responsive">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                    <tr>
+                        <th>N° Facture</th>
+                        <th>Client</th>
+                        <th>Description</th>
+                        <th>Montant TTC</th>
+                        <th>Échéance</th>
+                        <th>Statut</th>
+                        <th>Relances</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for facture in factures %}
+                    <tr>
+                        <td><strong>{{ facture.numero_facture }}</strong></td>
+                        <td>{{ facture.nom_client_anonyme }}</td>
+                        <td>{{ facture.description[:50] }}{% if facture.description|length > 50 %}...{% endif %}</td>
+                        <td class="text-right"><strong>{{ "%.2f"|format(facture.montant_ttc) }} Ariary</strong></td>
+                        <td>{{ facture.date_echeance.strftime('%d/%m/%Y') }}</td>
+                        <td>
+                            {% if facture.statut.value == 'payee' %}
+                            <span class="badge badge-success">{{ facture.statut.value.replace('_', ' ').title() }}</span>
+                            {% elif facture.statut.value == 'en_retard' %}
+                            <span class="badge badge-danger">{{ facture.statut.value.replace('_', ' ').title() }}</span>
+                            {% elif facture.statut.value == 'envoyee' %}
+                            <span class="badge badge-warning">{{ facture.statut.value.replace('_', ' ').title() }}</span>
+                            {% else %}
+                            <span class="badge badge-secondary">{{ facture.statut.value.replace('_', ' ').title() }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if facture.nombre_relances > 0 %}
+                            <span class="badge badge-info">{{ facture.nombre_relances }}</span>
+                            {% else %}
+                            <span class="text-muted">0</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-primary dropdown-toggle" type="button"
+                                        data-toggle="dropdown">
+                                    <i class="fas fa-cog"></i>
+                                </button>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" href="/factures/{{ facture.id }}">
+                                        <i class="fas fa-eye"></i> Voir
+                                    </a>
+                                    <a class="dropdown-item" href="/factures/{{ facture.id }}/modifier">
+                                        <i class="fas fa-edit"></i> Modifier
+                                    </a>
+                                    <a class="dropdown-item" href="/factures/{{ facture.id }}/download">
+                                        <i class="fas fa-download"></i> Télécharger
+                                    </a>
+                                    {% if facture.statut.value != 'payee' %}
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="#"
+                                       onclick="showEmailModal({{ facture.id }}, '{{ facture.numero_facture }}')">
+                                        <i class="fas fa-envelope"></i> Envoyer par email
+                                    </a>
+                                    {% endif %}
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item text-danger" href="#"
+                                       onclick="confirmDelete({{ facture.id }})">
+                                        <i class="fas fa-trash"></i> Supprimer
+                                    </a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-file-invoice fa-3x text-gray-300 mb-3"></i>
+                <p class="text-gray-500">Aucune facture trouvée.</p>
+                <a href="/factures/nouveau" class="btn btn-primary">Créer votre première facture</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="emailModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Envoyer la facture par email</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form id="emailForm" method="post">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="email_client">Email du client *</label>
+                        <input type="email" class="form-control" id="email_client" name="email_client" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message_personnalise">Message personnalisé</label>
+                        <textarea class="form-control" id="message_personnalise" name="message_personnalise" rows="3"
+                                  placeholder="Message optionnel à ajouter à l'email..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Envoyer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function showEmailModal(factureId, numeroFacture) {
+        document.getElementById('emailForm').action = '/factures/' + factureId + '/envoyer';
+        document.getElementById('emailModal').querySelector('.modal-title').textContent = 'Envoyer la facture ' + numeroFacture;
+        $('#emailModal').modal('show');
+    }
+
+    function confirmDelete(factureId) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer cette facture ? Cette action est irréversible.')) {
+            fetch('/factures/' + factureId, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        alert('Facture supprimée avec succès');
+                        location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Erreur lors de la suppression');
+                });
+        }
+    }
+</script>
+{% endblock %}

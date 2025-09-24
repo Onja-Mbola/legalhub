@@ -26,6 +26,13 @@
                 </div>
 
                 <div class="mb-3">
+                    <label for="date_notification" class="form-label fw-semibold">Date Notification <span
+                            class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="date_notification" name="date_notification" required
+                           value="{{ jugement.date_notification }}">
+                </div>
+
+                <div class="mb-3">
                     <label for="texte_decision" class="form-label fw-semibold">Texte de la décision</label>
                     <textarea class="form-control" id="texte_decision" name="texte_decision">{{ jugement.texte_decision }}</textarea>
                 </div>

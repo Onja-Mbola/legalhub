@@ -282,6 +282,7 @@ def jugement_defavorable_form(
 async def create_jugement_defavorable(
         dossier_id: int,
         date_jugement: str = Form(...),
+        date_notification: str = Form(...),
         texte_decision: Optional[str] = Form(None),
         sous_type: str = Form(...),
         delai_appel: Optional[int] = Form(None),
@@ -296,6 +297,7 @@ async def create_jugement_defavorable(
         dossier_id=dossier_id,
         sous_type=sous_type,
         date_jugement=date_jugement,
+        date_notification=date_notification,
         texte_decision=texte_decision,
         delai_appel=delai_appel,
         execution_provisoire=execution_provisoire,

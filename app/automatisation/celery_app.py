@@ -15,6 +15,8 @@ celery_app = Celery(
         "app.services.email",
         "app.services.grosse_service",
         "app.services.opposition_service",
+        "app.services.jugement_service",
+        "app.services.facture_service"
     ],
 )
 
@@ -39,5 +41,29 @@ celery_app.conf.beat_schedule = {
     "check_and_send_alerts_1": {
         "task": "app.services.opposition_service.check_and_send_alerts_1",
         "schedule": timedelta(minutes=1),
+    },
+    "check_and_send_appel_alerts": {
+        "task": "app.services.jugement_service.check_and_send_appel_alerts",
+        "schedule": crontab(hour=0, minute=0),
+    },
+    "check_and_send_appel_alerts_1": {
+        "task": "app.services.jugement_service.check_and_send_appel_alerts_1",
+        "schedule": timedelta(minutes=1),
+    },
+    "check_factures_rappel": {
+        "task": "app.services.facture_service.check_factures_rappel",
+        "schedule": crontab(hour=9, minute=0),
+    },
+    "check_factures_rappel_hebdomadaire": {
+        "task": "app.services.facture_service.check_factures_rappel",
+        "schedule": crontab(hour=9, minute=0, day_of_week=1),
+    },
+    "check_factures_rappel_fin_mois": {
+        "task": "app.services.facture_service.check_factures_rappel",
+        "schedule": crontab(hour=9, minute=0, day_of_month=28),
+    },
+    "update_facture_status": {
+        "task": "app.services.facture_service.update_facture_status_task",
+        "schedule": crontab(hour=1, minute=0),
     },
 }

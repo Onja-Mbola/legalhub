@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Paiements Facture {{ facture.numero_facture }}{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_paiement.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 text-gray-800">Paiements - Facture {{ facture.numero_facture }}</h1>
+        <a href="/factures/{{ facture.id }}/paiements/create" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> Ajouter un Paiement
+        </a>
+    </div>
+
+    {% if paiements %}
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <table class="table table-bordered table-hover">
+                <thead class="thead-light">
+                <tr>
+                    <th>#</th>
+                    <th>Montant</th>
+                    <th>Date Paiement</th>
+                    <th>Preuve</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for paiement in paiements %}
+                <tr>
+                    <td>{{ paiement.id }}</td>
+                    <td>{{ "%.2f"|format(paiement.montant) }} Ar</td>
+                    <td>{{ paiement.date_paiement.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>
+                        {% if paiement.preuve_paiement %}
+                        <a href="/paiements/{{ paiement.id }}/download" class="btn btn-sm btn-outline-success">
+                            <i class="fas fa-download"></i> Télécharger
+                        </a>
+                        {% else %}
+                        <span class="text-muted">Aucune</span>
+                        {% endif %}
+                    </td>
+                    <td class="d-flex gap-1">
+                        <a href="/paiements/{{ paiement.id }}/modifier" class="btn btn-sm btn-warning p-1">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form method="post" action="/paiements/{{ paiement.id }}/delete"
+                              onsubmit="return confirm('Voulez-vous vraiment supprimer ce paiement ?');"
+                              class="d-inline m-0">
+                            <button type="submit" class="btn btn-sm btn-danger p-1 w-auto">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> Aucun paiement enregistré pour cette facture.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

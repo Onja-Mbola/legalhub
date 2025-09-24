@@ -23,5 +23,6 @@ class ProcessStage(str, Enum):
     ECHANGE_CONCLUSIONS_JUGEMENT_PAR_DEFAUT = "echange_conclusions_jugement_par_defaut"
     DELIBERATION_JUGEMENT_PAR_DEFAUT = "deliberation_jugement_par_defaut"
     NOTIFICATION_CLIENT_JUGEMENT_PAR_DEFAUT = "notification_client_jugement_par_defaut"
+    APPEL = "appel"
 
 

@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de bord - Avocat{% endblock %}
+
+{% block sidebar %}
+    {% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+        <i class="fa fa-bars"></i>
+    </button>
+
+    <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+        <div class="input-group">
+            <input type="text" class="form-control bg-light border-0 small" placeholder="Rechercher..."
+                aria-label="Search" aria-describedby="basic-addon2">
+            <div class="input-group-append">
+                <button class="btn btn-primary" type="button">
+                    <i class="fas fa-search fa-sm"></i>
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <ul class="navbar-nav ml-auto">
+        <li class="nav-item dropdown no-arrow mx-1">
+            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-bell fa-fw"></i>
+                <span class="badge badge-danger badge-counter" id="facturesEnRetardBadge">0+</span>
+            </a>
+            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                aria-labelledby="alertsDropdown">
+                <h6 class="dropdown-header">Alertes Facturation</h6>
+                <div id="facturesEnRetardList"></div>
+                <a class="dropdown-item text-center small text-gray-500" href="/factures?statut=en_retard">Voir toutes les factures en retard</a>
+            </div>
+        </li>
+
+        <li class="nav-item dropdown no-arrow">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Maître {{ user.nom }}</span>
+                <img class="img-profile rounded-circle" src="/static/img/undraw_profile.svg">
+            </a>
+            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                aria-labelledby="userDropdown">
+                <a class="dropdown-item" href="/profil">
+                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i> Profil
+                </a>
+                <a class="dropdown-item" href="/settings">
+                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i> Paramètres
+                </a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> Déconnexion
+                </a>
+            </div>
+        </li>
+    </ul>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Tableau de bord</h1>
+    <div>
+        <a href="/factures/nouveau" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm mr-2">
+            <i class="fas fa-file-invoice fa-sm text-white-50"></i> Nouvelle Facture
+        </a>
+        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" onclick="downloadRapport()">
+            <i class="fas fa-download fa-sm text-white-50"></i> Générer un rapport
+        </a>
+        <button class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm" onclick="refreshDashboard()">
+            <i class="fas fa-sync-alt fa-sm text-white-50"></i> Rafraîchir
+        </button>
+    </div>
+</div>
+
+<div class="row" id="dashboardStats">
+    <!-- Les cartes seront remplies dynamiquement par JS -->
+</div>
+
+<div class="row">
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Aperçu des Revenus</h6>
+                <div class="dropdown no-arrow">
+                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                        aria-labelledby="dropdownMenuLink">
+                        <div class="dropdown-header">Options:</div>
+                        <a class="dropdown-item" href="/statistiques/facturation">Voir détails</a>
+                        <a class="dropdown-item" href="/factures">Gérer factures</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-area">
+                    <canvas id="myAreaChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Sources de Revenus</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-pie pt-4 pb-2">
+                    <canvas id="myPieChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" id="facturesRecentsSection">
+    <!-- Factures récentes dynamiques -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/dashboard.js"></script>
+
+<script>
+async function loadDashboard() {
+    try {
+        const res = await fetch('/api/dashboard/data');
+        const data = await res.json();
+
+        // Mettre à jour badges
+        document.getElementById('facturesEnRetardBadge').textContent = data.factures_en_retard_count;
+
+        // Remplir alertes factures en retard
+        let alertList = document.getElementById('facturesEnRetardList');
+        alertList.innerHTML = '';
+        data.factures_en_retard?.slice(0,3).forEach(facture => {
+            alertList.innerHTML += `
+            <a class="dropdown-item d-flex align-items-center" href="/factures/${facture.id}">
+                <div class="mr-3">
+                    <div class="icon-circle bg-danger">
+                        <i class="fas fa-exclamation-triangle text-white"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="small text-gray-500">${new Date(facture.date_echeance).toLocaleDateString('fr-FR')}</div>
+                    <span class="font-weight-bold">Facture ${facture.numero_facture} en retard</span>
+                </div>
+            </a>`;
+        });
+
+        // Construire les cartes statistiques
+        const statsDiv = document.getElementById('dashboardStats');
+        statsDiv.innerHTML = `
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Dossiers Actifs (Mois)</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">${data.stats.nombre_dossiers_actifs || 0}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-folder-open fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Revenus du Mois</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">${data.stats_facturation.total_paye.toLocaleString('fr-FR')} Ariary</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-euro-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Taux de Recouvrement</div>
+                            <div class="row no-gutters align-items-center">
+                                <div class="col-auto">
+                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">${data.stats_facturation.taux_recouvrement.toFixed(1)}%</div>
+                                </div>
+                                <div class="col">
+                                    <div class="progress progress-sm mr-2">
+                                        <div class="progress-bar bg-info" role="progressbar" style="width: ${data.stats_facturation.taux_recouvrement}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        `;
+
+        // Graphiques Chart.js
+        const ctxArea = document.getElementById("myAreaChart");
+        new Chart(ctxArea, {
+            type: 'line',
+            data: {
+                labels: data.revenus_mensuels.map(r => r.mois),
+                datasets: [{
+                    label: "Revenus Mensuels",
+                    data: data.revenus_mensuels.map(r => r.montant),
+                    borderColor: 'rgba(78, 115, 223, 1)',
+                    backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                    fill: true,
+                }]
+            },
+            options: { maintainAspectRatio: false }
+        });
+
+        const ctxPie = document.getElementById("myPieChart");
+        new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(data.sources_revenus),
+                datasets: [{
+                    data: Object.values(data.sources_revenus),
+                    backgroundColor: ['#4e73df','#1cc88a','#36b9cc','#f6c23e','#e74a3b']
+                }]
+            },
+            options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+
+    } catch (err) {
+        console.error('Erreur chargement dashboard:', err);
+    }
+}
+
+function downloadRapport() {
+    fetch('/api/reports/facturation?period=current_month')
+        .then(res => res.blob())
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'rapport_facturation.pdf';
+            a.click();
+        });
+}
+
+async function refreshDashboard() {
+    const res = await fetch('/api/dashboard/refresh', { method: 'POST' });
+    const data = await res.json();
+    if(data.status === 'success') {
+        loadDashboard();
+        alert('Dashboard mis à jour');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadDashboard);
+</script>
+{% endblock %}

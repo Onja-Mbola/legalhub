@@ -1,0 +1,121 @@
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #007bff;
+            margin: 0;
+        }
+
+        .facture-info {
+            background-color: #f8f9fc;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .montant {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            text-align: center;
+            padding: 15px;
+            background-color: #e3f2fd;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .footer {
+            text-align: center;
+            color: #777;
+            font-size: 12px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            margin: 20px auto;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Facture</h1>
+        <p>{{ CABINET_NOM }}</p>
+    </div>
+
+    <p>Madame, Monsieur,</p>
+
+    <p>Veuillez trouver ci-joint votre facture <strong>{{ facture.numero_facture }}</strong> d'un montant de <strong>{{
+        "%.2f"|format(facture.montant_ttc) }} Ariary</strong>.</p>
+
+    <div class="facture-info">
+        <p><strong>Numéro de facture :</strong> {{ facture.numero_facture }}</p>
+        <p><strong>Date d'échéance :</strong> {{ facture.date_echeance }}</p>
+        <p><strong>Description :</strong> {{ facture.description }}</p>
+    </div>
+
+    <div class="montant">
+        Montant à régler : {{ "%.2f"|format(facture.montant_ttc) }} Ariary
+    </div>
+
+    {% if facture.message_personnalise %}
+    <div style="background-color: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <p><strong>Message du cabinet :</strong></p>
+        <p>{{ facture.message_personnalise }}</p>
+    </div>
+    {% endif %}
+
+    <p><strong>Modalités de règlement :</strong></p>
+    <ul>
+        <li>Par virement bancaire (IBAN : {{ IBAN }}, BIC : {{ BIC }})</li>
+        <li>Par Mobile Money (Nom : {{ NOM_MOBILE }}, Numéro : {{ NUMERO_MOBILE }})</li>
+        <li>Par chèque à l'ordre du cabinet</li>
+        <li>Échéance : {{ facture.date_echeance }}</li>
+    </ul>
+
+    <p>Pour toute question concernant cette facture, n'hésitez pas à nous contacter à <strong>{{ MAIL_CABINET
+        }}</strong> ou au <strong>{{ CABINET_TELEPHONE }}</strong>.</p>
+
+    <div class="footer">
+        <p>Cordialement,</p>
+        <p><strong>{{ CABINET_NOM }}</strong></p>
+        <p>Adresse : {{ CABINET_ADRESSE }}</p>
+        <p>Cette facture est générée automatiquement par notre système de gestion.</p>
+    </div>
+</div>
+</body>
+</html>

@@ -6,12 +6,14 @@ from sqlalchemy.orm import relationship
 from app.core.workflow_enums import ProcessStage
 from app.db.base_class import Base
 from app.models.action_log import ActionLog
+from app.models.appel import Appel
 from app.models.client import Client
 from app.models.decision_avant_dire_droit import DecisionAvantDireDroit
 from app.models.decision_definitive import DecisionDefinitive
 from app.models.deliberation_decision import DeliberationDecision
 from app.models.echange_conclusion import EchangeConclusion
 from app.models.enrolement import Enrolement
+from app.models.facture import Facture
 from app.models.jugement import Jugement
 from app.models.jugement_definitif import JugementDefinitif
 from app.models.opposition import Opposition
@@ -64,3 +66,6 @@ class Dossier(Base):
     oppositions = relationship(lambda: Opposition, back_populates="dossier", cascade="all, delete-orphan")
     retours_audiences = relationship(lambda: RetourAudience, back_populates="dossier", cascade="all, delete-orphan")
     jugements_definitifs = relationship(lambda: JugementDefinitif, back_populates="dossier", cascade="all, delete-orphan")
+    appels = relationship(lambda: Appel, back_populates="dossier", cascade="all, delete-orphan")
+    factures = relationship(lambda: Facture, back_populates="dossier")
+

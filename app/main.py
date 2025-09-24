@@ -12,7 +12,7 @@ from app.db.init_db import init_db
 from app.api.routes import clarck
 from app.api.routes.avocat import dossier, avocat, enrolement, requete_assignation, premiere_audience, \
     echange_conclusion, deliberation_decision, decision_definitive, decision_avant_dire_droit, jugement, opposition, \
-    retour_audience, jugement_definitif
+    retour_audience, jugement_definitif, appel, facturation, dashboard, facture
 from app.api.routes.admin import admin, auth, param_general
 
 app = FastAPI()
@@ -40,6 +40,10 @@ app.include_router(jugement.router)
 app.include_router(opposition.router)
 app.include_router(retour_audience.router)
 app.include_router(jugement_definitif.router)
+app.include_router(appel.router)
+app.include_router(facturation.router)
+app.include_router(dashboard.router)
+app.include_router(facture.router)
 
 documents_path = "app/documents"
 if not os.path.exists(documents_path):

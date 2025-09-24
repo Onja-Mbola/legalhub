@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Appels - Dossier #{{ dossier.id }}{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold"><i class="fas fa-balance-scale me-2"></i> Appels du dossier #{{ dossier.numero_dossier }}</h3>
+        <a href="/dossiers/{{ dossier.id }}/appels/create" class="btn btn-primary rounded-pill">
+            <i class="fas fa-plus-circle me-1"></i> Nouvel appel
+        </a>
+    </div>
+
+    {% if appels %}
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Motif</th>
+                        <th scope="col">Date de dépôt</th>
+                        <th scope="col">Statut</th>
+                        <th scope="col" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for appel in appels %}
+                    <tr>
+                        <td>{{ appel.motif }}</td>
+                        <td>{{ appel.date_depot.strftime('%d/%m/%Y') }}</td>
+                        <td>
+                            <span class="badge badge-{% if appel.statut == 'en_attente' %}warning{% elif appel.statut == 'accepte' %}success{% else %}danger{% endif %}">
+                                {{ appel.statut|capitalize }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <a href="/dossiers/{{ dossier.id }}/appels/{{ appel.id }}/update"
+                               class="btn btn-sm btn-outline-primary rounded-pill">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form action="/dossiers/{{ dossier.id }}/appels/{{ appel.id }}/delete"
+                                  method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill"
+                                        onclick="return confirm('Voulez-vous vraiment supprimer cet appel ?')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info rounded-4 shadow-sm">
+        <i class="fas fa-info-circle me-2"></i> Aucun appel enregistré pour ce dossier.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

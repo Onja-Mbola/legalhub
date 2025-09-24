@@ -81,7 +81,7 @@
             <i class="fas fa-folder"></i>
             <span>Dossiers</span>
         </a>
-        <div id="collapseDossiers" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+        <div id="collapseDossiers" class="collapse" aria-labelledby="headingDossiers" data-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <h6 class="collapse-header">Gestion des dossiers:</h6>
                 <a class="collapse-item" href="/dossiers">Voir les dossiers</a>
@@ -97,12 +97,18 @@
             <i class="fas fa-file-invoice-dollar"></i>
             <span>Facturation</span>
         </a>
-        <div id="collapseFacturation" class="collapse" aria-labelledby="headingUtilities"
+        <div id="collapseFacturation" class="collapse" aria-labelledby="headingFacturation"
              data-parent="#accordionSidebar">
             <div class="bg-white py-2 collapse-inner rounded">
                 <h6 class="collapse-header">Gestion des factures:</h6>
-                <a class="collapse-item" href="/factures">Voir les factures</a>
-                <a class="collapse-item" href="/factures/nouvelle">Nouvelle facture</a>
+                <a class="collapse-item" href="/factures">Toutes les Factures</a>
+                <a class="collapse-item" href="/factures/nouveau">Nouvelle Facture</a>
+                <div class="collapse-divider"></div>
+                <h6 class="collapse-header">Analyses:</h6>
+                <a class="collapse-item" href="/statistiques/facturation">Statistiques</a>
+                <a class="collapse-item" href="/factures?statut=en_retard" class="text-danger">
+                    Factures en Retard
+                </a>
             </div>
         </div>
     </li>

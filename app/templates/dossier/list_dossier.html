@@ -21,6 +21,7 @@
     ('decision_finale', "Action décision définitive faite avec succès.."),
     ('opposition_success', "Opposition faite avec succès.."),
     ('delib_update_success', "Délibération mise à jour."),
+    ('deleted_appel', "Appel supprimé avec succès."),
     ('delib_retour_audience_success', "Délibération Retour audience faite avec succès."),
     ('echange_success', "Echange de Conclusions crée avec succès."),
     ('add_success', "Décision Avant Dire Droit crée avec succès."),
@@ -148,9 +149,9 @@
                         {% set decision = dossier.jugements[-1] %}
 
                         {% if decision.sous_type == 'jugement_contradictoire' %}
-                        <a href="/dossiers/{{ dossier.id }}/test"
+                        <a href="/dossiers/{{ dossier.id }}/appels/create"
                            class="btn btn-sm btn-outline-primary mb-1">
-                            <i class="fas fa-balance-scale-left mr-1"></i> Contradictoire
+                            <i class="fas fa-balance-scale-left mr-1"></i> Appel
                         </a>
                         {% elif decision.sous_type == 'jugement_par_defaut' %}
                         <a href="/dossiers/{{ dossier.id }}/opposition"

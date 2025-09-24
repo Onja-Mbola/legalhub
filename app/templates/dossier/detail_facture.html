@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block title %}Dossier {{ dossier.numero_dossier }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            📂 Dossier : {{ dossier.nom_dossier }}
+        </h1>
+        <div>
+            <a href="/factures/nouveau?dossier_id={{ dossier.id }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-file-invoice"></i> Nouvelle facture
+            </a>
+            <a href="/dossiers/{{ dossier.id }}/download" class="btn btn-secondary btn-sm">
+                <i class="fas fa-download"></i> Télécharger tout
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-primary text-white">
+                    <h6 class="m-0 font-weight-bold">Informations générales</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Numéro dossier :</strong> {{ dossier.numero_dossier }}</p>
+                    <p><strong>Client :</strong> {{ dossier.client.nom }}</p>
+                    <p><strong>Avocat responsable :</strong> {{ dossier.avocat_responsable_user.nom }}</p>
+                    <p><strong>Juridiction :</strong> {{ dossier.juridiction or '-' }}</p>
+                    <p><strong>Tribunal :</strong> {{ dossier.tribunal or '-' }}</p>
+                    <p><strong>Date création :</strong> {{ dossier.date_creation.strftime('%d/%m/%Y %H:%M') }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-info text-white">
+                    <h6 class="m-0 font-weight-bold">Résumé Financier</h6>
+                </div>
+                <div class="card-body">
+                    {% set factures_principales = dossier.factures | selectattr('facture_parent_id', 'none') | list %}
+                    {% set total_facture = factures_principales | sum(attribute='montant_total_avec_enfants') %}
+                    {% set total_paye = factures_principales | sum(attribute='montant_paye_total_avec_enfants') %}
+                    {% set total_restant = total_facture - total_paye %}
+
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h6 class="text-primary">{{ "%.2f"|format(total_facture) }} Ar</h6>
+                            <small class="text-muted">Total facturé</small>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="text-success">{{ "%.2f"|format(total_paye) }} Ar</h6>
+                            <small class="text-muted">Total payé</small>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="text-{{ 'success' if total_restant <= 0 else 'danger' }}">{{ "%.2f"|format(total_restant) }} Ar</h6>
+                            <small class="text-muted">Restant</small>
+                        </div>
+                    </div>
+
+                    {% if total_restant > 0 %}
+                    <div class="progress mt-3">
+                        <div class="progress-bar bg-success" role="progressbar"
+                             style="width: {{ (total_paye / total_facture * 100) if total_facture > 0 else 0 }}%">
+                            {{ "%.1f"|format((total_paye / total_facture * 100) if total_facture > 0 else 0) }}%
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-info text-white">
+                    <h6 class="m-0 font-weight-bold">Commentaires</h6>
+                </div>
+                <div class="card-body">
+                    {{ dossier.commentaire or "Aucun commentaire" }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-success text-white d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold">💰 Factures liées ({{ dossier.factures|length }} factures)</h6>
+            <div>
+                <small class="text-white-50">
+                    {{ (dossier.factures | selectattr('facture_parent_id', 'none') | list) |length }} principales +
+                    {{ (dossier.factures | selectattr('facture_parent_id', 'ne', none) | list) |length }} soldes
+                </small>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if dossier.factures %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Type</th>
+                            <th>#</th>
+                            <th>Description</th>
+                            <th>Montant TTC</th>
+                            <th>Payé</th>
+                            <th>Restant</th>
+                            <th>Statut</th>
+                            <th>Date émission</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set factures_principales = dossier.factures | selectattr('facture_parent_id', 'none') | list %}
+
+                        {% for f in factures_principales %}
+                        <tr class="table-light">
+                            <td>
+                                <i class="fas fa-file-invoice text-primary" title="Facture principale"></i>
+                            </td>
+                            <td>
+                                <a href="/factures/{{ f.id }}" class="text-primary font-weight-bold">
+                                    {{ f.numero_facture }}
+                                </a>
+                                {% if f.factures_enfant %}
+                                <small class="text-muted d-block">{{ f.factures_enfant|length }} solde(s)</small>
+                                {% endif %}
+                            </td>
+                            <td>{{ f.description }}</td>
+                            <td>
+                                <strong>{{ "%.2f"|format(f.montant_ttc) }} Ariary</strong>
+                                {% if f.factures_enfant %}
+                                <small class="text-muted d-block">
+                                    Global: {{ "%.2f"|format(f.montant_total_avec_enfants) }} Ar
+                                </small>
+                                {% endif %}
+                            </td>
+                            <td class="text-success">
+                                <strong>{{ "%.2f"|format(f.montant_paye) }} Ariary</strong>
+                                {% if f.factures_enfant %}
+                                <small class="text-muted d-block">
+                                    Global: {{ "%.2f"|format(f.montant_paye_total_avec_enfants) }} Ar
+                                </small>
+                                {% endif %}
+                            </td>
+                            <td class="text-danger">
+                                <strong>{{ "%.2f"|format(f.montant_restant_facture_mere) }} Ariary</strong>
+                                {% if f.factures_enfant %}
+                                <small class="text-muted d-block">
+                                    Global: {{ "%.2f"|format(f.montant_restant_global) }} Ar
+                                </small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if f.est_completement_payee %}
+                                    <span class="badge badge-success">PAYÉE</span>
+                                {% elif f.montant_paye > 0 %}
+                                    <span class="badge badge-info">PARTIELLE</span>
+                                {% elif f.statut.value == "en_retard" %}
+                                    <span class="badge badge-danger">EN RETARD</span>
+                                {% elif f.statut.value == "envoyee" %}
+                                    <span class="badge badge-warning">ENVOYÉE</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">{{ f.statut.value.upper() }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if f.date_emission %}
+                                    {{ f.date_emission.strftime("%d/%m/%Y") }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if f.fichier_facture %}
+                                <a href="/factures/{{ f.id }}/download" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-file-download"></i>
+                                </a>
+                                {% endif %}
+                                <a href="/factures/{{ f.id }}" class="btn btn-sm btn-outline-info">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if f.montant_restant > 0 %}
+                                <a href="/factures/{{ f.id }}/paiements/create" class="btn btn-sm btn-outline-success" title="Ajouter paiement">
+                                    <i class="fas fa-plus"></i>
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        {% for enfant in f.factures_enfant %}
+                        <tr class="table-warning">
+                            <td class="pl-4">
+                                <i class="fas fa-level-down-alt fa-rotate-90 text-warning" title="Facture de solde"></i>
+                            </td>
+                            <td class="pl-4">
+                                <a href="/factures/{{ enfant.id }}" class="text-warning">
+                                    {{ enfant.numero_facture }}
+                                </a>
+                                <small class="text-muted d-block">Solde</small>
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ enfant.description }}</small>
+                            </td>
+                            <td>{{ "%.2f"|format(enfant.montant_ttc) }} Ariary</td>
+                            <td class="text-success">{{ "%.2f"|format(enfant.montant_paye) }} Ariary</td>
+                            <td class="text-danger">{{ "%.2f"|format(enfant.montant_restant) }} Ariary</td>
+                            <td>
+                                {% if enfant.montant_restant <= 0 %}
+                                    <span class="badge badge-success badge-sm">PAYÉE</span>
+                                {% elif enfant.montant_paye > 0 %}
+                                    <span class="badge badge-info badge-sm">PARTIELLE</span>
+                                {% elif enfant.statut.value == "en_retard" %}
+                                    <span class="badge badge-danger badge-sm">RETARD</span>
+                                {% else %}
+                                    <span class="badge badge-secondary badge-sm">{{ enfant.statut.value.upper() }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if enfant.date_emission %}
+                                    {{ enfant.date_emission.strftime("%d/%m/%Y") }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if enfant.fichier_facture %}
+                                <a href="/factures/{{ enfant.id }}/download" class="btn btn-sm btn-outline-warning">
+                                    <i class="fas fa-file-download"></i>
+                                </a>
+                                {% endif %}
+                                <a href="/factures/{{ enfant.id }}" class="btn btn-sm btn-outline-info">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if enfant.montant_restant > 0 %}
+                                <a href="/factures/{{ enfant.id }}/paiements/create" class="btn btn-sm btn-outline-success" title="Ajouter paiement">
+                                    <i class="fas fa-plus"></i>
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if factures_principales %}
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle"></i> Légende :</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small>
+                                    <i class="fas fa-file-invoice text-primary"></i> <strong>Factures principales</strong> : Factures originales<br>
+                                    <i class="fas fa-level-down-alt fa-rotate-90 text-warning"></i> <strong>Factures de solde</strong> : Compléments pour montants restants
+                                </small>
+                            </div>
+                            <div class="col-md-6">
+                                <small>
+                                    Les montants <strong>"Global"</strong> incluent la facture principale + ses soldes.<br>
+                                    Les paiements peuvent être effectués sur n'importe quelle facture de la série.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-file-invoice fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucune facture</h5>
+                    <p class="text-muted">Aucune facture n'est encore associée à ce dossier.</p>
+                    <a href="/factures/nouveau?dossier_id={{ dossier.id }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Créer la première facture
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .table tr.table-light {
+        background-color: #f8f9fc !important;
+    }
+    .table tr.table-warning {
+        background-color: #fff3cd !important;
+    }
+    .progress {
+        height: 8px;
+    }
+    .badge-sm {
+        font-size: 0.75em;
+    }
+</style>
+{% endblock %}

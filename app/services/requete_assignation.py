@@ -30,9 +30,9 @@ def create_requete_assignation_service(
     assignation_filename = None
     preuve_filename = None
 
-    if assignation_file:
+    if assignation_file and assignation_file.filename:
         assignation_filename = save_uploaded_files([assignation_file], dossier_path)[0]
-    if preuve_signification_file:
+    if preuve_signification_file and preuve_signification_file.filename:
         preuve_filename = save_uploaded_files([preuve_signification_file], dossier_path)[0]
 
     requete = create_requete_assignation(

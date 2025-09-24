@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Rappel Délai d'Appel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .header {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px 8px 0 0;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #888888;
+            text-align: center;
+        }
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            background-color: #17a2b8;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>⚖️ Rappel Délai d'Appel</h2>
+        </div>
+        <div class="content">
+            <p>Bonjour Maître,</p>
+
+            <p>
+                Le dossier <strong>{{ dossier.nom_dossier }}</strong>
+                (Numéro : <strong>{{ dossier.numero_dossier }}</strong>) notifié le
+                <strong>{{ dossier.date_notification.strftime("%d/%m/%Y") }}</strong>
+                approche de la fin du délai d’appel.
+            </p>
+
+            <p>Date limite d’appel : <strong>{{ dossier.date_limite.strftime("%d/%m/%Y") }}</strong></p>
+
+            <p class="badge">⏳ Il reste {{ dossier.days_left }} jours pour agir !</p>
+
+            <p>Veuillez prendre les dispositions nécessaires avant cette date.</p>
+
+            <p>Cordialement,<br>Votre application LegalHub</p>
+        </div>
+        <div class="footer">
+            Ce message est généré automatiquement, merci de ne pas y répondre.
+        </div>
+    </div>
+</body>
+</html>

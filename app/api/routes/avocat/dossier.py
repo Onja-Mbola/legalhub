@@ -2,7 +2,7 @@ import json
 import os
 from typing import List, Union
 
-from fastapi import APIRouter, Depends, Request, Form, UploadFile, File
+from fastapi import APIRouter, Depends, Request, Form, UploadFile, File, HTTPException
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -11,6 +11,8 @@ from starlette.responses import RedirectResponse, HTMLResponse, FileResponse
 from app.core.auth import get_current_avocat_user
 from app.db.session import get_db
 from app.models.user import User
+from app.repositories.dossier import get_dossier_by_id
+from app.repositories.facture import get_factures_by_dossier
 from app.schemas.dossier import DossierCreate
 from app.services.action_log import log_action_service
 from app.services.dossier import create_new_dossier_with_files, get_dossiers_by_avocat_service, \
@@ -172,3 +174,24 @@ def documents(filepath: str):
     if os.path.exists(full_path) and os.path.isfile(full_path):
         return FileResponse(full_path, filename=os.path.basename(full_path))
     return {"error": "Fichier non trouvé"}
+
+
+@router.get("/dossiers/{dossier_id}/facture_dossier")
+async def afficher_dossier(
+        dossier_id: int,
+        request: Request,
+        db: Session = Depends(get_db),
+        user: User = Depends(get_current_avocat_user)
+):
+    dossier = get_dossier_by_id(db, dossier_id)
+    if not dossier:
+        raise HTTPException(status_code=404, detail="Dossier non trouvé")
+
+    factures = get_factures_by_dossier(db, dossier_id)
+
+    return templates.TemplateResponse("dossier/detail_facture.html", {
+        "request": request,
+        "dossier": dossier,
+        "factures": factures,
+        "user": user
+    })

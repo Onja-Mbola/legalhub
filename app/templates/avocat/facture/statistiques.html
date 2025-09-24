@@ -1,0 +1,646 @@
+{% extends "base.html" %}
+
+{% block title %}Statistiques de Facturation{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Statistiques de Facturation</h1>
+        <div>
+            <button class="btn btn-primary" onclick="window.print()">
+                <i class="fas fa-print fa-sm text-white-50"></i> Imprimer
+            </button>
+            <a href="/factures" class="btn btn-secondary ml-2">
+                <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour aux Factures
+            </a>
+        </div>
+    </div>
+
+    {% if error_message %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <strong>Attention!</strong> {{ error_message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    {% endif %}
+
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Chiffre d'Affaires Total
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ (stats_facturation.total_facture or 0) | int }} Ariaryy
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-euro-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Montant Encaissé
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ "{:,.0f}".format(stats_facturation.total_paye if stats_facturation.total_paye else 0) }} Ariary
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                En Attente de Paiement
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ "{:,.0f}".format(stats_facturation.total_impaye if stats_facturation.total_impaye else 0) }} Ariary
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Taux de Recouvrement
+                            </div>
+                            <div class="row no-gutters align-items-center">
+                                <div class="col-auto">
+                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">
+                                        {{ "%.1f"|format(stats_facturation.taux_recouvrement if stats_facturation.taux_recouvrement else 0) }}%
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="progress progress-sm mr-2">
+                                        <div class="progress-bar bg-info" role="progressbar"
+                                             style="width: {{ stats_facturation.taux_recouvrement if stats_facturation.taux_recouvrement else 0 }}%"
+                                             aria-valuenow="{{ stats_facturation.taux_recouvrement if stats_facturation.taux_recouvrement else 0 }}"
+                                             aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-percentage fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Évolution des Revenus Mensuels</h6>
+                </div>
+                <div class="card-body">
+                    {% if stats_revenus and stats_revenus.revenus_par_mois and stats_revenus.revenus_par_mois|length > 0 %}
+                    <div class="chart-area">
+                        <canvas id="revenueChart" width="100%" height="40"></canvas>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-chart-line fa-3x text-gray-300 mb-3"></i>
+                        <p class="text-gray-500">Aucune donnée de revenus disponible pour le moment</p>
+                        <small class="text-muted">Les graphiques s'afficheront une fois que vous aurez des factures payées</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Répartition des Factures</h6>
+                </div>
+                <div class="card-body">
+                    {% if stats_facturation.nombre_factures_total > 0 %}
+                    <div class="chart-pie pt-4 pb-2">
+                        <canvas id="statusPieChart"></canvas>
+                    </div>
+                    <div class="mt-4 text-center small">
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-success"></i>
+                            Payées ({{ stats_facturation.nombre_factures_payees or 0 }})
+                        </span><br>
+                        <span class="mr-2 mt-1 d-inline-block">
+                            <i class="fas fa-circle text-warning"></i>
+                            En attente ({{ (stats_facturation.nombre_factures_total - stats_facturation.nombre_factures_payees - (factures_en_retard|length if factures_en_retard else 0)) or 0 }})
+                        </span><br>
+                        <span class="mr-2 mt-1 d-inline-block">
+                            <i class="fas fa-circle text-danger"></i>
+                            En retard ({{ factures_en_retard|length if factures_en_retard else 0 }})
+                        </span>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-file-invoice fa-3x text-gray-300 mb-3"></i>
+                        <p class="text-gray-500">Aucune facture créée</p>
+                        <a href="/factures/nouveau" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus"></i> Créer une facture
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Top 5 Clients (Revenus)</h6>
+                </div>
+                <div class="card-body">
+                    {% if top_clients and top_clients|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-borderless">
+                            {% for client in top_clients %}
+                            <tr>
+                                <td class="border-0">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm rounded-circle bg-{{ 'primary' if loop.index == 1 else 'secondary' if loop.index == 2 else 'info' if loop.index == 3 else 'warning' }} text-white d-flex align-items-center justify-content-center mr-3" style="width: 35px; height: 35px;">
+                                            {{ loop.index }}
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">{{ client.nom_client_anonyme }}</h6>
+                                            <small class="text-muted">{{ client.nb_factures }} facture(s)</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="border-0 text-right">
+                                    <h6 class="mb-0 font-weight-bold">{{ "{:,.0f}".format(client.total_revenus) }} Ariary</h6>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-users fa-3x text-gray-300 mb-3"></i>
+                        <p class="text-gray-500 mb-0">Aucun client avec revenus pour le moment</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-danger">Factures en Retard</h6>
+                    <span class="badge badge-danger">{{ factures_en_retard|length if factures_en_retard else 0 }}</span>
+                </div>
+                <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                    {% if factures_en_retard and factures_en_retard|length > 0 %}
+                    <div class="list-group list-group-flush">
+                        {% for facture in factures_en_retard[:5] %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <div>
+                                <h6 class="mb-0">{{ facture.numero_facture }}</h6>
+                                <small class="text-muted">
+                                    {{ facture.nom_client_anonyme }} -
+                                    Échéance: {{ facture.date_echeance.strftime('%d/%m/%Y') if facture.date_echeance else 'N/A' }}
+                                </small>
+                            </div>
+                            <div class="text-right">
+                                <span class="font-weight-bold">{{ "{:,.0f}".format(facture.montant_ttc if facture.montant_ttc else 0) }} Ariary</span><br>
+                                <small class="text-danger">
+                                    {% if facture.date_echeance %}
+                                        {{ (now().date() - facture.date_echeance).days }} jours
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if factures_en_retard|length > 5 %}
+                    <div class="text-center mt-3">
+                        <a href="/factures" class="btn btn-sm btn-outline-danger">
+                            Voir toutes ({{ factures_en_retard|length }})
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <div class="text-center text-success py-4">
+                        <i class="fas fa-check-circle fa-3x mb-3"></i>
+                        <p class="mb-0">Aucune facture en retard !</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Métriques Détaillées</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center mb-3">
+                            <h4 class="text-success">
+                                {% if stats_facturation.nombre_factures_total > 0 %}
+                                    {{ "%.1f"|format((stats_facturation.nombre_factures_payees / stats_facturation.nombre_factures_total * 100)) }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </h4>
+                            <p class="mb-0">Factures Payées</p>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <h4 class="text-info">
+                                {% if stats_facturation.nombre_factures_total > 0 %}
+                                    {{ "{:,.0f}".format(stats_facturation.total_facture / stats_facturation.nombre_factures_total) }} Ariary
+                                {% else %}
+                                    0 Ariary
+                                {% endif %}
+                            </h4>
+                            <p class="mb-0">Montant Moyen</p>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <h4 class="text-warning">{{ delai_paiement_moyen if delai_paiement_moyen else 'N/A' }}</h4>
+                            <p class="mb-0">Délai Paiement Moyen</p>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <h4 class="text-primary">{{ stats_facturation.nombre_factures_total if stats_facturation.nombre_factures_total else 0 }}</h4>
+                            <p class="mb-0">Total Factures</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<script>
+    Chart.defaults.font.family = "'Nunito', -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+    Chart.defaults.font.size = 13;
+    Chart.defaults.color = '#5a5c69';
+
+    var revenusData = {{ stats_revenus.revenus_par_mois|default({})|tojson|safe }};
+
+    console.log(revenusData);
+
+    var facturesData = {
+        "payees": {{ stats_facturation.nombre_factures_payees|default(0) }},
+        "en_attente": {{ (stats_facturation.nombre_factures_total - stats_facturation.nombre_factures_payees - (factures_en_retard|length if factures_en_retard else 0))|default(0) }},
+        "en_retard": {{ factures_en_retard|length if factures_en_retard else 0 }}
+    };
+
+    var ctx1 = document.getElementById("revenueChart");
+    if (ctx1 && Object.keys(revenusData).length > 0) {
+        const gradient = ctx1.getContext('2d').createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(78, 115, 223, 0.2)');
+        gradient.addColorStop(0.5, 'rgba(78, 115, 223, 0.1)');
+        gradient.addColorStop(1, 'rgba(78, 115, 223, 0.02)');
+
+        new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"],
+                datasets: [{
+                    label: "Revenus (Ariary)",
+                    data: [
+                        revenusData['1'] || 0, revenusData['2'] || 0, revenusData['3'] || 0,
+                        revenusData['4'] || 0, revenusData['5'] || 0, revenusData['6'] || 0,
+                        revenusData['7'] || 0, revenusData['8'] || 0, revenusData['9'] || 0,
+                        revenusData['10'] || 0, revenusData['11'] || 0, revenusData['12'] || 0
+                    ],
+                    borderColor: '#4e73df',
+                    backgroundColor: gradient,
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 8,
+                    pointHoverBackgroundColor: '#4e73df',
+                    pointHoverBorderColor: '#ffffff',
+                    pointHoverBorderWidth: 3,
+                    pointBackgroundColor: '#4e73df',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        titleColor: '#5a5c69',
+                        bodyColor: '#858796',
+                        borderColor: '#e3e6f0',
+                        borderWidth: 1,
+                        cornerRadius: 10,
+                        displayColors: false,
+                        titleFont: {
+                            size: 14,
+                            weight: '600'
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        padding: 12,
+                        callbacks: {
+                            label: function(context) {
+                                return 'Revenus: ' + context.parsed.y.toLocaleString() + ' Ariary';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        display: true,
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#858796',
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    y: {
+                        display: true,
+                        beginAtZero: true,
+                        grid: {
+                            color: '#f8f9fc',
+                            borderDash: [5, 5],
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#858796',
+                            font: {
+                                size: 12
+                            },
+                            maxTicksLimit: 6,
+                            callback: function(value) {
+                                return value.toLocaleString() + ' Ar';
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    duration: 2000,
+                    easing: 'easeInOutQuart'
+                },
+                elements: {
+                    line: {
+                        borderCapStyle: 'round'
+                    }
+                }
+            }
+        });
+    }
+
+    var ctx2 = document.getElementById("statusPieChart");
+    if (ctx2 && (facturesData.payees + facturesData.en_attente + facturesData.en_retard) > 0) {
+        const ctx = ctx2.getContext('2d');
+
+        const gradientSuccess = ctx.createRadialGradient(150, 150, 20, 150, 150, 100);
+        gradientSuccess.addColorStop(0, '#1cc88a');
+        gradientSuccess.addColorStop(1, '#17a673');
+
+        const gradientWarning = ctx.createRadialGradient(150, 150, 20, 150, 150, 100);
+        gradientWarning.addColorStop(0, '#f6c23e');
+        gradientWarning.addColorStop(1, '#dda20a');
+
+        const gradientDanger = ctx.createRadialGradient(150, 150, 20, 150, 150, 100);
+        gradientDanger.addColorStop(0, '#e74a3b');
+        gradientDanger.addColorStop(1, '#c0392b');
+
+        new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: ["Payées", "En attente", "En retard"],
+                datasets: [{
+                    data: [facturesData.payees, facturesData.en_attente, facturesData.en_retard],
+                    backgroundColor: [gradientSuccess, gradientWarning, gradientDanger],
+                    borderWidth: 3,
+                    borderColor: '#ffffff',
+                    hoverBorderWidth: 4,
+                    hoverBorderColor: '#ffffff',
+                    cutout: '70%'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        titleColor: '#5a5c69',
+                        bodyColor: '#858796',
+                        borderColor: '#e3e6f0',
+                        borderWidth: 1,
+                        cornerRadius: 10,
+                        titleFont: {
+                            size: 14,
+                            weight: '600'
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        padding: 12,
+                        displayColors: true,
+                        usePointStyle: true,
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label;
+                                const value = context.raw;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return label + ': ' + value + ' factures (' + percentage + '%)';
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    animateScale: true,
+                    animateRotate: true,
+                    duration: 1500,
+                    easing: 'easeInOutBack'
+                },
+                elements: {
+                    arc: {
+                        borderWidth: 2
+                    }
+                }
+            }
+        });
+    }
+
+    function animateCounters() {
+        const counters = document.querySelectorAll('.counter');
+        counters.forEach(counter => {
+            const target = parseFloat(counter.getAttribute('data-count')) || 0;
+            const suffix = counter.textContent.includes('Ariary') ? ' Ariary' : '';
+            let current = 0;
+            const increment = target / 100;
+            const duration = 2000;
+            const stepTime = duration / 100;
+
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                counter.textContent = Math.floor(current).toLocaleString() + suffix;
+            }, stepTime);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+            animateCounters();
+        }, 500);
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.transition = 'transform 0.3s ease';
+            });
+
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    });
+</script>
+
+<style>
+    .chart-area {
+        position: relative;
+        height: 320px;
+        padding: 20px;
+    }
+
+    .chart-pie {
+        position: relative;
+        height: 250px;
+        padding: 20px;
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        transition: all 0.3s ease;
+        border-radius: 0.5rem;
+    }
+
+    .card:hover {
+        box-shadow: 0 0.25rem 2rem 0 rgba(58, 59, 69, 0.2);
+    }
+
+    .border-left-primary {
+        border-left: 0.25rem solid #4e73df !important;
+    }
+
+    .border-left-success {
+        border-left: 0.25rem solid #1cc88a !important;
+    }
+
+    .border-left-warning {
+        border-left: 0.25rem solid #f6c23e !important;
+    }
+
+    .border-left-info {
+        border-left: 0.25rem solid #36b9cc !important;
+    }
+
+    .progress {
+        height: 0.5rem;
+        border-radius: 10rem;
+        background-color: #eaecf4;
+    }
+
+    .progress-bar {
+        border-radius: 10rem;
+        background: linear-gradient(45deg, #4e73df, #224abe);
+        box-shadow: 0 0.1rem 0.25rem rgba(78, 115, 223, 0.15);
+    }
+
+    .badge-danger {
+        background: linear-gradient(45deg, #e74a3b, #c0392b);
+        border-radius: 10rem;
+        box-shadow: 0 0.1rem 0.25rem rgba(231, 74, 59, 0.15);
+    }
+
+    .fa-2x, .fa-3x {
+        transition: all 0.3s ease;
+    }
+
+    .card:hover .fa-2x, .card:hover .fa-3x {
+        transform: scale(1.1);
+    }
+
+    .card-header {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+</style>
+{% endblock %}

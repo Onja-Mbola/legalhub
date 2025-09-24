@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Ajouter un Paiement{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            Ajouter un Paiement à la Facture {{ facture.numero_facture }}
+        </h1>
+        <a href="/factures/{{ facture.id }}/paiements" class="btn btn-secondary">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour aux paiements
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Informations du Paiement</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="montant">Montant payé (Ariary) *</label>
+                            <input type="number" class="form-control" id="montant" name="montant"
+                                   step="0.01" min="0" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fichiers">Preuves de paiement</label>
+                            <input type="file" class="form-control-file" id="fichiers" name="fichiers"
+                                   multiple accept=".pdf,.jpg,.jpeg,.png">
+                            <small class="form-text text-muted">
+                                Formats acceptés : PDF, JPG, PNG
+                            </small>
+                        </div>
+
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check"></i> Enregistrer Paiement
+                        </button>
+                        <a href="/factures/{{ facture.id }}/paiements" class="btn btn-secondary ml-2">
+                            <i class="fas fa-times"></i> Annuler
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-info">Aide</h6>
+                </div>
+                <div class="card-body small text-muted">
+                    <p>Chaque paiement est rattaché à une facture spécifique.</p>
+                    <p>Vous pouvez télécharger une ou plusieurs preuves de paiement.</p>
+                    <p>Les montants cumulés des paiements seront comparés au total TTC de la facture.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

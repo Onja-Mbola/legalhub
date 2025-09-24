@@ -1,0 +1,860 @@
+{% extends "base.html" %}
+
+{% block title %}Facture {{ facture.numero_facture }}{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_paiement.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Facture {{ facture.numero_facture }}</h1>
+        <div>
+            {% if facture.montant_restant > 0 %}
+            {% if facture.montant_restant <= 0 %}
+            <button class="btn btn-success btn-sm"
+                    onclick="markAsPaid('{{ facture.id }}', {{ facture.montant_restant }})">
+                <i class="fas fa-check fa-sm text-white-50"></i> Marquer Payée
+            </button>
+            {% else %}
+            <button class="btn btn-success btn-sm" disabled
+                    title="Impossible de marquer comme payée tant qu'il reste un montant à régler">
+                <i class="fas fa-check fa-sm text-white-50"></i> Marquer Payée
+            </button>
+            {% endif %}
+            {% endif %}
+            <a href="/factures/{{ facture.id }}/modifier" class="btn btn-warning btn-sm">
+                <i class="fas fa-edit fa-sm text-white-50"></i> Modifier
+            </a>
+            <a href="/factures/{{ facture.id }}/download" class="btn btn-primary btn-sm">
+                <i class="fas fa-download fa-sm text-white-50"></i> Télécharger PDF
+            </a>
+            <a href="/factures" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour
+            </a>
+        </div>
+    </div>
+
+    {% if success %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle"></i>
+        {% if success == "1" %}
+        Facture mise à jour avec succès !
+        {% elif success == "email_sent" %}
+        Facture envoyée par email avec succès !
+        {% elif success == "solde_generated" %}
+        Facture de solde générée avec succès !
+        {% elif success == "paiement_added" %}
+        Paiement ajouté avec succès !
+        {% elif success == "paiement_deleted" %}
+        Paiement supprimé avec succès !
+        {% endif %}
+        <button type="button" class="close" data-dismiss="alert">
+            <span>&times;</span>
+        </button>
+    </div>
+    {% endif %}
+
+    {% if facture.facture_parent_id %}
+    <div class="alert alert-info mb-3">
+        <h6><i class="fas fa-link"></i> Facture de Solde</h6>
+        <p class="mb-0">Cette facture est un solde de la facture principale :
+            <a href="/factures/{{ facture.facture_parent.id }}" class="alert-link">
+                {{ facture.facture_parent.numero_facture }}
+            </a>
+        </p>
+    </div>
+    {% elif facture.factures_enfant %}
+    <div class="alert alert-warning mb-3">
+        <h6><i class="fas fa-sitemap"></i> Facture avec Soldes Séparés</h6>
+        <p class="mb-2">Cette facture a {{ facture.factures_enfant|length }} facture(s) de solde :</p>
+        <ul class="mb-0">
+            {% for enfant in facture.factures_enfant %}
+            <li>
+                <a href="/factures/{{ enfant.id }}" class="alert-link">
+                    {{ enfant.numero_facture }}
+                </a> - {{ "%.2f"|format(enfant.montant_ttc) }} Ariary
+                {% if enfant.montant_restant <= 0 %}
+                <span class="badge badge-success">Payée</span>
+                {% else %}
+                <span class="badge badge-warning">{{ "%.2f"|format(enfant.montant_restant) }} Ar restant</span>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Informations de la Facture</h6>
+
+                    {% if facture.montant_restant <= 0 %}
+                    <span class="badge badge-success badge-lg">Payée</span>
+                    {% elif facture.montant_paye > 0 %}
+                    <span class="badge badge-info badge-lg">Partiellement Payée</span>
+                    {% elif facture.statut.value == 'en_retard' %}
+                    <span class="badge badge-danger badge-lg">En Retard</span>
+                    {% elif facture.statut.value == 'envoyee' %}
+                    <span class="badge badge-warning badge-lg">Envoyée</span>
+                    {% else %}
+                    <span class="badge badge-secondary badge-lg">{{ facture.statut.value.title() }}</span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Numéro de facture :</strong></td>
+                                    <td>{{ facture.numero_facture }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Client :</strong></td>
+                                    <td>{{ facture.nom_client_anonyme }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Dossier :</strong></td>
+                                    <td>
+                                        <a href="/dossiers/{{ facture.dossier_id }}">
+                                            {{ facture.dossier.numero_dossier }}
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Detail des Facturation du Dossier :</strong></td>
+                                    <td>
+                                        <a href="/dossiers/{{ facture.dossier_id }}/facture_dossier">
+                                            {{ facture.dossier.numero_dossier }}
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Date d'émission:</strong></td>
+                                    <td>
+                                        {% if facture.date_emission %}
+                                        {{ facture.date_emission.strftime('%d/%m/%Y à %H:%M') }}
+                                        {% else %}
+                                        <span class="text-muted">Non émise</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Date d'échéance:</strong></td>
+                                    <td class="{% if facture.date_echeance.date() < today and facture.montant_restant > 0 %}text-danger font-weight-bold{% endif %}">
+                                        {{ facture.date_echeance.strftime('%d/%m/%Y') }}
+                                        {% if facture.date_echeance.date() < today and facture.montant_restant > 0 %}
+                                        <small>({{ (today - facture.date_echeance.date()).days }} jours de
+                                            retard)</small>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Dernier paiement:</strong></td>
+                                    <td>
+                                        {% if paiements %}
+                                        {% set dernier_paiement = paiements|sort(attribute='date_paiement')|last %}
+                                        {{ dernier_paiement.date_paiement.strftime('%d/%m/%Y à %H:%M') }}
+                                        {% else %}
+                                        <span class="text-muted">Aucun paiement</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Date de création :</strong></td>
+                                    <td>{{ facture.date_creation.strftime('%d/%m/%Y à %H:%M') }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h6 class="font-weight-bold text-primary mb-3">Description des Prestations</h6>
+                    <div class="bg-light p-3 rounded">
+                        <p class="mb-0">{{ facture.description }}</p>
+                    </div>
+
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Montant HT :</strong></td>
+                                    <td class="text-right">{{ "%.2f"|format(facture.montant_ht) }} Ariary</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>TVA ({{ facture.taux_tva }}%) :</strong></td>
+                                    <td class="text-right">{{ "%.2f"|format(facture.montant_ht * facture.taux_tva / 100) }} Ariary</td>
+                                </tr>
+                                <tr class="table-primary">
+                                    <td><strong>Total TTC (cette facture) :</strong></td>
+                                    <td class="text-right"><strong>{{ "%.2f"|format(facture.montant_ttc) }} Ariary</strong></td>
+                                </tr>
+
+                                {% if facture.facture_parent_id is none and facture.factures_enfant %}
+                                <tr class="table-info">
+                                    <td><strong>Total global (avec soldes) :</strong></td>
+                                    <td class="text-right"><strong>{{ "%.2f"|format(facture.montant_total_avec_enfants) }} Ariary</strong></td>
+                                </tr>
+                                <tr class="table-success">
+                                    <td><strong>Total payé global :</strong></td>
+                                    <td class="text-right"><strong>{{ "%.2f"|format(facture.montant_paye_total_avec_enfants) }} Ariary</strong></td>
+                                </tr>
+                                <tr class="{% if facture.montant_restant_global > 0 %}table-warning{% else %}table-success{% endif %}">
+                                    <td><strong>Montant restant global :</strong></td>
+                                    <td class="text-right"><strong>{{ "%.2f"|format(facture.montant_restant_global) }} Ariary</strong></td>
+                                </tr>
+                                <tr><td colspan="2"><hr class="my-1"></td></tr>
+                                <tr class="table-light">
+                                    <td><strong>Payé sur cette facture :</strong></td>
+                                    <td class="text-right">{{ "%.2f"|format(facture.montant_paye) }} Ariary</td>
+                                </tr>
+                                <tr class="table-light">
+                                    <td><strong>Restant sur cette facture :</strong></td>
+                                    <td class="text-right">{{ "%.2f"|format(facture.montant_restant) }} Ariary</td>
+                                </tr>
+                                {% else %}
+                                <tr class="table-success">
+                                    <td><strong>Total payé :</strong></td>
+                                    <td class="text-right"><strong>{{ "%.2f"|format(facture.montant_paye) }} Ariary</strong></td>
+                                </tr>
+                                <tr class="{% if facture.montant_restant > 0 %}table-warning{% else %}table-success{% endif %}">
+                                    <td><strong>Montant restant :</strong></td>
+                                    <td class="text-right"><strong>{{ "%.2f"|format(facture.montant_restant) }} Ariary</strong></td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+
+                    {% if facture.notes_internes %}
+                    <hr>
+                    <h6 class="font-weight-bold text-secondary mb-2">Notes Internes</h6>
+                    <div class="bg-warning bg-opacity-10 p-3 rounded">
+                        <small class="text-muted">{{ facture.notes_internes }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Paiements ({{ paiements|length }})</h6>
+                    <a href="/factures/{{ facture.id }}/paiements/create" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Ajouter un paiement
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if paiements %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Montant</th>
+                                <th>Preuve</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for paiement in paiements %}
+                            <tr>
+                                <td>{{ paiement.date_paiement.strftime('%d/%m/%Y à %H:%M') }}</td>
+                                <td class="font-weight-bold text-success">{{ "%.2f"|format(paiement.montant) }} Ariary</td>
+                                <td>
+                                    {% if paiement.preuve_paiement %}
+                                    <a href="/paiements/{{ paiement.id }}/download" class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td class="d-flex gap-1">
+                                    <a href="/paiements/{{ paiement.id }}/modifier" class="btn btn-sm btn-warning p-1">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form method="post" action="/paiements/{{ paiement.id }}/delete"
+                                          onsubmit="return confirm('Voulez-vous vraiment supprimer ce paiement ?');"
+                                          class="d-inline m-0">
+                                        <button type="submit" class="btn btn-sm btn-danger p-1 w-auto">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-credit-card fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucun paiement enregistré pour cette facture</p>
+                        <a href="/factures/{{ facture.id }}/paiements/create" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Enregistrer le premier paiement
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Historique</h6>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">Facture créée</h6>
+                                <p class="timeline-text">{{ facture.date_creation_plus3h.strftime('%d/%m/%Y à %H:%M') }}</p>
+                            </div>
+                        </div>
+
+                        {% if facture.date_emission %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-info"></div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">Facture émise</h6>
+                                <p class="timeline-text">{{ facture.date_emission_plus3h.strftime('%d/%m/%Y à %H:%M') }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% for paiement in paiements %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">Paiement reçu</h6>
+                                <p class="timeline-text">{{ paiement.date_paiement.strftime('%d/%m/%Y à %H:%M') }} - {{ "%.2f"|format(paiement.montant) }} Ariary</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        {% if facture.nombre_relances > 0 %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-warning"></div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">Relances envoyées</h6>
+                                <p class="timeline-text">{{ facture.nombre_relances }} relance(s)</p>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if facture.montant_restant <= 0 %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">Facture entièrement payée</h6>
+                                <p class="timeline-text">Tous les paiements reçus</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Actions Rapides</h6>
+                </div>
+                <div class="card-body">
+                    {% if facture.montant_restant > 0 %}
+                        {% if facture.facture_parent_id is none %}
+                        <form action="/factures/{{ facture.id }}/generer-solde" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-outline-info btn-block mb-2"
+                                    onclick="return confirm('Créer une nouvelle facture pour le montant restant de {{ '%.2f'|format(facture.montant_restant) }} Ariary ?')">
+                                <i class="fas fa-file-invoice-dollar"></i> Créer Facture de Solde
+                            </button>
+                        </form>
+                        {% else %}
+                        <div class="alert alert-info">
+                            <small><i class="fas fa-info-circle"></i> Les factures de solde ne peuvent pas générer d'autres soldes. Ajoutez un paiement ou modifiez la facture principale.</small>
+                        </div>
+                        {% endif %}
+
+                        <button class="btn btn-outline-primary btn-block mb-2" onclick="showEmailModal()">
+                            <i class="fas fa-envelope"></i> Envoyer par Email
+                        </button>
+                        <a href="/factures/{{ facture.id }}/paiements/create" class="btn btn-outline-success btn-block mb-2">
+                            <i class="fas fa-plus"></i> Ajouter un Paiement
+                        </a>
+                        <button class="btn btn-outline-success btn-block mb-2"
+                                onclick="markAsPaid('{{ facture.id }}', {{ facture.montant_restant }})">
+                            <i class="fas fa-check"></i> Marquer comme Payée
+                        </button>
+                    {% else %}
+                        <div class="alert alert-success text-center">
+                            <i class="fas fa-check-circle fa-2x mb-2"></i><br>
+                            <strong>
+                                {% if facture.facture_parent_id is none and facture.factures_enfant %}
+                                    Facture et tous les soldes entièrement payés
+                                {% else %}
+                                    Facture entièrement payée
+                                {% endif %}
+                            </strong>
+                        </div>
+                    {% endif %}
+
+                    <a href="/factures/{{ facture.id }}/modifier" class="btn btn-outline-warning btn-block mb-2">
+                        <i class="fas fa-edit"></i> Modifier la Facture
+                    </a>
+
+                    {% if facture.fichier_facture %}
+                    <a href="/factures/{{ facture.id }}/download" class="btn btn-outline-info btn-block mb-2">
+                        <i class="fas fa-download"></i> Télécharger PDF
+                    </a>
+                    {% endif %}
+
+                    {% if facture.facture_parent_id is none %}
+                    <button class="btn btn-outline-danger btn-block" onclick="deleteFacture('{{ facture.id }}')">
+                        <i class="fas fa-trash"></i> Supprimer
+                    </button>
+                    {% else %}
+                    <button class="btn btn-outline-danger btn-block"
+                            onclick="deleteFactureSolde('{{ facture.id }}', '{{ facture.facture_parent.numero_facture }}')">
+                        <i class="fas fa-trash"></i> Supprimer ce Solde
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if facture.montant_paye > 0 and facture.montant_restant > 0 %}
+            <div class="card shadow mb-4 border-warning">
+                <div class="card-header py-3 bg-warning">
+                    <h6 class="m-0 font-weight-bold text-white">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        {% if facture.facture_parent_id is none and facture.factures_enfant %}
+                            Paiement Partiel Global
+                        {% else %}
+                            Paiement Partiel
+                        {% endif %}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning mb-0">
+                        <h6><strong>Situation du paiement :</strong></h6>
+                        <ul class="mb-0">
+                            {% if facture.facture_parent_id is none and facture.factures_enfant %}
+                            <li>Montant total global : <strong>{{ "%.2f"|format(facture.montant_total_avec_enfants) }} Ariary</strong></li>
+                            <li>Déjà payé global : <strong>{{ "%.2f"|format(facture.montant_paye_total_avec_enfants) }} Ariary</strong></li>
+                            <li>Reste à payer global : <strong class="text-danger">{{ "%.2f"|format(facture.montant_restant_global) }} Ariary</strong></li>
+                            <hr class="my-2">
+                            <li>Cette facture : {{ "%.2f"|format(facture.montant_paye) }} Ar payé / {{ "%.2f"|format(facture.montant_restant) }} Ar restant</li>
+                            {% else %}
+                            <li>Montant total : <strong>{{ "%.2f"|format(facture.montant_ttc) }} Ariary</strong></li>
+                            <li>Déjà payé : <strong>{{ "%.2f"|format(facture.montant_paye) }} Ariary</strong></li>
+                            <li>Reste à payer : <strong class="text-danger">{{ "%.2f"|format(facture.montant_restant) }} Ariary</strong></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <strong>Options disponibles :</strong><br>
+                            {% if facture.facture_parent_id is none %}
+                            • Créer une facture de solde pour faciliter le suivi<br>
+                            {% endif %}
+                            • Ajouter un nouveau paiement<br>
+                            • Envoyer un rappel avec le montant restant
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-secondary">Rappels Automatiques</h6>
+                </div>
+                <div class="card-body">
+                    {% if facture.rappel_active and facture.montant_restant > 0 %}
+                    <div class="alert alert-info alert-sm">
+                        <i class="fas fa-bell"></i> <strong>Actif</strong><br>
+                        <small>
+                            Type: {{ facture.type_rappel.value.replace('_', ' ').title() }}<br>
+                            {% if facture.prochaine_relance %}
+                            Prochaine relance: {{ facture.prochaine_relance.strftime('%d/%m/%Y') }}
+                            {% endif %}
+                        </small>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-secondary alert-sm">
+                        <i class="fas fa-bell-slash"></i> <strong>Inactif</strong><br>
+                        <small>
+                            {% if facture.montant_restant <= 0 %}
+                            Facture payée - Rappels désactivés
+                            {% else %}
+                            Aucun rappel programmé
+                            {% endif %}
+                        </small>
+                    </div>
+                    {% endif %}
+
+                    {% if facture.montant_restant > 0 %}
+                    <button class="btn btn-sm btn-outline-secondary btn-block"
+                            onclick="toggleReminders('{{ facture.id }}', '{{ facture.rappel_active | tojson }}')">
+                        {% if facture.rappel_active %}
+                        <i class="fas fa-bell-slash"></i> Désactiver
+                        {% else %}
+                        <i class="fas fa-bell"></i> Activer
+                        {% endif %}
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if facture.preuve_paiement or facture.fichier_facture or paiements %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">Documents</h6>
+                </div>
+                <div class="card-body">
+                    {% if facture.fichier_facture %}
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-file-pdf text-danger mr-2"></i>
+                        <div class="flex-grow-1">
+                            <small>Facture PDF</small><br>
+                            <a href="/factures/{{ facture.id }}/download" class="text-primary">
+                                {{ facture.fichier_facture.split('/')[-1] }}
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if facture.preuve_paiement %}
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-receipt text-success mr-2"></i>
+                        <div class="flex-grow-1">
+                            <small>Preuve de paiement globale</small><br>
+                            <a href="{{ facture.preuve_paiement }}" target="_blank" class="text-success">
+                                {{ facture.preuve_paiement.split('/')[-1] }}
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% for paiement in paiements %}
+                    {% if paiement.preuve_paiement %}
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-file-invoice text-info mr-2"></i>
+                        <div class="flex-grow-1">
+                            <small>Preuve paiement {{ "%.2f"|format(paiement.montant) }} Ariary</small><br>
+                            <a href="/paiements/{{ paiement.id }}/download" class="text-info">
+                                Télécharger
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if facture.dossier %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Factures du Dossier {{ facture.dossier.numero_dossier }}</h6>
+                </div>
+                <div class="card-body">
+                    {% set factures_principales = facture.dossier.factures | selectattr('facture_parent_id', 'none') | list %}
+                    {% if factures_principales|length > 1 or facture.factures_enfant %}
+
+                    {% for f in factures_principales %}
+                    <div class="mb-3 {% if f.id == facture.id %}bg-light p-2 rounded{% endif %}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>
+                                    {% if f.id == facture.id %}
+                                        <i class="fas fa-arrow-right text-primary"></i>
+                                    {% endif %}
+                                    <a href="/factures/{{ f.id }}" class="{% if f.id == facture.id %}text-primary{% endif %}">
+                                        {{ f.numero_facture }}
+                                    </a>
+                                </strong>
+                                <small class="text-muted">- {{ f.description[:50] }}...</small>
+                            </div>
+                            <div class="text-right">
+                                <div>{{ "%.2f"|format(f.montant_ttc) }} Ar</div>
+                                {% if f.montant_restant > 0 %}
+                                <span class="badge badge-warning">{{ "%.2f"|format(f.montant_restant) }} Ar restant</span>
+                                {% else %}
+                                <span class="badge badge-success">Payée</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if f.factures_enfant %}
+                        <div class="ml-4 mt-2">
+                            {% for enfant in f.factures_enfant %}
+                            <div class="d-flex justify-content-between align-items-center text-sm {% if enfant.id == facture.id %}font-weight-bold text-primary{% endif %}">
+                                <div>
+                                    <i class="fas fa-level-down-alt fa-rotate-90 text-muted mr-1"></i>
+                                    <a href="/factures/{{ enfant.id }}" class="{% if enfant.id == facture.id %}text-primary{% endif %}">
+                                        {{ enfant.numero_facture }} (Solde)
+                                    </a>
+                                </div>
+                                <div>
+                                    {{ "%.2f"|format(enfant.montant_ttc) }} Ar
+                                    {% if enfant.montant_restant > 0 %}
+                                    <span class="badge badge-warning badge-sm">{{ "%.2f"|format(enfant.montant_restant) }} Ar</span>
+                                    {% else %}
+                                    <span class="badge badge-success badge-sm">Payée</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    {% else %}
+                    <p class="text-muted mb-0">Aucune autre facture pour ce dossier.</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="emailModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Envoyer la Facture {{ facture.numero_facture }}</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form action="/factures/{{ facture.id }}/envoyer" method="post">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Montant restant à payer : {{ "%.2f"|format(facture.montant_restant) }} Ariary</strong>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email_client">Email du client *</label>
+                        <input type="email" class="form-control" id="email_client" name="email_client" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message_personnalise">Message personnalisé</label>
+                        <textarea class="form-control" id="message_personnalise" name="message_personnalise" rows="3"
+                                  placeholder="Message optionnel à ajouter à l'email...">{% if facture.montant_paye > 0 %}Nous avons bien reçu votre paiement de {{ "%.2f"|format(facture.montant_paye) }} Ariary. Il reste {{ "%.2f"|format(facture.montant_restant) }} Ariary à régler.{% endif %}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Envoyer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e3e6f0;
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        left: -23px;
+        top: 0;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 2px #e3e6f0;
+    }
+
+    .timeline-content {
+        margin-left: 10px;
+    }
+
+    .timeline-title {
+        font-size: 14px;
+        font-weight: bold;
+        margin-bottom: 4px;
+    }
+
+    .timeline-text {
+        font-size: 12px;
+        color: #6c757d;
+        margin: 0;
+    }
+
+    .alert-sm {
+        padding: 0.5rem;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function showEmailModal() {
+        $('#emailModal').modal('show');
+    }
+
+    function markAsPaid(factureId, montantRestant) {
+        if (montantRestant > 0) {
+            alert("Impossible de marquer comme payée : il reste un montant à régler.");
+            return;
+        }
+        if (confirm('Confirmer que cette facture a été payée ?')) {
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/factures/' + factureId + '/modifier';
+
+            var statusInput = document.createElement('input');
+            statusInput.type = 'hidden';
+            statusInput.name = 'statut';
+            statusInput.value = 'payee';
+            form.appendChild(statusInput);
+
+            var dateInput = document.createElement('input');
+            dateInput.type = 'hidden';
+            dateInput.name = 'date_paiement';
+            dateInput.value = new Date().toISOString();
+            form.appendChild(dateInput);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+    function toggleReminders(factureId, isActive) {
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/factures/' + factureId + '/modifier';
+
+        var rappelInput = document.createElement('input');
+        rappelInput.type = 'hidden';
+        rappelInput.name = 'rappel_active';
+        rappelInput.value = !isActive;
+        form.appendChild(rappelInput);
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    function deleteFacture(factureId) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer cette facture ? Cette action supprimera aussi toutes les factures de solde liées. Cette action est irréversible.')) {
+            fetch('/factures/' + factureId, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        alert('Facture supprimée avec succès');
+                        window.location.href = '/factures';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Erreur lors de la suppression');
+                });
+        }
+    }
+
+    function deleteFactureSolde(factureId, parentNumero) {
+        if (confirm(`Êtes-vous sûr de vouloir supprimer cette facture de solde ?\n\nCela remettra le montant correspondant sur la facture parent ${parentNumero}.\nCette action est irréversible.`)) {
+            fetch('/factures/' + factureId, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    alert('Facture de solde supprimée avec succès');
+                    window.location.href = '/factures';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Erreur lors de la suppression');
+            });
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const success = urlParams.get('success');
+
+        if (success === 'solde_generated') {
+            showNotification('Facture de solde créée avec succès !', 'success');
+        } else if (success === 'pdf_regenerated') {
+            showNotification('PDF régénéré avec succès !', 'success');
+        }
+    });
+
+    function showNotification(message, type) {
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible fade show`;
+        alert.innerHTML = `
+        <i class="fas fa-check-circle"></i>
+        ${message}
+        <button type="button" class="close" data-dismiss="alert">
+            <span>&times;</span>
+        </button>
+    `;
+
+        const container = document.querySelector('.container-fluid');
+        container.insertBefore(alert, container.firstChild);
+
+        setTimeout(() => {
+            alert.remove();
+        }, 5000);
+    }
+
+    function confirmAction(message, callback) {
+        if (confirm(message)) {
+            callback();
+        }
+    }
+</script>
+{% endblock %}

@@ -76,10 +76,13 @@ def create_dossier_with_files(db: Session, dossier_in: DossierCreate, avocat_nom
     for a in dossier_in.client.adverses:
         db.add(Adverse(client_id=client.id, **a.dict()))
 
+    pieces_jointes = []
+
     numero_dossier = get_next_numero_dossier(db)
     dossier_path = os.path.join("app/documents", avocat_nom, numero_dossier)
-
-    pieces_jointes = save_uploaded_files(files, dossier_path) if files else []
+    if files and any(f.filename.strip() for f in files):
+        saved_files = save_uploaded_files(files, dossier_path)
+        pieces_jointes = [os.path.join(dossier_path, f) for f in saved_files]
 
     dossier = Dossier(
         numero_dossier=numero_dossier,
@@ -154,7 +157,8 @@ def get_dossier_by_id(db: Session, dossier_id: int):
             joinedload(Dossier.jugements),
             joinedload(Dossier.oppositions),
             joinedload(Dossier.retours_audiences),
-            joinedload(Dossier.jugements_definitifs)
+            joinedload(Dossier.jugements_definitifs),
+            joinedload(Dossier.appels)
         )
         .filter(Dossier.id == dossier_id)
         .first()
@@ -181,7 +185,7 @@ def update_dossier_with_files(
     dossier_path = dossier.dossier_path or os.path.join("app/documents", avocat_nom, dossier.numero_dossier)
 
     if files:
-        files = [f for f in files if f.filename]
+        files = [f for f in files if f.filename.strip()]
         if files:
             new_files = save_uploaded_files(files, dossier_path)
             pieces_jointes.extend(new_files)

@@ -9,6 +9,7 @@ class JugementBase(BaseModel):
     texte_decision: Optional[str] = None
     sous_type: Optional[str] = None
     delai_appel: Optional[int] = None
+    date_notification: Optional[date] = None
     execution_provisoire: Optional[bool] = False
     statut: Optional[str] = "en_attente_recours"
     fichier_jugement: Optional[str] = None

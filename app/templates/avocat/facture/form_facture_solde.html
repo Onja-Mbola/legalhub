@@ -1,0 +1,274 @@
+<!-- app/templates/avocat/facture/form_facture_solde.html -->
+{% extends "base.html" %}
+
+{% block title %}Générer Facture de Solde - {{ facture.numero_facture }}{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Générer une Facture de Solde</h1>
+        <a href="/factures/{{ facture.id }}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour à la Facture
+        </a>
+    </div>
+
+    {% if error_msg %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle"></i> {{ error_msg }}
+        <button type="button" class="close" data-dismiss="alert">
+            <span>&times;</span>
+        </button>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-file-invoice-dollar"></i> Nouvelle Facture de Solde
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="/factures/{{ facture.id }}/generer-facture-solde">
+
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle"></i> Facture Originale</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Numéro :</strong> {{ facture.numero_facture }}<br>
+                                    <strong>Client :</strong> {{ facture.nom_client_anonyme }}<br>
+                                    <strong>Montant total :</strong> {{ "%.2f"|format(facture.montant_ttc) }} Ariary
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Montant payé :</strong> {{ "%.2f"|format(facture.montant_paye) }} Ariary<br>
+                                    <strong class="text-danger">Montant restant :</strong> {{ "%.2f"|format(facture.montant_restant) }} Ariary<br>
+                                    <strong>Échéance :</strong> {{ facture.date_echeance.strftime('%d/%m/%Y') }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="description_custom">
+                                        <i class="fas fa-edit"></i> Description de la facture de solde
+                                    </label>
+                                    <textarea
+                                        class="form-control"
+                                        id="description_custom"
+                                        name="description_custom"
+                                        rows="3"
+                                        placeholder="Laissez vide pour utiliser la description automatique : 'Solde restant - {{ facture.description[:50] }}...'"
+                                    ></textarea>
+                                    <small class="form-text text-muted">
+                                        Description par défaut : "Solde restant - {{ facture.description }}"
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card border-left-warning mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title text-warning">
+                                    <i class="fas fa-calendar-alt"></i> Date d'échéance
+                                </h6>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="echeance_option" id="conserver_echeance" value="conserver" checked>
+                                    <label class="form-check-label" for="conserver_echeance">
+                                        <strong>Conserver l'échéance originale</strong> ({{ facture.date_echeance.strftime('%d/%m/%Y') }})
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="echeance_option" id="nouvelle_echeance" value="nouvelle">
+                                    <label class="form-check-label" for="nouvelle_echeance">
+                                        <strong>Définir une nouvelle échéance</strong>
+                                    </label>
+                                </div>
+                                <div class="mt-2" id="nouvelle_echeance_div" style="display: none;">
+                                    <input type="date" class="form-control" name="nouvelle_echeance" id="nouvelle_echeance_input">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card border-left-success mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title text-success">
+                                    <i class="fas fa-cog"></i> Options
+                                </h6>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="marquer_originale_partielle"
+                                           name="marquer_originale_partielle" checked>
+                                    <label class="form-check-label" for="marquer_originale_partielle">
+                                        <strong>Marquer la facture originale comme "Partiellement payée"</strong><br>
+                                        <small class="text-muted">Recommandé pour maintenir la cohérence comptable</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card border-left-primary mb-4">
+                            <div class="card-body">
+                                <h6 class="card-title text-primary">
+                                    <i class="fas fa-file-invoice"></i> Résumé de la Facture de Solde
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <table class="table table-sm table-borderless">
+                                            <tr>
+                                                <td><strong>Client :</strong></td>
+                                                <td>{{ facture.nom_client_anonyme }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Dossier :</strong></td>
+                                                <td>{{ facture.dossier.numero_dossier }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>TVA :</strong></td>
+                                                <td>{{ facture.taux_tva }}%</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="col-md-6">
+                                        {% set montant_ht_solde = facture.montant_restant / (1 + facture.taux_tva / 100) %}
+                                        {% set tva_solde = montant_ht_solde * (facture.taux_tva / 100) %}
+                                        <table class="table table-sm">
+                                            <tr>
+                                                <td><strong>Montant HT :</strong></td>
+                                                <td class="text-right">{{ "%.2f"|format(montant_ht_solde) }} Ariary</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>TVA ({{ facture.taux_tva }}%) :</strong></td>
+                                                <td class="text-right">{{ "%.2f"|format(tva_solde) }} Ariary</td>
+                                            </tr>
+                                            <tr class="table-primary">
+                                                <td><strong>Total TTC :</strong></td>
+                                                <td class="text-right"><strong>{{ "%.2f"|format(facture.montant_restant) }} Ariary</strong></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group text-center">
+                            <button type="button" class="btn btn-secondary mr-3" onclick="window.history.back();">
+                                <i class="fas fa-times"></i> Annuler
+                            </button>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-file-plus"></i> Créer la Facture de Solde
+                            </button>
+                        </div>
+
+                        <input type="hidden" name="conserver_echeance" value="true" id="conserver_echeance_hidden">
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-lightbulb"></i> À Propos des Factures de Solde
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-sm mb-3">
+                        <strong>Qu'est-ce qu'une facture de solde ?</strong><br>
+                        Une facture de solde permet de facturer uniquement le montant restant dû après des paiements partiels.
+                    </p>
+
+                    <h6 class="text-primary">Avantages :</h6>
+                    <ul class="text-sm mb-3">
+                        <li>Clarté pour le client sur le montant exact à payer</li>
+                        <li>Suivi comptable précis</li>
+                        <li>Relances automatiques sur le solde uniquement</li>
+                        <li>Historique complet des paiements</li>
+                    </ul>
+
+                    <div class="alert alert-warning alert-sm">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Important :</strong> Cette action créera une nouvelle facture. L'ancienne facture restera inchangée dans vos archives.
+                    </div>
+                </div>
+            </div>
+
+            {% if facture.paiements %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-history"></i> Paiements Reçus
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% for paiement in facture.paiements %}
+                    <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                        <div>
+                            <small class="text-muted">{{ paiement.date_paiement.strftime('%d/%m/%Y') }}</small>
+                        </div>
+                        <div>
+                            <span class="badge badge-success">{{ "%.2f"|format(paiement.montant) }} Ariary</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                        <strong>Total payé :</strong>
+                        <strong class="text-success">{{ "%.2f"|format(facture.montant_paye) }} Ariary</strong>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const conserverRadio = document.getElementById('conserver_echeance');
+    const nouvelleRadio = document.getElementById('nouvelle_echeance');
+    const nouvelleEcheanceDiv = document.getElementById('nouvelle_echeance_div');
+    const conserverHidden = document.getElementById('conserver_echeance_hidden');
+
+    function toggleEcheanceField() {
+        if (nouvelleRadio.checked) {
+            nouvelleEcheanceDiv.style.display = 'block';
+            conserverHidden.value = 'false';
+        } else {
+            nouvelleEcheanceDiv.style.display = 'none';
+            conserverHidden.value = 'true';
+        }
+    }
+
+    conserverRadio.addEventListener('change', toggleEcheanceField);
+    nouvelleRadio.addEventListener('change', toggleEcheanceField);
+
+    toggleEcheanceField();
+
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (nouvelleRadio.checked) {
+            const nouvelleEcheanceInput = document.getElementById('nouvelle_echeance_input');
+            if (!nouvelleEcheanceInput.value) {
+                e.preventDefault();
+                alert('Veuillez sélectionner une nouvelle date d\'échéance.');
+                return false;
+            }
+        }
+
+        const confirmation = confirm(
+            'Êtes-vous sûr de vouloir créer une nouvelle facture pour le montant restant de {{ "%.2f"|format(facture.montant_restant) }} Ariary ?'
+        );
+
+        if (!confirmation) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -7,6 +7,7 @@ from app.models.param_general import ParamGeneral
 from app.db.base_class import Base
 from app.core.security import hash_password
 from sqlalchemy.orm import Session
+from app.models.paiement import Paiement
 
 def init_db(retries=5, delay=3):
     for attempt in range(retries):
@@ -47,7 +48,11 @@ def init_db(retries=5, delay=3):
                 {"nom": "role_type", "valeur": "Defendeur", "unite": None, "ordre": 10},
                 {"nom": "quota_echange_conclusion_civil", "valeur": "3", "unite": None, "ordre": 10},
                 {"nom": "sous_type_jugement_defavorable", "valeur": "jugement_par_defaut", "unite": None, "ordre": 10},
-                {"nom": "sous_type_jugement_defavorable", "valeur": "jugement_contradictoire", "unite": None, "ordre": 5}
+                {"nom": "sous_type_jugement_defavorable", "valeur": "jugement_contradictoire", "unite": None, "ordre": 5},
+                {"nom": "statut_appel", "valeur": "en_attente", "unite": None, "ordre": 5},
+                {"nom": "statut_appel", "valeur": "en_cours", "unite": None, "ordre": 10},
+                {"nom": "statut_appel", "valeur": "rejete", "unite": None, "ordre": 15},
+                {"nom": "statut_appel", "valeur": "accepte", "unite": None, "ordre": 20},
             ]
 
             for p in params_to_create:

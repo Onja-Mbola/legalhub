@@ -1,0 +1,36 @@
+.table td .btn {
+    min-width: 34px;
+    text-align: center;
+    padding: 4px 6px;
+}
+
+.table td form {
+    display: inline-block;
+    margin: 0;
+}
+
+.table td form button {
+    width: auto !important;
+    display: inline-block;
+}
+
+.table td .btn i {
+    margin: 0;
+}
+
+
+.form-actions .btn {
+    min-width: 100px;
+    text-align: center;
+    padding: 6px 12px;
+}
+
+.form-actions .btn i {
+    margin-right: 5px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 4mm;
+}

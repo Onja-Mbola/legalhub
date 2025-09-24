@@ -49,7 +49,7 @@ def login(request: Request, email: str = Form(...), password: str = Form(...), d
     try:
         user = authenticate_user(email, password, db)
     except Exception as e:
-        return templates.TemplateResponse("login.html", {"request": request, "error": e.detail})
+        return templates.TemplateResponse("login.html", {"request": request, "error": str(e)})
 
     access_token = create_access_token(
         data={"sub": user.email, "role": user.role.value},
