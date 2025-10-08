@@ -10,62 +10,164 @@
 {% include "partials/topbar.html" %}
 {% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_deliberation.css">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
+
+<div class="page-header">
+    <div class="container">
+        <h2 class="text-white mb-0 d-flex align-items-center flex-wrap">
+            <i class="fas fa-gavel me-3"></i>
+            Délibération - Dossier #{{ dossier.id }}
+            <span class="badge-mode badge-deliberation">Phase judiciaire</span>
+        </h2>
+        <p class="text-white-50 mb-0 mt-2">Enregistrement de la mise en délibéré</p>
+    </div>
+</div>
+
+<div class="container mb-5">
     {% if error_msg %}
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <strong>Erreur :</strong> {{ error_msg }}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
-            <span aria-hidden="true">x</span>
-        </button>
+        <div class="d-flex align-items-center">
+            <i class="fas fa-exclamation-circle me-3" style="font-size: 1.5rem;"></i>
+            <div>
+                <strong>Erreur :</strong> {{ error_msg }}
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
     </div>
     {% endif %}
-    <div class="card shadow-lg rounded-4 border-0">
-        <div class="card-header bg-gradient-primary text-white py-3">
-            <h4 class="mb-0"><i class="fas fa-gavel me-2"></i> Délibération - Dossier #{{ dossier.id }}</h4>
-        </div>
-        <div class="card-body">
-            <form method="post" enctype="multipart/form-data" action="{{ request.url }}">
 
-                <div class="mb-3">
-                    <label for="date_mise_en_delibere" class="form-label fw-semibold">Date de mise en délibéré <span
-                            class="text-danger">*</span></label>
-                    <input type="date" class="form-control" id="date_mise_en_delibere" name="date_mise_en_delibere"
-                           required
-                           value="{{ item.date_mise_en_delibere if item else '' }}">
-                </div>
+    <div class="form-card">
+        <div class="form-section">
+            <form method="post" enctype="multipart/form-data" action="{{ request.url }}">
                 <input type="hidden" name="retour_audience_id"
                        value="{{ retour_audience.id if retour_audience else '' }}">
+                <input type="hidden" name="premiere_audience_appel_id"
+                       value="{{ premieres_audiences_appel.id if premieres_audiences_appel else '' }}">
 
-                <div class="mb-3">
-                    <label for="type_decision_attendue" class="form-label fw-semibold">Type de décision attendue
-                        <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="type_decision_attendue"
-                           name="type_decision_attendue" required
-                           value="{{ item.type_decision_attendue if item else '' }}">
+
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-calendar-check"></i>
+                        Informations de délibération
+                    </h5>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label for="date_mise_en_delibere" class="form-label">
+                                <i class="fas fa-calendar-alt"></i>
+                                Date de mise en délibéré
+                                <span class="required-badge">Requis</span>
+                            </label>
+                            <input type="date"
+                                   class="form-control"
+                                   id="date_mise_en_delibere"
+                                   name="date_mise_en_delibere"
+                                   required
+                                   value="{{ item.date_mise_en_delibere if item else '' }}">
+                            <small class="form-text text-muted mt-2 d-block">
+                                <i class="fas fa-info-circle me-1"></i>Date à laquelle le dossier a été mis en délibéré
+                            </small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="type_decision_attendue" class="form-label">
+                                <i class="fas fa-file-signature"></i>
+                                Type de décision attendue
+                                <span class="required-badge">Requis</span>
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="type_decision_attendue"
+                                   name="type_decision_attendue"
+                                   required
+                                   placeholder="Ex: Jugement, Ordonnance, Arrêt..."
+                                   value="{{ item.type_decision_attendue if item else '' }}">
+                            <small class="form-text text-muted mt-2 d-block">
+                                <i class="fas fa-info-circle me-1"></i>Nature de la décision qui sera rendue
+                            </small>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="observations_juge" class="form-label fw-semibold">Observations du juge</label>
-                    <textarea class="form-control" id="observations_juge" name="observations_juge">{{ item.observations_juge if item else '' }}</textarea>
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-comment-dots"></i>
+                        Observations et remarques
+                    </h5>
+
+                    <div class="mb-0">
+                        <label for="observations_juge" class="form-label">
+                            <i class="fas fa-clipboard-list"></i>
+                            Observations du juge
+                        </label>
+                        <textarea class="form-control"
+                                  id="observations_juge"
+                                  name="observations_juge"
+                                  rows="6"
+                                  placeholder="Saisissez les observations, remarques ou commentaires du juge concernant cette affaire...">{{ item.observations_juge if item else '' }}</textarea>
+                        <small class="form-text text-muted mt-2 d-block">
+                            <i class="fas fa-pen me-1"></i>Champ facultatif - Ajoutez des notes si nécessaire
+                        </small>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="note_file" class="form-label fw-semibold">Note du juge (fichier)</label>
+                <div class="section-divider"></div>
+
+                <h5 class="mb-4 text-muted">
+                    <i class="fas fa-paperclip me-2"></i>
+                    Document joint
+                </h5>
+
+                <div class="mb-4 file-upload-section">
+                    <label for="note_file" class="form-label">
+                        <i class="fas fa-file-upload"></i>
+                        Note du juge (fichier)
+                    </label>
+                    <small class="d-block text-muted mb-3">
+                        Formats acceptés : PDF, JPG, JPEG, PNG • Maximum 10 MB
+                    </small>
+
                     {% if item and item.note_audience_file %}
-                    <p>Fichier actuel : <a
-                            href="{{ request.url_for('documents', filepath=item.note_audience_file.split('app/documents/')[-1]) }}"
-                            target="_blank">{{ item.note_audience_file.split('/')[-1] }}</a></p>
+                    <div class="current-files-list">
+                        <div class="text-muted small mb-2 fw-semibold">
+                            <i class="fas fa-check-circle text-success me-1"></i>
+                            Fichier actuel
+                        </div>
+                        <div class="file-item">
+                            <i class="fas fa-file-pdf"></i>
+                            <a href="{{ request.url_for('documents', filepath=item.note_audience_file.split('app/documents/')[-1]) }}"
+                               target="_blank">
+                                <i class="fas fa-download me-1"></i>
+                                {{ item.note_audience_file.split('/')[-1] }}
+                            </a>
+                        </div>
+                    </div>
                     {% endif %}
-                    <input type="file" class="form-control" id="note_file" name="note_file"
+
+                    <input type="file"
+                           class="form-control"
+                           id="note_file"
+                           name="note_file"
                            accept=".pdf,.jpg,.png,.jpeg">
                 </div>
 
-                <button type="submit" class="btn btn-primary rounded-pill px-4">
-                    <i class="fas fa-save me-2"></i> Enregistrer
-                </button>
+                <div class="d-flex justify-content-between align-items-center mt-5">
+                    <a href="/dossiers/{{ dossier.id }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Retour au dossier
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        Enregistrer la délibération
+                    </button>
+                </div>
             </form>
         </div>
     </div>
 </div>
+
 {% endblock %}

@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.core.facture_enum import StatutFacture
 from app.repositories.paiement import PaiementRepository
-from app.services.FileStorageService import save_uploaded_files
+from app.services.FileStorageService import storage
 from app.repositories.facture import get_facture_by_id, update_facture
 
 from app.schemas.facture import FactureUpdate
@@ -45,7 +45,7 @@ def add_paiement_service(
     fichiers_paths = []
 
     if fichiers and any(f.filename.strip() for f in fichiers):
-        saved_files = save_uploaded_files(fichiers, base_path)
+        saved_files = storage.save_uploaded_files(fichiers, base_path)
         fichiers_paths = [os.path.join(base_path, f) for f in saved_files]
 
     paiement_repo = PaiementRepository(db)
@@ -90,7 +90,7 @@ def update_paiement_service(
     fichiers_paths = []
     if fichiers and avocat_nom and any(f.filename.strip() for f in fichiers):
         base_path = os.path.join("app/documents", avocat_nom, paiement.facture.dossier.numero_dossier, "paiements")
-        saved_files = save_uploaded_files(fichiers, base_path)
+        saved_files = storage.save_uploaded_files(fichiers, base_path)
         fichiers_paths = [os.path.join(base_path, f) for f in saved_files]
 
     paiement = paiement_repo.update(

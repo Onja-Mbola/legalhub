@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Oppositions - Avocat{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_dashboard_opposition.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="mb-4">
+        <h2 class="mb-1 font-weight-bold">
+            <i class="fas fa-balance-scale-right mr-2"></i>
+            Dashboard des Oppositions
+        </h2>
+        <p class="text-muted mb-0">Vue d'ensemble et gestion des oppositions</p>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="stats-card card-total">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon icon-total">
+                        <i class="fas fa-list"></i>
+                    </div>
+                    <div class="ml-3 flex-grow-1">
+                        <p class="stats-number mb-0">{{ stats.total }}</p>
+                        <p class="stats-label mb-0">Total</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="stats-card card-en-cours">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon icon-en-cours">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="ml-3 flex-grow-1">
+                        <p class="stats-number mb-0">{{ stats.en_cours }}</p>
+                        <p class="stats-label mb-0">En cours</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="stats-card card-expirees">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon icon-expirees">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="ml-3 flex-grow-1">
+                        <p class="stats-number mb-0">{{ stats.expirees_non_traitees }}</p>
+                        <p class="stats-label mb-0">Expirées</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="stats-card card-formulees">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon icon-formulees">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="ml-3 flex-grow-1">
+                        <p class="stats-number mb-0">{{ stats.formulees }}</p>
+                        <p class="stats-label mb-0">Formulées</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if oppositions_en_cours %}
+    <div class="mb-4">
+        <div class="section-header">
+            <h4 class="font-weight-bold mb-0">
+                <i class="fas fa-clock text-success mr-2"></i>
+                Oppositions en cours ({{ oppositions_en_cours|length }})
+            </h4>
+        </div>
+        <div class="opposition-table">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Dossier</th>
+                        <th>Date notification</th>
+                        <th>Délai expire le</th>
+                        <th>Jours restants</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for opposition in oppositions_en_cours %}
+                    {% set jours_restants = (opposition.opposition_possible_jusqua - today).days %}
+                    <tr>
+                        <td>
+                            <strong>{{ opposition.dossier.numero_dossier }}</strong><br>
+                            <small class="text-muted">{{ opposition.dossier.nom_dossier }}</small>
+                        </td>
+                        <td>{{ opposition.date_notification.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ opposition.opposition_possible_jusqua.strftime('%d/%m/%Y') }}</td>
+                        <td>
+                            {% if jours_restants <= 5 %}
+                            <span class="badge badge-delai badge-danger-delai">
+                                <i class="fas fa-exclamation-circle mr-1"></i>{{ jours_restants }} jours
+                            </span>
+                            {% elif jours_restants <= 15 %}
+                            <span class="badge badge-delai badge-warning-delai">
+                                <i class="fas fa-clock mr-1"></i>{{ jours_restants }} jours
+                            </span>
+                            {% else %}
+                            <span class="badge badge-delai badge-success-delai">
+                                <i class="fas fa-check mr-1"></i>{{ jours_restants }} jours
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <a href="/oppositions/{{ opposition.id }}/formuler" 
+                               class="btn btn-sm btn-primary">
+                                <i class="fas fa-file-signature mr-1"></i> Formuler
+                            </a>
+                            <a href="/dossiers/{{ opposition.dossier_id }}" 
+                               class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-eye mr-1"></i> Voir
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if oppositions_expirees %}
+    <div class="mb-4">
+        <div class="section-header">
+            <h4 class="font-weight-bold mb-0">
+                <i class="fas fa-exclamation-triangle text-danger mr-2"></i>
+                Oppositions expirées non traitées ({{ oppositions_expirees|length }})
+            </h4>
+        </div>
+        <div class="opposition-table">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Dossier</th>
+                        <th>Date notification</th>
+                        <th>Expiré le</th>
+                        <th>Jours dépassés</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for opposition in oppositions_expirees %}
+                    {% set jours_depasses = (today - opposition.opposition_possible_jusqua).days %}
+                    <tr>
+                        <td>
+                            <strong>{{ opposition.dossier.numero_dossier }}</strong><br>
+                            <small class="text-muted">{{ opposition.dossier.nom_dossier }}</small>
+                        </td>
+                        <td>{{ opposition.date_notification.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ opposition.opposition_possible_jusqua.strftime('%d/%m/%Y') }}</td>
+                        <td>
+                            <span class="badge badge-delai badge-danger-delai">
+                                <i class="fas fa-times-circle mr-1"></i>+{{ jours_depasses }} jours
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <a href="/dossiers/{{ opposition.dossier_id }}" 
+                               class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-eye mr-1"></i> Voir
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if oppositions_formulees %}
+    <div class="mb-4">
+        <div class="section-header">
+            <h4 class="font-weight-bold mb-0">
+                <i class="fas fa-check-circle text-info mr-2"></i>
+                Oppositions formulées ({{ oppositions_formulees|length }})
+            </h4>
+        </div>
+        <div class="opposition-table">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Dossier</th>
+                        <th>Date opposition</th>
+                        <th>Motifs</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for opposition in oppositions_formulees %}
+                    <tr>
+                        <td>
+                            <strong>{{ opposition.dossier.numero_dossier }}</strong><br>
+                            <small class="text-muted">{{ opposition.dossier.nom_dossier }}</small>
+                        </td>
+                        <td>{{ opposition.date_opposition.strftime('%d/%m/%Y') if opposition.date_opposition else '-' }}</td>
+                        <td>
+                            {% if opposition.motifs_opposition %}
+                            <small>{{ opposition.motifs_opposition[:50] }}...</small>
+                            {% else %}
+                            <small class="text-muted">-</small>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <a href="/dossiers/{{ opposition.dossier_id }}" 
+                               class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-eye mr-1"></i> Voir
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not oppositions_en_cours and not oppositions_expirees and not oppositions_formulees %}
+    <div class="opposition-table">
+        <div class="empty-state">
+            <i class="fas fa-balance-scale-right"></i>
+            <h5>Aucune opposition</h5>
+            <p class="text-muted">Il n'y a actuellement aucune opposition enregistrée dans le système.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

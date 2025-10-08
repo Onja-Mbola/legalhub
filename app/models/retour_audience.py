@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, DateTime, String, ForeignKey, Text
+from sqlalchemy import Column, Integer, DateTime, String, ForeignKey, Text, JSON
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.db.base_class import Base
@@ -18,6 +18,9 @@ class RetourAudience(Base):
     observations_judge = Column(Text, nullable=True)
     observations_internes = Column(Text, nullable=True)
     pv_audience = Column(String, nullable=True)
+
+    ocr_texte = Column(Text, nullable=True)
+    entites_extraites = Column(JSON, nullable=True)
 
     created_at = Column(DateTime, default=datetime.utcnow)
 

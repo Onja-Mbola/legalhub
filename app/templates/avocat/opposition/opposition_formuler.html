@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}Opposition - Dossier #{{ opposition.dossier_id }}{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_opposition_formuler.css">
+{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb bg-transparent p-0 mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/" class="text-white text-decoration-none">
+                        <i class="fas fa-home me-1"></i> Accueil
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="/dossiers" class="text-white text-decoration-none">Dossiers</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="/dossiers/{{ opposition.dossier_id }}" class="text-white text-decoration-none">
+                        Dossier #{{ opposition.dossier_id }}
+                    </a>
+                </li>
+                <li class="breadcrumb-item active text-white-50" aria-current="page">Opposition</li>
+            </ol>
+        </nav>
+        <h2 class="text-white mb-0 d-flex align-items-center flex-wrap">
+            <i class="fas fa-exclamation-triangle me-3"></i>
+            Formuler une Opposition
+            <span class="badge-mode badge-opposition">Phase judiciaire</span>
+        </h2>
+        <p class="text-white-50 mb-0 mt-2">
+            {{ opposition.dossier.numero_dossier }} - {{ opposition.dossier.nom_dossier }}
+        </p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Main Form Card -->
+            <div class="form-card">
+                <div class="form-section">
+
+                    <!-- Info Section -->
+                    <div class="info-section">
+                        <h6>
+                            <i class="fas fa-info-circle"></i>
+                            Informations sur l'opposition
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <p class="mb-2">
+                                    <i class="fas fa-calendar-check text-success me-2"></i>
+                                    <strong>Date de notification:</strong>
+                                </p>
+                                <span class="badge bg-success bg-opacity-10 text-dark px-3 py-2">
+                                    {{ opposition.date_notification.strftime('%d/%m/%Y') }}
+                                </span>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-2">
+                                    <i class="fas fa-calendar-times text-danger me-2"></i>
+                                    <strong>Opposition possible jusqu'au:</strong>
+                                </p>
+                                <span class="badge bg-danger bg-opacity-10 text-dark px-3 py-2">
+                                    {{ opposition.opposition_possible_jusqua.strftime('%d/%m/%Y') }}
+                                </span>
+                            </div>
+                        </div>
+
+                        {% set today = datetime_now %}
+                        {% set days_left = (opposition.opposition_possible_jusqua - today).days %}
+                        <div class="days-left-section">
+                            {% if days_left >= 0 %}
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-hourglass-half me-2 {% if days_left <= 3 %}text-danger{% elif days_left <= 7 %}text-warning{% else %}text-success{% endif %}"></i>
+                                <strong class="me-2">Jours restants:</strong>
+                                <span class="badge {% if days_left <= 3 %}bg-danger{% elif days_left <= 7 %}bg-warning{% else %}bg-success{% endif %} px-3 py-2">
+                                        {{ days_left }} jour(s)
+                                    </span>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-danger bg-danger bg-opacity-10 border-danger border-2 mb-0">
+                                <i class="fas fa-times-circle me-2"></i>
+                                <strong>⚠️ Délai expiré depuis {{ days_left|abs }} jour(s)</strong>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Form -->
+                    <form method="POST" action="/oppositions/{{ opposition.id }}/formuler"
+                          enctype="multipart/form-data">
+
+                        <div class="form-group-section">
+                            <h5 class="section-title">
+                                <i class="fas fa-calendar-check"></i>
+                                Date d'opposition
+                            </h5>
+
+                            <div class="row g-4">
+                                <div class="col-12">
+                                    <label for="date_opposition" class="form-label">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        Date d'opposition
+                                        <span class="required-badge">Requis</span>
+                                    </label>
+                                    <input type="date"
+                                           class="form-control"
+                                           id="date_opposition"
+                                           name="date_opposition"
+                                           min="{{ opposition.date_notification.strftime('%Y-%m-%d') }}"
+                                           max="{{ opposition.opposition_possible_jusqua.strftime('%Y-%m-%d') }}"
+                                           required>
+                                    <small class="form-text text-muted mt-2 d-block">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        La date doit être entre le {{ opposition.date_notification.strftime('%d/%m/%Y')
+                                        }}
+                                        et le {{ opposition.opposition_possible_jusqua.strftime('%d/%m/%Y') }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group-section">
+                            <h5 class="section-title">
+                                <i class="fas fa-file-upload"></i>
+                                Document d'opposition
+                            </h5>
+
+                            <div class="mb-4 file-upload-section">
+                                <label for="acte_opposition" class="form-label">
+                                    <i class="fas fa-file-pdf"></i>
+                                    Acte d'opposition
+                                </label>
+                                <small class="d-block text-muted mb-3">
+                                    Formats acceptés : PDF • Maximum 10 MB
+                                </small>
+
+                                <div class="upload-area text-center position-relative">
+
+                                    <input type="file"
+                                           class="form-control"
+                                           id="acte_opposition"
+                                           name="acte_opposition"
+                                           accept=".pdf,.jpg,.png,.jpeg">
+                                    <div class="position-relative" style="z-index: 1; pointer-events: none;">
+                                        <i class="fas fa-cloud-upload-alt fs-1 text-warning mb-3 d-block"></i>
+                                        <p class="mb-2 fw-semibold">Cliquez pour sélectionner un fichier</p>
+                                        <p class="text-muted small mb-0">Document officiel de l'opposition (PDF
+                                            uniquement)</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group-section">
+                            <h5 class="section-title">
+                                <i class="fas fa-align-left"></i>
+                                Motifs de l'opposition
+                            </h5>
+
+                            <div class="mb-0">
+                                <label for="motifs_opposition" class="form-label">
+                                    <i class="fas fa-clipboard-list"></i>
+                                    Motifs de l'opposition
+                                </label>
+                                <textarea class="form-control"
+                                          id="motifs_opposition"
+                                          name="motifs_opposition"
+                                          rows="6"
+                                          placeholder="Décrivez les motifs de l'opposition..."></textarea>
+                                <small class="form-text text-muted mt-2 d-block">
+                                    <i class="fas fa-pen me-1"></i>Champ facultatif - Précisez les raisons de
+                                    l'opposition si nécessaire
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="section-divider"></div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <a href="/dossiers/{{ opposition.dossier_id }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Retour au dossier
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check-circle me-2"></i>
+                                Enregistrer l'opposition
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Info Box -->
+            <div class="info-box mt-4">
+                <h6>
+                    <i class="fas fa-info-circle"></i>
+                    Informations importantes
+                </h6>
+                <ul>
+                    <li>
+                        <i class="fas fa-check-circle text-success"></i>
+                        La date d'opposition doit être dans le délai légal
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle text-success"></i>
+                        L'acte d'opposition est le document officiel de l'opposition
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle text-success"></i>
+                        Les motifs doivent être clairement exposés
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle text-success"></i>
+                        Format accepté : PDF uniquement
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const dateInput = document.getElementById('date_opposition');
+        const today = new Date().toISOString().split('T')[0];
+        const minDate = dateInput.getAttribute('min');
+        const maxDate = dateInput.getAttribute('max');
+
+        // Set default date to today if within valid range
+        if (today >= minDate && today <= maxDate) {
+            dateInput.value = today;
+        }
+
+        // File upload feedback
+        const fileInput = document.getElementById('acte_opposition');
+        fileInput.addEventListener('change', function (e) {
+            const fileName = e.target.files[0]?.name;
+            if (fileName) {
+                const uploadArea = this.closest('.upload-area');
+                uploadArea.classList.add('border-success');
+                const textElement = uploadArea.querySelector('p.fw-semibold');
+                textElement.innerHTML = '<i class="fas fa-check-circle text-success me-2"></i>Fichier sélectionné: ' + fileName;
+                textElement.classList.remove('text-muted');
+                textElement.classList.add('text-success');
+            }
+        });
+    });
+
+    // Form validation
+    document.querySelector('form').addEventListener('submit', function (e) {
+        const dateInput = document.getElementById('date_opposition');
+        const selectedDate = new Date(dateInput.value);
+        const minDate = new Date(dateInput.getAttribute('min'));
+        const maxDate = new Date(dateInput.getAttribute('max'));
+
+        if (selectedDate < minDate || selectedDate > maxDate) {
+            e.preventDefault();
+            alert('La date d\'opposition doit être entre le ' +
+                minDate.toLocaleDateString('fr-FR') + ' et le ' +
+                maxDate.toLocaleDateString('fr-FR'));
+        }
+    });
+</script>
+{% endblock %}

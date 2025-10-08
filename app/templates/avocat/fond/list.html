@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Décisions au Fond{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="/static/css/custom_list_fond.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="container">
+        <h2 class="text-white mb-0 d-flex align-items-center flex-wrap">
+            <i class="fas fa-balance-scale me-3"></i>
+            Décisions au Fond
+        </h2>
+        <p class="text-white-50 mb-0 mt-2">Liste des décisions rendues pour ce dossier</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="dossier-info mb-4">
+        <i class="fas fa-folder-open me-2"></i>
+        <strong>Dossier :</strong> {{ dossier.numero_dossier }} - {{ dossier.nom_dossier }}
+    </div>
+
+    {% if request.query_params.get('success') %}
+    <div class="alert alert-success">
+        <p class="alert-text">
+            <i class="fas fa-check-circle"></i>
+            Décision au fond créée avec succès
+        </p>
+    </div>
+    {% endif %}
+
+    {% if request.query_params.get('deleted') %}
+    <div class="alert alert-info">
+        <p class="alert-text">
+            <i class="fas fa-info-circle"></i>
+            Décision au fond supprimée avec succès
+        </p>
+    </div>
+    {% endif %}
+
+    <div class="list-card">
+        <div class="card-header-section">
+            <div>
+                <h3 class="text-dark fw-bold mb-0">
+                    Liste des décisions
+                </h3>
+                <p class="text-muted mb-0 mt-1">
+                    {% if decisions %}
+                        {{ decisions|length }} décision(s) enregistrée(s)
+                    {% else %}
+                        Aucune décision pour le moment
+                    {% endif %}
+                </p>
+            </div>
+            <a href="/dossiers/{{ dossier.id }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Retour au dossier
+            </a>
+        </div>
+
+        {% if decisions %}
+        <div class="table-wrapper">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-calendar me-2"></i>Date Décision</th>
+                        <th><i class="fas fa-file-signature me-2"></i>Type</th>
+                        <th><i class="fas fa-arrow-right me-2"></i>Sens</th>
+                        <th><i class="fas fa-bell me-2"></i>Date Notification</th>
+                        <th><i class="fas fa-hourglass-end me-2"></i>Date Limite Appel</th>
+                        <th><i class="fas fa-cog me-2"></i>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for decision in decisions %}
+                    <tr>
+                        <td>
+                            <strong>{{ decision.date_decision_fond.strftime('%d/%m/%Y') if decision.date_decision_fond else '-' }}</strong>
+                        </td>
+                        <td>
+                            {% if decision.type_decision_fond == 'contradictoire' %}
+                                <span class="badge-pill badge-contradictoire">
+                                    <i class="fas fa-balance-scale"></i>
+                                    Contradictoire
+                                </span>
+                            {% elif decision.type_decision_fond == 'par_defaut' %}
+                                <span class="badge-pill badge-par-defaut">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    Par défaut
+                                </span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if decision.sens_decision == 'favorable' %}
+                                <span class="badge-favorable">
+                                    <i class="fas fa-check-circle me-1"></i>
+                                    Favorable
+                                </span>
+                            {% elif decision.sens_decision == 'defavorable' %}
+                                <span class="badge-defavorable">
+                                    <i class="fas fa-times-circle me-1"></i>
+                                    Défavorable
+                                </span>
+                            {% elif decision.sens_decision == 'mixte' %}
+                                <span class="badge-mixte">
+                                    <i class="fas fa-adjust me-1"></i>
+                                    Mixte
+                                </span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ decision.date_notification.strftime('%d/%m/%Y') if decision.date_notification else '-' }}
+                        </td>
+                        <td>
+                            {% if decision.date_limite_appel %}
+                                <span class="{% if decision.date_limite_appel < now %}date-expired{% endif %}">
+                                    {{ decision.date_limite_appel.strftime('%d/%m/%Y') }}
+                                    {% if decision.date_limite_appel < now %}
+                                        <i class="fas fa-exclamation-triangle ms-1"></i>
+                                    {% endif %}
+                                </span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="/decisions_fond/{{ decision.id }}" class="btn-action btn-view">
+                                    <i class="fas fa-eye"></i>
+                                    Voir
+                                </a>
+                                <a href="/decisions_fond/{{ decision.id }}/update" class="btn-action btn-edit">
+                                    <i class="fas fa-edit"></i>
+                                    Modifier
+                                </a>
+                                <form method="post"
+                                      action="/decisions_fond/{{ decision.id }}/delete"
+                                      style="display: inline;"
+                                      onsubmit="return confirm('⚠️ Êtes-vous sûr de vouloir supprimer cette décision ?\n\nCette action est irréversible.');">
+                                    <button type="submit" class="btn-action btn-delete">
+                                        <i class="fas fa-trash-alt"></i>
+                                        Supprimer
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-balance-scale"></i>
+            </div>
+            <h3 class="empty-state-title">Aucune décision au fond</h3>
+            <p class="empty-state-text">
+                Aucune décision au fond n'a été enregistrée pour ce dossier.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

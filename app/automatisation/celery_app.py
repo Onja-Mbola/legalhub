@@ -16,7 +16,10 @@ celery_app = Celery(
         "app.services.grosse_service",
         "app.services.opposition_service",
         "app.services.jugement_service",
-        "app.services.facture_service"
+        "app.services.facture_service",
+        "app.automatisation.cleanup",
+        "app.services.fond_service",
+        "app.services.cassation_service"
     ],
 )
 
@@ -32,11 +35,11 @@ celery_app.conf.update(
 celery_app.conf.beat_schedule = {
     "check_grosse_rappel": {
         "task": "app.services.grosse_service.check_grosse_rappel",
-        "schedule": crontab(hour=0, minute=0),
+        "schedule": crontab(hour=9, minute=0),
     },
     "check_and_send_alerts": {
         "task": "app.services.opposition_service.check_and_send_alerts",
-        "schedule": crontab(hour=0, minute=0),
+        "schedule": crontab(hour=9, minute=0),
     },
     "check_and_send_alerts_1": {
         "task": "app.services.opposition_service.check_and_send_alerts_1",
@@ -44,11 +47,15 @@ celery_app.conf.beat_schedule = {
     },
     "check_and_send_appel_alerts": {
         "task": "app.services.jugement_service.check_and_send_appel_alerts",
-        "schedule": crontab(hour=0, minute=0),
+        "schedule": crontab(hour=9, minute=0),
     },
     "check_and_send_appel_alerts_1": {
         "task": "app.services.jugement_service.check_and_send_appel_alerts_1",
         "schedule": timedelta(minutes=1),
+    },
+    "check_and_send_opposition_appel_alerts": {
+        "task": "app.services.opposition_service.check_and_send_opposition_appel_alerts",
+        "schedule": crontab(hour=9, minute=0),
     },
     "check_factures_rappel": {
         "task": "app.services.facture_service.check_factures_rappel",
@@ -64,6 +71,18 @@ celery_app.conf.beat_schedule = {
     },
     "update_facture_status": {
         "task": "app.services.facture_service.update_facture_status_task",
-        "schedule": crontab(hour=1, minute=0),
+        "schedule": crontab(hour=9, minute=0),
     },
+    "cleanup-expired-password-tokens": {
+        "task": "app.automatisation.cleanup.cleanup_expired_password_tokens",
+        "schedule": crontab(hour=9, minute=0),
+    },
+    'check-fond-alerts-daily': {
+        'task': 'app.services.fond_service.check_and_send_fond_alerts',
+        'schedule': crontab(hour=9, minute=0),
+    },
+    'check_and_send_cassation_alerts': {
+        'task': 'app.services.cassation_service.check_and_send_cassation_alerts',
+        'schedule': crontab(hour=9, minute=0),
+    }
 }

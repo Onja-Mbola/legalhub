@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+{% block title %}Mon Profil{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_profil.css">
+{% endblock %}
+{% block content %}
+<div class="container-fluid mt-3">
+    {% if success %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>{{ success }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert">x</button>
+    </div>
+    {% endif %}
+    
+    {% if error %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert">x</button>
+    </div>
+    {% endif %}
+
+    <div class="profile-header mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-2 text-center">
+                <div class="profile-avatar mx-auto">
+                    <i class="fas fa-user"></i>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <h2 class="mb-1">{{ user.nom }}</h2>
+                <p class="mb-1"><i class="fas fa-envelope me-2"></i>{{ user.email }}</p>
+                {% if user.role.value == "avocat" %}
+                <span class="badge bg-primary">
+                    <i class="fas fa-gavel me-1"></i>Avocat
+                </span>
+                {% else %}
+                <span class="badge bg-info">
+                    <i class="fas fa-user-tie me-1"></i>Clerk
+                </span>
+                {% endif %}
+                
+                {% if user.is_active %}
+                <span class="badge bg-success ms-2">
+                    <i class="fas fa-check-circle me-1"></i>Compte Actif
+                </span>
+                {% else %}
+                <span class="badge bg-warning ms-2">
+                    <i class="fas fa-clock me-1"></i>En attente d'activation
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="profile-card">
+        <ul class="nav nav-tabs" id="profileTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab">
+                    <i class="fas fa-user me-2"></i>Informations
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab">
+                    <i class="fas fa-lock me-2"></i>Mot de passe
+                </button>
+            </li>
+            {% if user.role.value == "avocat" %}
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="clerk-tab" data-bs-toggle="tab" data-bs-target="#clerk" type="button" role="tab">
+                    <i class="fas fa-user-plus me-2"></i>Créer un clerk
+                </button>
+            </li>
+            {% endif %}
+        </ul>
+
+        <div class="tab-content" id="profileTabsContent">
+            <div class="tab-pane fade show active" id="info" role="tabpanel">
+                <h4 class="mb-4"><i class="fas fa-edit me-2"></i>Modifier mes informations</h4>
+                
+                <form action="/profil/update" method="post">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="nom" class="form-label">Nom complet</label>
+                                <input type="text" class="form-control" id="nom" name="nom" value="{{ user.nom }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="role" class="form-label">Rôle</label>
+                                <select class="form-select" id="role" disabled>
+                                    <option value="avocat" {% if user.role.value == "avocat" %}selected{% endif %}>Avocat</option>
+                                    <option value="clerk" {% if user.role.value == "clerk" %}selected{% endif %}>clerk</option>
+                                </select>
+                                <small class="text-muted">Le rôle ne peut pas être modifié</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="phone" class="form-label">Téléphone</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" 
+                                       value="{{ user.phone or '' }}" placeholder="+33 1 23 45 67 89">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="tab-pane fade" id="password" role="tabpanel">
+                <h4 class="mb-4"><i class="fas fa-shield-alt me-2"></i>Changer mon mot de passe</h4>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Pour votre sécurité, un email de confirmation sera envoyé avant la modification du mot de passe.
+                </div>
+
+                <form action="/profil/password/request-change" method="post">
+                    <div class="form-group">
+                        <label for="current_password" class="form-label">Mot de passe actuel</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                            <input type="password" class="form-control" id="current_password" name="current_password" required>
+                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('current_password')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new_password" class="form-label">Nouveau mot de passe</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-key"></i>
+                            </span>
+                            <input type="password" class="form-control" id="new_password" name="new_password" required>
+                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('new_password')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="password-strength" id="passwordStrength"></div>
+                        <small class="text-muted">Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirm_password" class="form-label">Confirmer le nouveau mot de passe</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-check"></i>
+                            </span>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('confirm_password')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-envelope me-2"></i>Envoyer la demande de confirmation
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            {% if user.role.value == "avocat" %}
+            <div class="tab-pane fade" id="clerk" role="tabpanel">
+                <h4 class="mb-4"><i class="fas fa-user-plus me-2"></i>Créer un compte clerk</h4>
+                
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Un email d'activation sera automatiquement envoyé au nouveau clerk avec ses identifiants de connexion.
+                </div>
+
+                <form action="/profil/create-clerk" method="post">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="clerk_nom" class="form-label">Nom complet du clerk</label>
+                                <input type="text" class="form-control" id="clerk_nom" name="clerk_nom" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="clerk_email" class="form-label">Email du clerk</label>
+                                <input type="email" class="form-control" id="clerk_email" name="clerk_email" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="send_welcome_email" name="send_welcome_email" checked>
+                            <label class="form-check-label" for="send_welcome_email">
+                                Envoyer un email de bienvenue avec les instructions d'activation
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Annuler
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-user-plus me-2"></i>Créer le compte clerk
+                        </button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function togglePassword(fieldId) {
+    const field = document.getElementById(fieldId);
+    const button = field.nextElementSibling;
+    const icon = button.querySelector('i');
+    
+    if (field.type === 'password') {
+        field.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        field.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
+document.getElementById('new_password').addEventListener('input', function(e) {
+    const password = e.target.value;
+    const strengthBar = document.getElementById('passwordStrength');
+    
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[a-z]/.test(password)) strength++;
+    if (/\d/.test(password)) strength++;
+    if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) strength++;
+    
+    strengthBar.className = 'password-strength';
+    if (strength < 3) {
+        strengthBar.classList.add('strength-weak');
+    } else if (strength < 5) {
+        strengthBar.classList.add('strength-medium');
+    } else {
+        strengthBar.classList.add('strength-strong');
+    }
+});
+
+document.getElementById('confirm_password').addEventListener('input', function(e) {
+    const newPassword = document.getElementById('new_password').value;
+    const confirmPassword = e.target.value;
+    
+    if (newPassword !== confirmPassword && confirmPassword.length > 0) {
+        e.target.classList.add('is-invalid');
+    } else {
+        e.target.classList.remove('is-invalid');
+    }
+});
+</script>
+{% endblock %}

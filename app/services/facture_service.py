@@ -18,7 +18,7 @@ from app.repositories.facture import get_factures_en_attente_relance, update_rel
 from app.repositories.facture import get_statistiques_facturation, get_factures_by_avocat
 from app.repositories.user import get_user_by_id
 from app.schemas.facture import FactureCreate, FactureUpdate
-from app.services.FileStorageService import save_uploaded_files
+from app.services.FileStorageService import storage
 from app.services.email import send_email
 from app.services.email import send_facture_email, send_relance_facture_email
 from app.services.pdf_generator import generate_facture_pdf
@@ -72,7 +72,7 @@ def update_facture_with_files(
         file_path = os.path.join("app/documents", avocat_nom, dossier.numero_dossier, "factures", "preuves")
 
         try:
-            saved_files = save_uploaded_files([preuve_paiement], file_path)
+            saved_files = storage.save_uploaded_files([preuve_paiement], file_path)
             facture_update.preuve_paiement = os.path.join(file_path, saved_files[0])
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Erreur lors de l'upload: {str(e)}")

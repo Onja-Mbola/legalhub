@@ -15,8 +15,10 @@ from app.services.echange_conclusion_service import (
     create_echange_conclusion_service,
     update_echange_conclusion_service,
     get_echange_conclusion_by_dossier_service,
-    get_echange_conclusion_by_id, create_echange_conclusion_service_retour_audience
+    get_echange_conclusion_by_id, create_echange_conclusion_service_retour_audience,
+    create_echange_conclusion_service_premiere_appel
 )
+from app.services.premiere_audience_appel_service import get_premiere_audience_appel_by_id_service
 from app.services.retour_audience_service import get_retour_audience_by_id
 
 router = APIRouter()
@@ -58,7 +60,7 @@ def echange_form_create_retour_audience(
 ):
     dossier = _get_dossier_or_404(db, dossier_id)
     retour_audience = get_retour_audience_by_id(db, retour_audience_id)
-    items = get_echange_conclusion_by_dossier_service(db, dossier_id)
+    items = get_echange_conclusion_by_dossier_service(db, dossier_id, arg="retour")
     return templates.TemplateResponse("avocat/echange_conclusions/form.html", {
         "request": request,
         "user": user,
@@ -66,6 +68,27 @@ def echange_form_create_retour_audience(
         "items": items,
         "retour_audience": retour_audience,
         "mode": "creates"
+    })
+
+@router.get("/dossiers/{dossier_id}/echange_conclusions/premiere_appel/{premiere_appel_id}", response_class=HTMLResponse)
+def echange_form_create_premiere_appel(
+        dossier_id: int,
+        premiere_appel_id: int,
+        request: Request,
+        db: Session = Depends(get_db),
+        user: User = Depends(get_current_avocat_user)
+):
+    dossier = _get_dossier_or_404(db, dossier_id)
+    premiere_appel = get_premiere_audience_appel_by_id_service(db, premiere_appel_id)
+    items = get_echange_conclusion_by_dossier_service(db, dossier_id, arg="appel")
+    return templates.TemplateResponse("avocat/echange_conclusions/form.html", {
+        "request": request,
+        "user": user,
+        "dossier": dossier,
+        "items": items,
+        "premiere_appel": premiere_appel,
+        "premiere_appel_id": premiere_appel.id,
+        "mode": "creates_appel"
     })
 
 
@@ -140,6 +163,33 @@ async def echange_create_retour_audience(
     create_echange_conclusion_service_retour_audience(db, dossier_id, user.nom, data, conclusions_file)
 
     return RedirectResponse(url=f"/dossiers/?echange_retour_success=1", status_code=303)
+
+
+@router.post("/dossiers/{dossier_id}/echange_conclusions/premiere_appel/{premiere_appel_id}")
+async def echange_create_premiere_appel(
+        dossier_id: int,
+        premiere_appel_id: int,
+        partie: str = Form(...),
+        date_depot: date = Form(...),
+        contenu_resume: Optional[str] = Form(None),
+        motif_renvoi: Optional[str] = Form(None),
+        conclusions_file: List[UploadFile] = File(None),
+        db: Session = Depends(get_db),
+        user: User = Depends(get_current_avocat_user),
+):
+    dossier = _get_dossier_or_404(db, dossier_id)
+    data = EchangeConclusionCreate(
+        dossier_id=dossier_id,
+        premiere_appel_id=premiere_appel_id,
+        partie=partie,
+        date_depot=date_depot,
+        contenu_resume=contenu_resume,
+        motif_renvoi=motif_renvoi
+    )
+
+    create_echange_conclusion_service_premiere_appel(db, dossier_id, user.nom, data, conclusions_file)
+
+    return RedirectResponse(url=f"/dossiers/?echange_premiere_appel_success=1", status_code=303)
 
 @router.post("/dossiers/{dossier_id}/echange_conclusions/{echange_id}/update")
 async def echange_update(

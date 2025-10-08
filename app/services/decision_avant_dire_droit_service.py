@@ -1,7 +1,9 @@
 import os
 from typing import Optional
+
 from fastapi import UploadFile, HTTPException
 from sqlalchemy.orm import Session
+
 from app.models.dossier import Dossier
 from app.core.workflow_enums import ProcessStage
 from app.repositories.decision_avant_dire_droit import (
@@ -17,7 +19,7 @@ from app.schemas.decision_avant_dire_droit import (
 from app.services.dossier import get_dossier_by_id_service
 from app.services.param_general import get_param
 from app.services.workflow_guard import WorkflowGuard
-from app.services.FileStorageService import save_uploaded_files
+from app.services.upload_processor import process_upload
 
 
 def create_decision_avant_dire_droit_service(
@@ -44,17 +46,35 @@ def create_decision_avant_dire_droit_service(
         raise HTTPException(status_code=400,
                             detail=f"Vous ne pouvez pas créer plus de {quota} décisions avant dire droit.")
 
-    base = os.path.join("app/documents", avocat_nom, dossier.numero_dossier, "decision_avant_dire_droit")
-    file_path = None
-    if ordonnance_file and ordonnance_file.filename:
-        saved_files = save_uploaded_files([ordonnance_file], base)
-        file_path = os.path.join(base, saved_files[0])
-
     obj = create_decision_avant_dire_droit(db, data)
-    if file_path:
-        obj.ordonnance_file = file_path
-        db.commit()
-        db.refresh(obj)
+    # obj.ordonnance_file = None
+    db.commit()
+    db.refresh(obj)
+
+    has_ordonnance = ordonnance_file and ordonnance_file.filename
+    if has_ordonnance:
+        process_upload(
+            obj=obj,
+            files=[ordonnance_file],
+            db=db,
+            dossier=dossier,
+            file_field="ordonnance_file",
+            contenu_field="contenu",
+            ocr_all_files=False,
+            run_ml=True,
+            subfolder="decision_avant_dire_droit"
+        )
+    else:
+        process_upload(
+            obj=obj,
+            files=[],
+            db=db,
+            dossier=dossier,
+            file_field="ordonnance_file",
+            contenu_field="contenu",
+            run_ml=True,
+            subfolder="decision_avant_dire_droit"
+        )
 
     next_stage = ProcessStage.DECISION_AVANT_DIRE_DROIT
     WorkflowGuard.advance(dossier, next_stage, db)
@@ -72,24 +92,31 @@ def update_decision_avant_dire_droit_service(
     if not existing:
         raise HTTPException(status_code=404, detail="Décision introuvable")
 
-    base = os.path.join("app/documents", avocat_nom, existing.dossier.numero_dossier,
-                        "decision_avant_dire_droit")
-    file_path = None
-    if ordonnance_file and ordonnance_file.filename:
-        saved_files = save_uploaded_files([ordonnance_file], base)
-        file_path = os.path.join(base, saved_files[0])
+    dossier = existing.dossier
 
     updated = update_decision_avant_dire_droit(db, existing, data)
-    if file_path:
-        updated.ordonnance_file = file_path
-        db.commit()
-        db.refresh(updated)
+    db.commit()
+    db.refresh(updated)
+
+    has_new_ordonnance = ordonnance_file and ordonnance_file.filename
+    if has_new_ordonnance:
+        process_upload(
+            obj=updated,
+            files=[ordonnance_file],
+            db=db,
+            dossier=dossier,
+            file_field="ordonnance_file",
+            contenu_field="contenu",
+            ocr_all_files=False,
+            run_ml=True,
+            subfolder="decision_avant_dire_droit"
+        )
 
     return updated
 
 
-def get_decision_avant_dire_droit_by_id_service(db: Session, id: int):
-    return get_decision_avant_dire_droit_by_id(db, id)
+def get_decision_avant_dire_droit_by_id_service(db: Session, avant_dire_droit_id: int):
+    return get_decision_avant_dire_droit_by_id(db, avant_dire_droit_id)
 
 
 def get_decision_avant_dire_droit_by_dossier_service(db: Session, dossier_id: int):

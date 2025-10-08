@@ -8,8 +8,9 @@ from app.models.adverse import Adverse
 from app.models.client import Client
 from app.models.demandeur import Demandeur
 from app.models.dossier import Dossier
+from app.models.user import User
 from app.schemas.dossier import DossierCreate
-from app.services.FileStorageService import save_uploaded_files
+from app.services.FileStorageService import storage, MinIOStorage
 from app.services.action_log import log_action_service
 
 
@@ -81,7 +82,7 @@ def create_dossier_with_files(db: Session, dossier_in: DossierCreate, avocat_nom
     numero_dossier = get_next_numero_dossier(db)
     dossier_path = os.path.join("app/documents", avocat_nom, numero_dossier)
     if files and any(f.filename.strip() for f in files):
-        saved_files = save_uploaded_files(files, dossier_path)
+        saved_files = storage.save_uploaded_files(files, dossier_path)
         pieces_jointes = [os.path.join(dossier_path, f) for f in saved_files]
 
     dossier = Dossier(
@@ -119,12 +120,54 @@ def get_dossiers_by_avocat(db: Session, avocat_id: int):
             joinedload(Dossier.decisions_definitives),
             joinedload(Dossier.jugements),
             joinedload(Dossier.retours_audiences),
-            joinedload(Dossier.deliberations_decisions)
+            joinedload(Dossier.deliberations_decisions),
+            joinedload(Dossier.premieres_audiences_appel),
+            joinedload(Dossier.decisions_add),
+            joinedload(Dossier.decisions_fond),
+            joinedload(Dossier.cassations)
         )
         .filter(Dossier.avocat_responsable == avocat_id)
         .all()
     )
 
+
+def get_dossiers_for_clerk(db: Session, clerk_user: User):
+    if not clerk_user.created_by_id:
+        return []
+
+    return (
+        db.query(Dossier)
+        .options(
+            joinedload(Dossier.client).joinedload(Client.role_client_param),
+            joinedload(Dossier.decisions_definitives),
+            joinedload(Dossier.jugements),
+            joinedload(Dossier.retours_audiences),
+            joinedload(Dossier.deliberations_decisions),
+            joinedload(Dossier.premieres_audiences_appel),
+            joinedload(Dossier.decisions_add),
+            joinedload(Dossier.decisions_fond),
+            joinedload(Dossier.cassations)
+        )
+        .filter(Dossier.avocat_responsable == clerk_user.created_by_id)
+        .all()
+    )
+
+
+def get_dossiers_archiver_for_clerk(db: Session, clerk_user: User):
+    if not clerk_user.created_by_id:
+        return []
+
+    return (
+        db.query(Dossier)
+        .options(
+            joinedload(Dossier.client).joinedload(Client.role_client_param)
+        )
+        .filter(
+            Dossier.avocat_responsable == clerk_user.created_by_id,
+            Dossier.current_stage == ProcessStage.FIN_ARCHIVAGE.value
+        )
+        .all()
+    )
 
 def get_dossiers_archiver_by_avocat(db: Session, avocat_id: int):
     return (
@@ -158,7 +201,11 @@ def get_dossier_by_id(db: Session, dossier_id: int):
             joinedload(Dossier.oppositions),
             joinedload(Dossier.retours_audiences),
             joinedload(Dossier.jugements_definitifs),
-            joinedload(Dossier.appels)
+            joinedload(Dossier.appels),
+            joinedload(Dossier.premieres_audiences_appel),
+            joinedload(Dossier.decisions_fond),
+            joinedload(Dossier.decisions_add),
+            joinedload(Dossier.cassations)
         )
         .filter(Dossier.id == dossier_id)
         .first()
@@ -187,7 +234,7 @@ def update_dossier_with_files(
     if files:
         files = [f for f in files if f.filename.strip()]
         if files:
-            new_files = save_uploaded_files(files, dossier_path)
+            new_files = storage.save_uploaded_files(files, dossier_path)
             pieces_jointes.extend(new_files)
             dossier.dossier_path = dossier_path
 
@@ -195,6 +242,16 @@ def update_dossier_with_files(
     db.commit()
     db.refresh(dossier)
 
-    log_action_service(db, user_id, f"Mise à jour du dossier {dossier.numero_dossier}", dossier.id)
+    log_action_service(db, user_id, "Mise à jour du dossier", f"Mise à jour du dossier {dossier.numero_dossier}", dossier.id)
 
     return dossier
+
+
+def delete_dossier_anonyme(db: Session, dossier_id: int):
+    dossier = get_dossier_by_id(db, dossier_id)
+    if dossier:
+        db.delete(dossier)
+        db.commit()
+        storage = MinIOStorage()
+        for path in dossier.files_paths or []:
+            storage.client.remove_object(storage.bucket_name, path)

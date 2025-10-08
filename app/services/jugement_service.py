@@ -1,6 +1,7 @@
+import json
 import os
 from datetime import timedelta, datetime
-from typing import Optional
+from typing import Optional, List
 
 from fastapi import HTTPException, UploadFile
 from sqlalchemy.orm import Session
@@ -9,17 +10,15 @@ from app.automatisation.celery_app import celery_app
 from app.core.workflow_enums import ProcessStage
 from app.db.session import SessionLocal
 from app.models.jugement import Jugement
+from app.models.dossier import Dossier  # NOUVEAU : Pour hook
 from app.repositories.jugement import create_jugement, update_jugement, get_jugements_by_dossier, get_jugement_by_id
 from app.schemas.jugement import JugementCreate, JugementUpdate
-from app.models.dossier import Dossier
-from app.models.action_log import ActionLog
-from app.services.FileStorageService import save_uploaded_files
 from app.services.action_log import log_action_service
 from app.services.dossier import get_dossier_by_id_service
-from app.services.email import send_jugement_favorable_email_programmer, send_appel_email_programmer
+from app.services.email import send_appel_email_programmer
 from app.services.workflow_guard import WorkflowGuard
-from sqlalchemy import not_
-
+from app.services.upload_processor import process_upload
+from app.services.FileStorageService import storage
 
 
 def create_jugement_service(
@@ -37,19 +36,35 @@ def create_jugement_service(
     if dossier.current_stage != ProcessStage.DECISION_DEFINITIVE.value:
         raise HTTPException(status_code=400, detail="Le jugement n'est accessible qu'après la décision définitive.")
 
-    base = os.path.join("app/documents", avocat_nom, dossier.numero_dossier, "jugement_favorable")
-    jugement_path = None
-
-    if jugement_file and jugement_file.filename:
-        saved_files = save_uploaded_files([jugement_file], base)
-        jugement_path = os.path.join(base, saved_files[0])
-
     obj = create_jugement(db, data)
-    if jugement_path:
-        obj.jugement_file = jugement_path
-
+    # obj.jugement_file = None
     db.commit()
     db.refresh(obj)
+
+    has_jugement = jugement_file and jugement_file.filename
+    if has_jugement:
+        process_upload(
+            obj=obj,
+            files=[jugement_file],
+            db=db,
+            dossier=dossier,
+            file_field="fichier_jugement",
+            contenu_field="texte_decision",
+            ocr_all_files=False,
+            run_ml=True,
+            subfolder="favorable"
+        )
+    else:
+        process_upload(
+            obj=obj,
+            files=[],
+            db=db,
+            dossier=dossier,
+            file_field="fichier_jugement",
+            contenu_field="texte_decision",
+            run_ml=True,
+            subfolder="favorable"
+        )
 
     WorkflowGuard.advance(dossier, ProcessStage.JUGEMENT_FAVORABLE, db)
 
@@ -67,36 +82,51 @@ def update_jugement_service(
         user_id: int,
         data: JugementUpdate,
         jugement_file: Optional[UploadFile] = None,
-        scan_grosse: Optional[list[UploadFile]] = None
+        scan_grosse: Optional[List[UploadFile]] = None
 ):
     existing = get_jugement_by_id(db, jugement_id)
     if not existing:
         raise HTTPException(status_code=404, detail="Jugement introuvable")
 
-    base = os.path.join("app/documents", avocat_nom, existing.dossier.numero_dossier, "jugement_favorable")
-    jugement_path = None
-    grosses_paths = []
-
-    if jugement_file and jugement_file.filename:
-        saved_files = save_uploaded_files([jugement_file], base)
-        jugement_path = os.path.join(base, saved_files[0])
-
-    if scan_grosse and any(f.filename for f in scan_grosse):
-        saved_files = save_uploaded_files(scan_grosse, base)
-        grosses_paths = [os.path.join(base, f) for f in saved_files]
+    dossier = existing.dossier
 
     updated = update_jugement(db, existing.id, data)
-    if jugement_path:
-        updated.fichier_jugement = jugement_path
-    if grosses_paths:
-        updated.scan_grosse = grosses_paths
-
     db.commit()
     db.refresh(updated)
 
+    has_new_jugement = jugement_file and jugement_file.filename
+    if has_new_jugement:
+        process_upload(
+            obj=updated,
+            files=[jugement_file],
+            db=db,
+            dossier=dossier,
+            file_field="fichier_jugement",
+            contenu_field="texte_decision",
+            ocr_all_files=False,
+            run_ml=True,
+            subfolder="favorable"
+        )
+
+    if scan_grosse and any(f.filename for f in scan_grosse):
+        if updated.scan_grosse:
+            if isinstance(updated.scan_grosse, str):
+                old_paths = json.loads(updated.scan_grosse)
+            else:
+                old_paths = updated.scan_grosse or []
+            for old_path in old_paths:
+                storage.delete_object(old_path)
+
+        dossier_path = f"dossiers/{dossier.numero_dossier}/jugements/favorable/scan_grosse"
+        new_paths = storage.save_uploaded_files(scan_grosse, dossier_path)
+        updated.scan_grosse = new_paths
+        db.commit()
+        db.refresh(updated)
+
+    # Log après
     log_action_service(db, user_id, "Mise à jour jugement",
-                       f"Mise à jour du jugement pour le dossier {existing.dossier.numero_dossier}",
-                       existing.dossier.id)
+                       f"Mise à jour du jugement pour le dossier {dossier.numero_dossier}",
+                       dossier.id)
 
     return updated
 
@@ -106,7 +136,7 @@ def enregistrer_grosse_service(
         jugement_id: int,
         avocat_nom: str,
         user_id: int,
-        scan_grosse: list[UploadFile]
+        scan_grosse: List[UploadFile]
 ):
     jugement = get_jugement_by_id(db, jugement_id)
     if not jugement:
@@ -116,12 +146,20 @@ def enregistrer_grosse_service(
     if dossier.current_stage != ProcessStage.NOTIFICATION_CLIENT.value:
         raise HTTPException(status_code=400, detail="La grosse ne peut être récupérée qu'après notification client")
 
-    base = os.path.join("app/documents", avocat_nom, dossier.numero_dossier, "jugement_favorable", "scan_grosse")
-    saved_files = save_uploaded_files(scan_grosse, base)
-    jugement.scan_grosse = [os.path.join(base, f) for f in saved_files]
+    if jugement.scan_grosse:
+        if isinstance(jugement.scan_grosse, str):
+            old_paths = json.loads(jugement.scan_grosse)
+        else:
+            old_paths = jugement.scan_grosse or []
+        for old_path in old_paths:
+            storage.delete_object(old_path)
 
+    dossier_path = f"dossiers/{dossier.numero_dossier}/jugements/favorable/scan_grosse"
+    new_paths = storage.save_uploaded_files(scan_grosse, dossier_path)
+    jugement.scan_grosse = new_paths  # List ou json.dumps si DB String
     db.commit()
     db.refresh(jugement)
+
     WorkflowGuard.advance(dossier, ProcessStage.RECUPERATION_GROSSE, db)
 
     log_action_service(db, user_id, "Récupération grosse",
@@ -177,21 +215,39 @@ def create_jugement_defavorable_service(
         raise HTTPException(status_code=400,
                             detail="Le jugement défavorable n'est accessible qu'après la décision définitive.")
 
-    base = os.path.join("app/documents", avocat_nom, dossier.numero_dossier, "jugement_defavorable")
-    jugement_path = None
-
-    if jugement_file and jugement_file.filename:
-        saved_files = save_uploaded_files([jugement_file], base)
-        jugement_path = os.path.join(base, saved_files[0])
 
     obj = create_jugement(db, data)
-    if jugement_path:
-        obj.jugement_file = jugement_path
+    # obj.jugement_file = None
+    db.commit()
+    db.refresh(obj)
+
+    has_jugement = jugement_file and jugement_file.filename
+    if has_jugement:
+        process_upload(
+            obj=obj,
+            files=[jugement_file],
+            db=db,
+            dossier=dossier,
+            file_field="fichier_jugement",
+            contenu_field="texte_decision",
+            ocr_all_files=False,
+            run_ml=True,
+            subfolder="defavorable"
+        )
+    else:
+        process_upload(
+            obj=obj,
+            files=[],
+            db=db,
+            dossier=dossier,
+            file_field="fichier_jugement",
+            contenu_field="texte_decision",
+            run_ml=True,
+            subfolder="defavorable"
+        )
 
     WorkflowGuard.advance(dossier, ProcessStage.JUGEMENT_DEFAVORABLE, db)
 
-    db.commit()
-    db.refresh(obj)
     log_action_service(db, user_id, "Création jugement défavorable",
                        f"Création du jugement défavorable pour le dossier {dossier.numero_dossier}",
                        dossier.id)

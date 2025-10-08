@@ -8,6 +8,7 @@ from app.db.base_class import Base
 from app.core.security import hash_password
 from sqlalchemy.orm import Session
 from app.models.paiement import Paiement
+from app.models.password_change_request import PasswordChangeRequest
 
 def init_db(retries=5, delay=3):
     for attempt in range(retries):

@@ -1,0 +1,335 @@
+<!-- app/templates/avocat/cassation/detail.html -->
+{% extends "base.html" %}
+
+{% block title %}Détail Cassation #{{ cassation.id }}{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_detail_cassation.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="container">
+        <h2 class="text-white mb-0 d-flex align-items-center flex-wrap">
+            <i class="fas fa-balance-scale me-3"></i>
+            Cassation #{{ cassation.id }} - Dossier {{ dossier.numero_dossier }}
+        </h2>
+        <p class="text-white-50 mb-0 mt-2">Détails de la procédure de cassation</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    {% if request.query_params.get('updated') %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-check-circle me-3" style="font-size: 1.5rem;"></i>
+            <div><strong>Succès !</strong> La cassation a été mise à jour avec succès.</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+
+    <div class="stats-grid">
+        {% set days_left = (cassation.date_limite_cassation - now).days %}
+        <div class="stat-card">
+            <div class="stat-value {% if days_left < 0 %}text-danger{% elif days_left <= 15 %}text-warning{% else %}text-success{% endif %}">
+                {{ days_left if days_left >= 0 else 0 }}
+            </div>
+            <div class="stat-label">Jours avant cassation</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-value text-primary">
+                {{ cassation.date_limite_cassation.strftime('%d/%m/%Y') }}
+            </div>
+            <div class="stat-label">Date limite cassation</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-value">
+                {% if cassation.statut == 'en_attente_requete' %}
+                <span class="badge bg-warning text-dark">En attente</span>
+                {% elif cassation.statut == 'requete_deposee' %}
+                <span class="badge bg-info">Requête déposée</span>
+                {% elif cassation.statut == 'memoire_ampliatif_depose' %}
+                <span class="badge bg-primary">Mémoire déposé</span>
+                {% elif cassation.statut == 'memoire_defense_recu' %}
+                <span class="badge bg-secondary">Défense reçue</span>
+                {% elif cassation.statut == 'reponse_envoyee' %}
+                <span class="badge bg-success">Réponse envoyée</span>
+                {% elif cassation.statut == 'delibere' %}
+                <span class="badge bg-dark">Délibéré</span>
+                {% endif %}
+            </div>
+            <div class="stat-label">Statut actuel</div>
+        </div>
+    </div>
+
+    <div class="form-card mb-4">
+        <div class="form-section">
+            <h4 class="mb-4">
+                <i class="fas fa-route me-2"></i>
+                Chronologie de la procédure
+            </h4>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-icon completed">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">
+                            <i class="fas fa-calendar me-2"></i>
+                            {{ cassation.date_notification_decision.strftime('%d/%m/%Y') }}
+                        </div>
+                        <div class="timeline-title">Notification de la décision</div>
+                        <div class="timeline-description">
+                            La décision de fond a été notifiée. Délai de 2 mois pour déposer une requête en cassation.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-icon {% if cassation.date_depot_requete %}completed{% elif cassation.statut == 'en_attente_requete' %}current{% else %}pending{% endif %}">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="timeline-content">
+                        {% if cassation.date_depot_requete %}
+                        <div class="timeline-date">
+                            <i class="fas fa-calendar-check me-2 text-success"></i>
+                            {{ cassation.date_depot_requete.strftime('%d/%m/%Y') }}
+                        </div>
+                        <div class="timeline-title">Requête déposée</div>
+                        {% if cassation.copie_requete %}
+                        <div class="mt-2">
+                            <a href="{{ request.url_for('documents', filepath=cassation.copie_requete.split('app/documents/')[-1]) }}"
+                               class="btn btn-sm btn-outline-primary" target="_blank">
+                                <i class="fas fa-download me-2"></i>
+                                Télécharger la requête
+                            </a>
+                        </div>
+                        {% endif %}
+                        {% else %}
+                        <div class="timeline-date text-warning">
+                            <i class="fas fa-clock me-2"></i>
+                            En attente - Date limite: {{ cassation.date_limite_cassation.strftime('%d/%m/%Y') }}
+                        </div>
+                        <div class="timeline-title">Dépôt de la requête</div>
+                        <div class="timeline-description">
+                            La requête doit être déposée avant la date limite.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-icon {% if cassation.date_depot_memoire_ampliatif %}completed{% elif cassation.statut == 'requete_deposee' %}current{% else %}pending{% endif %}">
+                        <i class="fas fa-file-signature"></i>
+                    </div>
+                    <div class="timeline-content">
+                        {% if cassation.date_depot_memoire_ampliatif %}
+                        <div class="timeline-date">
+                            <i class="fas fa-calendar-check me-2 text-success"></i>
+                            {{ cassation.date_depot_memoire_ampliatif.strftime('%d/%m/%Y') }}
+                        </div>
+                        <div class="timeline-title">Mémoire ampliatif déposé</div>
+                        {% if cassation.copie_memoire_ampliatif %}
+                        <div class="mt-2">
+                            <a href="{{ request.url_for('documents', filepath=cassation.copie_memoire_ampliatif.split('app/documents/')[-1]) }}"
+                               class="btn btn-sm btn-outline-primary" target="_blank">
+                                <i class="fas fa-download me-2"></i>
+                                Télécharger le mémoire
+                            </a>
+                        </div>
+                        {% endif %}
+                        {% elif cassation.date_limite_memoire_ampliatif %}
+                        <div class="timeline-date text-warning">
+                            <i class="fas fa-clock me-2"></i>
+                            En attente - Date limite: {{ cassation.date_limite_memoire_ampliatif.strftime('%d/%m/%Y') }}
+                        </div>
+                        <div class="timeline-title">Mémoire ampliatif (obligatoire)</div>
+                        <div class="timeline-description">
+                            Délai de 2 mois après le dépôt de la requête. Alerte envoyée 1 mois après le dépôt.
+                        </div>
+                        {% else %}
+                        <div class="timeline-date text-muted">
+                            <i class="fas fa-hourglass-half me-2"></i>
+                            En attente du dépôt de la requête
+                        </div>
+                        <div class="timeline-title">Mémoire ampliatif</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-icon {% if cassation.date_reception_memoire_defense %}completed{% elif cassation.statut == 'memoire_ampliatif_depose' %}current{% else %}pending{% endif %}">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="timeline-content">
+                        {% if cassation.date_reception_memoire_defense %}
+                        <div class="timeline-date">
+                            <i class="fas fa-calendar-check me-2 text-success"></i>
+                            {{ cassation.date_reception_memoire_defense.strftime('%d/%m/%Y') }}
+                        </div>
+                        <div class="timeline-title">Mémoire de défense reçu</div>
+                        {% if cassation.copie_memoire_defense %}
+                        <div class="mt-2">
+                            <a href="{{ request.url_for('documents', filepath=cassation.copie_memoire_defense.split('app/documents/')[-1]) }}"
+                               class="btn btn-sm btn-outline-primary" target="_blank">
+                                <i class="fas fa-download me-2"></i>
+                                Télécharger la défense
+                            </a>
+                        </div>
+                        {% endif %}
+                        {% else %}
+                        <div class="timeline-date text-muted">
+                            <i class="fas fa-hourglass-half me-2"></i>
+                            En attente
+                        </div>
+                        <div class="timeline-title">Réception mémoire de défense</div>
+                        <div class="timeline-description">
+                            En attente de la réception du mémoire de défense de la partie adverse.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-icon {% if cassation.copie_reponse %}completed{% elif cassation.statut == 'memoire_defense_recu' %}current{% else %}pending{% endif %}">
+                        <i class="fas fa-reply"></i>
+                    </div>
+                    <div class="timeline-content">
+                        {% if cassation.copie_reponse %}
+                        <div class="timeline-date">
+                            <i class="fas fa-calendar-check me-2 text-success"></i>
+                            Réponse envoyée
+                        </div>
+                        <div class="timeline-title">Réponse au mémoire de défense</div>
+                        <div class="mt-2">
+                            <a href="{{ request.url_for('documents', filepath=cassation.copie_reponse.split('app/documents/')[-1]) }}"
+                               class="btn btn-sm btn-outline-primary" target="_blank">
+                                <i class="fas fa-download me-2"></i>
+                                Télécharger la réponse
+                            </a>
+                        </div>
+                        {% elif cassation.date_limite_reponse %}
+                        <div class="timeline-date text-warning">
+                            <i class="fas fa-clock me-2"></i>
+                            Date limite: {{ cassation.date_limite_reponse.strftime('%d/%m/%Y') }}
+                        </div>
+                        <div class="timeline-title">Réponse (10 jours)</div>
+                        <div class="timeline-description">
+                            Délai de 10 jours après réception du mémoire de défense pour envoyer la réponse.
+                        </div>
+                        {% else %}
+                        <div class="timeline-date text-muted">
+                            <i class="fas fa-hourglass-half me-2"></i>
+                            En attente
+                        </div>
+                        <div class="timeline-title">Réponse au mémoire</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-icon {% if cassation.date_delibere %}completed{% elif cassation.statut == 'reponse_envoyee' %}current{% else %}pending{% endif %}">
+                        <i class="fas fa-gavel"></i>
+                    </div>
+                    <div class="timeline-content">
+                        {% if cassation.date_delibere %}
+                        <div class="timeline-date">
+                            <i class="fas fa-calendar-check me-2 text-success"></i>
+                            {{ cassation.date_delibere.strftime('%d/%m/%Y') }}
+                        </div>
+                        <div class="timeline-title">Mis en délibéré</div>
+                        <div class="timeline-description">
+                            L'affaire a été mise en délibéré. En attente de la décision de la Cour de cassation.
+                        </div>
+                        {% else %}
+                        <div class="timeline-date text-muted">
+                            <i class="fas fa-hourglass-half me-2"></i>
+                            En attente
+                        </div>
+                        <div class="timeline-title">Délibéré</div>
+                        <div class="timeline-description">
+                            Mise en délibéré après échange des mémoires.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if cassation.observations %}
+    <div class="form-card mb-4">
+        <div class="form-section">
+            <h4 class="mb-3">
+                <i class="fas fa-comment-dots me-2"></i>
+                Observations
+            </h4>
+            <div class="alert alert-light border">
+                {{ cassation.observations }}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="form-card">
+        <div class="form-section">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <a href="/dossiers/{{ dossier.id }}/cassations" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Retour à la liste
+                </a>
+                <div class="d-flex gap-2">
+                    <a href="/cassations/{{ cassation.id }}/update" class="btn btn-warning">
+                        <i class="fas fa-edit me-2"></i>
+                        Modifier
+                    </a>
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                        <i class="fas fa-trash me-2"></i>
+                        Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Êtes-vous sûr de vouloir supprimer cette procédure de cassation ? Cette action est irréversible.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form method="post" action="/cassations/{{ cassation.id }}/delete" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>
+                        Supprimer définitivement
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

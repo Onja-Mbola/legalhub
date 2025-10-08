@@ -241,7 +241,7 @@ def enregistrer_grosse_form(
 async def enregistrer_grosse_route(
         dossier_id: int,
         jugement_id: int,
-        scans_grosse: List[UploadFile] = File(...),
+        scans_grosse: Optional[List[UploadFile]] = File(...),
         db: Session = Depends(get_db),
         user: User = Depends(get_current_avocat_user),
         user1: User = Depends(get_current_user),

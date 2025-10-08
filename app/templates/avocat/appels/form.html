@@ -13,55 +13,126 @@
 {% include "partials/topbar.html" %}
 {% endblock %}
 
-{% block content %}
-<div class="container mt-5">
-    <div class="card shadow-lg rounded-4 border-0">
-        <div class="card-header bg-gradient-primary text-white py-3">
-            <h5 class="mb-0">
-                <i class="fas fa-balance-scale me-2"></i>
-                {% if mode == 'create' %}Créer un nouvel appel{% else %}Modifier l'appel{% endif %}
-            </h5>
-        </div>
-        <div class="card-body">
-            {% if error_msg %}
-            <div class="alert alert-danger">{{ error_msg }}</div>
-            {% endif %}
-            <form method="post">
-                <div class="mb-3">
-                    <label for="motif" class="form-label fw-semibold">Motif <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="motif" name="motif"
-                           value="{{ appel.motif if appel else '' }}" required>
-                </div>
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_appel.css">
+{% endblock %}
 
-                <div class="mb-3">
-                    <label for="date_depot" class="form-label fw-semibold">Date de dépôt</label>
-                    <input type="date" class="form-control" id="date_depot" name="date_depot"
-                           value="{{ appel.date_depot.strftime('%Y-%m-%d') if appel.date_depot else '' }}">
+{% block content %}
+
+<div class="page-header">
+    <div class="container">
+        <h2 class="text-white mb-0 d-flex align-items-center flex-wrap">
+            <i class="fas fa-balance-scale me-3"></i>
+            {% if mode == 'create' %}
+            Nouvel appel
+            <span class="badge-mode badge-create">Création</span>
+            {% else %}
+            Modification de l'appel
+            <span class="badge-mode badge-update">Modification</span>
+            {% endif %}
+        </h2>
+        <p class="text-white-50 mb-0 mt-2">Dossier #{{ dossier.numero_dossier }}</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    {% if error_msg %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-exclamation-circle me-3" style="font-size: 1.5rem;"></i>
+            <div>
+                <strong>Erreur :</strong> {{ error_msg }}
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+    </div>
+    {% endif %}
+
+    <div class="form-card">
+        <div class="form-section">
+            <form method="post">
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-info-circle"></i>
+                        Informations de l'appel
+                    </h5>
+
+                    <div class="mb-4">
+                        <label for="motif" class="form-label">
+                            <i class="fas fa-gavel"></i>
+                            Motif de l'appel
+                            <span class="required-badge">Requis</span>
+                        </label>
+                        <input type="text"
+                               class="form-control"
+                               id="motif"
+                               name="motif"
+                               value="{{ appel.motif if appel else '' }}"
+                               required
+                               placeholder="Ex: Désaccord sur le jugement rendu, vice de procédure...">
+                        <small class="form-text text-muted mt-2 d-block">
+                            <i class="fas fa-info-circle me-1"></i>Indiquez la raison principale de l'appel
+                        </small>
+                    </div>
+
+                    <div class="mb-0">
+                        <label for="date_depot" class="form-label">
+                            <i class="fas fa-calendar-day"></i>
+                            Date de dépôt de l'appel
+                        </label>
+                        <input type="date"
+                               class="form-control"
+                               id="date_depot"
+                               name="date_depot"
+                               value="{{ appel.date_depot.strftime('%Y-%m-%d') if appel and appel.date_depot else '' }}">
+                        <small class="form-text text-muted mt-2 d-block">
+                            <i class="fas fa-info-circle me-1"></i>Date à laquelle l'appel a été déposé auprès de la juridiction
+                        </small>
+                    </div>
                 </div>
 
                 {% if mode == 'update' %}
-                <div class="mb-3">
-                    <label for="statut" class="form-label fw-semibold">Sous-type <span
-                            class="text-danger">*</span></label>
-                    <select class="form-select" id="statut" name="statut" required>
-                        <option value="">-- Sélectionner --</option>
-                        {% for st in sous_type_options %}
-                        <option value="{{ st.valeur }}" {% if appel and appel.statut== st.valeur %}selected{% endif %}>
-                            {{ st.valeur }}
-                        </option>
-                        {% endfor %}
-                    </select>
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-tags"></i>
+                        Classification et statut
+                    </h5>
+
+                    <div class="mb-0">
+                        <label for="statut" class="form-label">
+                            <i class="fas fa-flag"></i>
+                            Sous-type / Statut
+                            <span class="required-badge">Requis</span>
+                        </label>
+                        <select class="form-select" id="statut" name="statut" required>
+                            <option value="">-- Sélectionner un statut --</option>
+                            {% for st in sous_type_options %}
+                            <option value="{{ st.valeur }}"
+                                    {% if appel and appel.statut == st.valeur %}selected{% endif %}>
+                                {{ st.valeur }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <small class="form-text text-muted mt-2 d-block">
+                            <i class="fas fa-info-circle me-1"></i>Choisissez le statut actuel de l'appel
+                        </small>
+                    </div>
                 </div>
                 {% endif %}
 
-                <button type="submit" class="btn btn-primary rounded-pill px-4">
-                    <i class="fas fa-save me-2"></i> Enregistrer
-                </button>
-                <a href="/dossiers/{{ dossier.id }}/appels" class="btn btn-outline-secondary rounded-pill px-4">
-                    <i class="fas fa-arrow-left me-2"></i> Retour
-                </a>
+                <div class="d-flex justify-content-between align-items-center mt-5">
+                    <a href="/dossiers/{{ dossier.id }}/appels" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Retour à la liste
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        {% if mode == 'create' %}Créer l'appel{% else %}Mettre à jour{% endif %}
+                    </button>
+                </div>
             </form>
         </div>
     </div>
 </div>
+
 {% endblock %}

@@ -10,67 +10,159 @@
 {% include "partials/topbar.html" %}
 {% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_decision_definitive.css">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
+
+<div class="page-header">
+    <div class="container">
+        <h2 class="text-white mb-0">
+            <i class="fas fa-gavel me-3"></i>
+            Décision Définitive
+        </h2>
+        <div class="decision-badge">
+            <i class="fas fa-hashtag me-1"></i>
+            Décision #{{ items.id }} • Dossier #{{ dossier.id }}
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
     {% if error_msg %}
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <strong>Erreur :</strong> {{ error_msg }}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
-            <span aria-hidden="true">x</span>
-        </button>
+        <div class="d-flex align-items-center">
+            <i class="fas fa-exclamation-circle me-3" style="font-size: 1.5rem;"></i>
+            <div>
+                <strong>Erreur :</strong> {{ error_msg }}
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
     </div>
     {% endif %}
 
-    <div class="card shadow-lg rounded-4 border-0 mb-4">
-        <div class="card-header bg-gradient-primary text-white py-3">
-            <h5 class="mb-0"><i class="fas fa-gavel me-2"></i> Décision #{{ items.id }}</h5>
+    <div class="info-banner">
+        <i class="fas fa-info-circle"></i>
+        <div class="info-banner-content">
+            <h6>Décision définitive du dossier</h6>
+            <p>Enregistrez la décision finale rendue par le tribunal. Cette décision marquera le jugement définitif du dossier.</p>
         </div>
-        <div class="card-body">
+    </div>
+
+    <div class="form-card">
+        <div class="form-section">
             <form method="post" enctype="multipart/form-data">
                 <input type="hidden" name="item_id" value="{{ items.id }}">
 
-                <div class="mb-3">
-                    <label for="date_decision_{{ items.id }}" class="form-label fw-semibold">Date de décision <span
-                            class="text-danger">*</span></label>
-                    <input type="date" class="form-control" id="date_decision_{{ items.id }}" name="date_decision"
-                           required
-                           value="{{ items.date_decision }}">
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-calendar-check"></i>
+                        Informations de la décision
+                    </h5>
+
+                    <div class="mb-4">
+                        <label for="date_decision_{{ items.id }}" class="form-label">
+                            <i class="fas fa-calendar-day"></i>
+                            Date de décision
+                            <span class="required-badge">Requis</span>
+                        </label>
+                        <input type="date"
+                               class="form-control"
+                               id="date_decision_{{ items.id }}"
+                               name="date_decision"
+                               required
+                               value="{{ items.date_decision }}">
+                    </div>
+
+                    <div class="mb-0">
+                        <label for="type_decision_{{ items.id }}" class="form-label">
+                            <i class="fas fa-balance-scale"></i>
+                            Type de décision
+                            <span class="required-badge">Requis</span>
+                        </label>
+                        <select class="form-select"
+                                id="type_decision_{{ items.id }}"
+                                name="type_decision"
+                                required>
+                            <option value="">-- Sélectionner un type --</option>
+                            {% for type in JugementType %}
+                            <option value="{{ type.value }}" {% if items.type_decision == type.value %}selected{% endif %}>
+                                {{ type.name|capitalize }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="decision-type-info">
+                            <i class="fas fa-lightbulb"></i>
+                            Sélectionnez le type de décision rendue par le tribunal (jugement)
+                        </div>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="type_decision_{{ items.id }}" class="form-label fw-semibold">
-                        Type de décision <span class="text-danger">*</span>
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-align-left"></i>
+                        Motivation de la décision
+                    </h5>
+
+                    <div class="mb-0">
+                        <label for="motivation_{{ items.id }}" class="form-label">
+                            <i class="fas fa-file-alt"></i>
+                            Motivation détaillée
+                        </label>
+                        <textarea class="form-control"
+                                  id="motivation_{{ items.id }}"
+                                  name="motivation"
+                                  placeholder="Décrivez les motifs et les raisons qui ont conduit à cette décision...">{{ items.motivation }}</textarea>
+                        <small class="text-muted d-block mt-2">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Indiquez les éléments de fait et de droit qui justifient la décision du tribunal
+                        </small>
+                    </div>
+                </div>
+
+                <div class="section-divider"></div>
+
+                <h5 class="mb-4 text-muted">
+                    <i class="fas fa-file-signature me-2"></i>
+                    Document officiel
+                </h5>
+
+                <div class="mb-4 file-upload-section">
+                    <label for="jugement_file_{{ items.id }}" class="form-label">
+                        <i class="fas fa-file-pdf"></i>
+                        Jugement officiel
                     </label>
-                    <select class="form-select" id="type_decision_{{ items.id }}" name="type_decision" required>
-                        {% for type in JugementType %}
-                        <option value="{{ type.value }}" {% if items.type_decision== type.value %}selected{% endif %}>
-                            {{ type.name|capitalize }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
+                    <small class="d-block text-muted mb-3">
+                        Formats acceptés : PDF, JPG, JPEG, PNG • Téléversez le document officiel du jugement
+                    </small>
 
-
-                <div class="mb-3">
-                    <label for="motivation_{{ items.id }}" class="form-label fw-semibold">Motivation</label>
-                    <textarea class="form-control" id="motivation_{{ items.id }}" name="motivation">{{ items.motivation }}</textarea>
-                </div>
-
-                <div class="mb-3">
-                    <label for="jugement_file_{{ items.id }}" class="form-label fw-semibold">Jugement (fichier)</label>
                     {% if items.jugement_file %}
-                    <p>Fichier actuel : <a
-                            href="{{ request.url_for('documents', filepath=items.jugement_file.split('app/documents/')[-1]) }}"
-                            target="_blank">
-                        {{ items.jugement_file.split('/')[-1] }}</a></p>
+                        <div class="current-file">
+                            <i class="fas fa-file-check"></i>
+                            <div class="flex-grow-1">
+                                <div class="text-muted small">Document actuel</div>
+                                <a href="{{ request.url_for('documents', filepath=items.jugement_file.split('app/documents/')[-1]) }}" target="_blank">
+                                    <i class="fas fa-download me-1"></i>
+                                    {{ items.jugement_file.split('/')[-1] }}
+                                </a>
+                            </div>
+                        </div>
                     {% endif %}
-                    <input type="file" class="form-control" id="jugement_file_{{ items.id }}" name="jugement_file"
+
+                    <input type="file"
+                           class="form-control"
+                           id="jugement_file_{{ items.id }}"
+                           name="jugement_file"
                            accept=".pdf,.jpg,.png,.jpeg">
                 </div>
 
-                <button type="submit" class="btn btn-primary rounded-pill px-4">
-                    <i class="fas fa-save me-2"></i> Enregistrer
-                </button>
+                <div class="d-flex justify-content-end mt-5">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        Enregistrer la décision
+                    </button>
+                </div>
             </form>
         </div>
     </div>

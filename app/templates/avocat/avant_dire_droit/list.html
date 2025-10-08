@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Décisions Avant Dire Droit{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="/static/css/custom_list_add.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="container">
+        <h2 class="text-white mb-0 d-flex align-items-center flex-wrap">
+            <i class="fas fa-file-contract me-3"></i>
+            Décisions Avant Dire Droit
+        </h2>
+        <p class="text-white-50 mb-0 mt-2">Liste des décisions ADD pour ce dossier</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="dossier-info mb-4">
+        <i class="fas fa-folder-open me-2"></i>
+        <strong>Dossier :</strong> {{ dossier.numero_dossier }} - {{ dossier.nom_dossier }}
+    </div>
+
+    {% if request.query_params.get('success') %}
+    <div class="alert alert-success">
+        <p class="alert-text">
+            <i class="fas fa-check-circle"></i>
+            Décision ADD créée avec succès
+        </p>
+    </div>
+    {% endif %}
+
+    {% if request.query_params.get('deleted') %}
+    <div class="alert alert-info">
+        <p class="alert-text">
+            <i class="fas fa-info-circle"></i>
+            Décision ADD supprimée avec succès
+        </p>
+    </div>
+    {% endif %}
+
+    <div class="list-card">
+        <div class="card-header-section">
+            <div>
+                <h3 class="text-dark fw-bold mb-0">
+                    Liste des décisions ADD
+                </h3>
+                <p class="text-muted mb-0 mt-1">
+                    {% if decisions %}
+                        {{ decisions|length }} décision(s) enregistrée(s)
+                    {% else %}
+                        Aucune décision pour le moment
+                    {% endif %}
+                </p>
+            </div>
+            <a href="/dossiers/{{ dossier.id }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Retour au dossier
+            </a>
+        </div>
+
+        {% if decisions %}
+        <div class="table-wrapper">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-calendar me-2"></i>Date Décision</th>
+                        <th><i class="fas fa-comment-dots me-2"></i>Motif Renvoi</th>
+                        <th><i class="fas fa-clock me-2"></i>Délai Conclusions</th>
+                        <th><i class="fas fa-hourglass-end me-2"></i>Date Limite</th>
+                        <th><i class="fas fa-cog me-2"></i>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for decision in decisions %}
+                    <tr>
+                        <td>
+                            <strong>{{ decision.date_decision_add.strftime('%d/%m/%Y') if decision.date_decision_add else '-' }}</strong>
+                        </td>
+                        <td>
+                            <div class="motif-cell" title="{{ decision.motif_renvoi if decision.motif_renvoi else '-' }}">
+                                {{ decision.motif_renvoi[:50] if decision.motif_renvoi else '-' }}
+                                {% if decision.motif_renvoi and decision.motif_renvoi|length > 50 %}...{% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            {% if decision.delai_conclusions %}
+                                <span class="fw-semibold">{{ decision.delai_conclusions }}</span> jours
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if decision.date_limite_conclusions %}
+                                <span class="{% if decision.date_limite_conclusions < now %}date-expired{% endif %}">
+                                    {{ decision.date_limite_conclusions.strftime('%d/%m/%Y') }}
+                                    {% if decision.date_limite_conclusions < now %}
+                                        <i class="fas fa-exclamation-triangle ms-1"></i>
+                                    {% endif %}
+                                </span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="/decisions_add/{{ decision.id }}" class="btn-action btn-view">
+                                    <i class="fas fa-eye"></i>
+                                    Voir
+                                </a>
+                                <a href="/decisions_add/{{ decision.id }}/update" class="btn-action btn-edit">
+                                    <i class="fas fa-edit"></i>
+                                    Modifier
+                                </a>
+                                <form method="post"
+                                      action="/decisions_add/{{ decision.id }}/delete"
+                                      style="display: inline;"
+                                      onsubmit="return confirm('⚠️ Êtes-vous sûr de vouloir supprimer cette décision ?\n\nCette action est irréversible.');">
+                                    <button type="submit" class="btn-action btn-delete">
+                                        <i class="fas fa-trash-alt"></i>
+                                        Supprimer
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-file-contract"></i>
+            </div>
+            <h3 class="empty-state-title">Aucune décision ADD</h3>
+            <p class="empty-state-text">
+                Aucune décision avant dire droit n'a été enregistrée pour ce dossier.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

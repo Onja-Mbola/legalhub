@@ -10,60 +10,168 @@
 {% include "partials/topbar.html" %}
 {% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_decision_add.css">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
+
+<div class="page-header">
+    <div class="container">
+        <h2 class="text-white mb-0 d-flex align-items-center flex-wrap">
+            <i class="fas fa-file-contract me-3"></i>
+            {% if item %}
+            Modification de la décision avant dire droit
+            <span class="badge-mode badge-update">Modification</span>
+            {% else %}
+            Nouvelle décision avant dire droit
+            <span class="badge-mode badge-create">Création</span>
+            {% endif %}
+        </h2>
+        <p class="text-white-50 mb-0 mt-2">Dossier #{{ dossier.id }}</p>
+    </div>
+</div>
+
+<div class="container mb-5">
     {% if error_msg %}
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <strong>Erreur :</strong> {{ error_msg }}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
-            <span aria-hidden="true">x</span>
-        </button>
+        <div class="d-flex align-items-center">
+            <i class="fas fa-exclamation-circle me-3" style="font-size: 1.5rem;"></i>
+            <div>
+                <strong>Erreur :</strong> {{ error_msg }}
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
     </div>
     {% endif %}
-    <div class="card shadow-lg rounded-4 border-0">
-        <div class="card-header bg-gradient-primary text-white py-3">
-            <h4 class="mb-0"><i class="fas fa-file-contract me-2"></i> Décision avant dire droit - Dossier #{{ dossier.id }}</h4>
-        </div>
-        <div class="card-body">
+
+    <div class="form-card">
+        <div class="form-section">
             {% if item %}
             <form method="post" enctype="multipart/form-data" action="{{ url_for('decision_add_update', dossier_id=dossier.id, decision_id=item.id) }}">
             {% else %}
             <form method="post" enctype="multipart/form-data" action="{{ url_for('decision_add_create', dossier_id=dossier.id) }}">
             {% endif %}
 
-                <div class="mb-3">
-                    <label for="date_decision" class="form-label fw-semibold">Date de décision <span class="text-danger">*</span></label>
-                    <input type="date" class="form-control" id="date_decision" name="date_decision" required
-                           value="{{ item.date_decision if item else '' }}">
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-info-circle"></i>
+                        Informations principales
+                    </h5>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label for="date_decision" class="form-label">
+                                <i class="fas fa-calendar-day"></i>
+                                Date de décision
+                                <span class="required-badge">Requis</span>
+                            </label>
+                            <input type="date"
+                                   class="form-control"
+                                   id="date_decision"
+                                   name="date_decision"
+                                   required
+                                   value="{{ item.date_decision if item else '' }}">
+                            <small class="form-text text-muted mt-2 d-block">
+                                <i class="fas fa-info-circle me-1"></i>Date à laquelle la décision a été rendue
+                            </small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="nature_incident" class="form-label">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Nature de l'incident
+                                <span class="required-badge">Requis</span>
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="nature_incident"
+                                   name="nature_incident"
+                                   required
+                                   placeholder="Ex: Exception d'incompétence, nullité de procédure..."
+                                   value="{{ item.nature_incident if item else '' }}">
+                            <small class="form-text text-muted mt-2 d-block">
+                                <i class="fas fa-info-circle me-1"></i>Type de l'incident soulevé avant le jugement au fond
+                            </small>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="nature_incident" class="form-label fw-semibold">Nature de l'incident <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="nature_incident" name="nature_incident" required
-                           value="{{ item.nature_incident if item else '' }}">
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-align-left"></i>
+                        Contenu de la décision
+                    </h5>
+
+                    <div class="mb-0">
+                        <label for="contenu" class="form-label">
+                            <i class="fas fa-file-alt"></i>
+                            Contenu détaillé
+                        </label>
+                        <textarea class="form-control"
+                                  id="contenu"
+                                  name="contenu"
+                                  rows="7"
+                                  placeholder="Décrivez le contenu de la décision avant dire droit, les motifs, les dispositifs...">{{ item.contenu if item else '' }}</textarea>
+                        <small class="form-text text-muted mt-2 d-block">
+                            <i class="fas fa-pen me-1"></i>Champ facultatif - Résumez les points essentiels de la décision
+                        </small>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="contenu" class="form-label fw-semibold">Contenu</label>
-                    <textarea class="form-control" id="contenu" name="contenu">{{ item.contenu if item else '' }}</textarea>
-                </div>
+                <div class="section-divider"></div>
 
-                <div class="mb-3">
-                    <label for="ordonnance_file" class="form-label fw-semibold">Ordonnance (fichier)</label>
+                <h5 class="mb-4 text-muted">
+                    <i class="fas fa-paperclip me-2"></i>
+                    Document joint
+                </h5>
+
+                <div class="mb-4 file-upload-section">
+                    <label for="ordonnance_file" class="form-label">
+                        <i class="fas fa-file-upload"></i>
+                        Ordonnance (fichier)
+                    </label>
+                    <small class="d-block text-muted mb-3">
+                        Formats acceptés : PDF, JPG, JPEG, PNG • Maximum 10 MB
+                    </small>
+
                     {% if item and item.ordonnance_file %}
-                    <p>Fichier actuel : <a
-                            href="{{ request.url_for('documents', filepath=item.ordonnance_file.split('app/documents/')[-1]) }}"
-                            target="_blank">{{ item.ordonnance_file.split('/')[-1] }}</a></p>
+                    <div class="current-files-list">
+                        <div class="text-muted small mb-2 fw-semibold">
+                            <i class="fas fa-check-circle text-success me-1"></i>
+                            Fichier actuel
+                        </div>
+                        <div class="file-item">
+                            <i class="fas fa-file-pdf"></i>
+                            <a href="{{ request.url_for('documents', filepath=item.ordonnance_file.split('app/documents/')[-1]) }}"
+                               target="_blank">
+                                <i class="fas fa-download me-1"></i>
+                                {{ item.ordonnance_file.split('/')[-1] }}
+                            </a>
+                        </div>
+                    </div>
                     {% endif %}
-                    <input type="file" class="form-control" id="ordonnance_file" name="ordonnance_file"
+
+                    <input type="file"
+                           class="form-control"
+                           id="ordonnance_file"
+                           name="ordonnance_file"
                            accept=".pdf,.jpg,.png,.jpeg">
                 </div>
 
-                <button type="submit" class="btn btn-primary rounded-pill px-4">
-                    <i class="fas fa-save me-2"></i> Enregistrer
-                </button>
+                <div class="d-flex justify-content-between align-items-center mt-5">
+                    <a href="/dossiers/{{ dossier.id }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Retour au dossier
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        {% if item %}Mettre à jour{% else %}Enregistrer{% endif %}
+                    </button>
+                </div>
             </form>
         </div>
     </div>
 </div>
+
 {% endblock %}

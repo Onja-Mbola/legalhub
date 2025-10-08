@@ -195,3 +195,6 @@ cython_debug/
 
 
 app/documents/*
+
+app/data/*
+data/*

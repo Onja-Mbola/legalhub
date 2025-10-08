@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+
+{% block title %}Oppositions - {{ dossier.numero_dossier }}{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_list_opposition.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4 mb-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-transparent p-0">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fas fa-home"></i> Accueil</a></li>
+            <li class="breadcrumb-item"><a href="/dossiers" class="text-decoration-none">Dossiers</a></li>
+            <li class="breadcrumb-item"><a href="/dossiers/{{ dossier.id }}" class="text-decoration-none">{{ dossier.numero_dossier }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Oppositions</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1 fw-bold">
+                <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                Oppositions
+            </h2>
+            <p class="text-muted mb-0">Dossier {{ dossier.numero_dossier }} - {{ dossier.nom_dossier }}</p>
+        </div>
+        <a href="/dossiers/{{ dossier.id }}" class="btn btn-light btn-lg border-2 rounded-3">
+            <i class="fas fa-arrow-left me-2"></i>Retour au dossier
+        </a>
+    </div>
+
+    {% if not oppositions %}
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-body empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-inbox"></i>
+            </div>
+            <h4 class="fw-bold mb-3">Aucune opposition enregistrée</h4>
+            <p class="text-muted mb-0">Il n'y a actuellement aucune opposition pour ce dossier.</p>
+        </div>
+    </div>
+    {% else %}
+
+    {% set today = now().date() %}
+    {% set total_oppositions = oppositions|length %}
+    {% set oppositions_formulees = oppositions|selectattr('opposition_formulee', 'equalto', true)|list|length %}
+    {% set oppositions_actives = oppositions|rejectattr('opposition_formulee', 'equalto', true)|select('test_opposition_active', today)|list|length %}
+    
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-3 stats-card">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 me-3">
+                            <div class="rounded-circle p-3" style="background: rgba(102, 126, 234, 0.15);">
+                                <i class="fas fa-list fs-4 text-primary"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-muted mb-1 small">Total</p>
+                            <h3 class="mb-0 fw-bold">{{ total_oppositions }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-3 stats-card" style="border-left-color: #f5576c !important; background: linear-gradient(135deg, #f093fb15 0%, #f5576c15 100%);">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 me-3">
+                            <div class="rounded-circle p-3" style="background: rgba(245, 87, 108, 0.15);">
+                                <i class="fas fa-check-circle fs-4 text-danger"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-muted mb-1 small">Formulées</p>
+                            <h3 class="mb-0 fw-bold">{{ oppositions_formulees }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-3 stats-card" style="border-left-color: #ffc107 !important; background: linear-gradient(135deg, #ffc10715 0%, #ff980015 100%);">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 me-3">
+                            <div class="rounded-circle p-3" style="background: rgba(255, 193, 7, 0.15);">
+                                <i class="fas fa-clock fs-4 text-warning"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-muted mb-1 small">En attente</p>
+                            <h3 class="mb-0 fw-bold">{{ oppositions_actives }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for opp in oppositions %}
+        {% set days_left = (opp.opposition_possible_jusqua - today).days %}
+        <div class="col-12">
+            <div class="card opposition-card shadow-sm rounded-3">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-lg-3 mb-3 mb-lg-0">
+                            <div class="d-flex flex-column gap-2">
+                                {% if opp.decision_fond_id %}
+                                <span class="opposition-type-badge bg-warning bg-opacity-10 text-warning">
+                                    <i class="fas fa-file-alt"></i>
+                                    Décision par défaut
+                                </span>
+                                {% elif opp.jugement_id %}
+                                <span class="opposition-type-badge bg-info bg-opacity-10 text-info">
+                                    <i class="fas fa-gavel"></i>
+                                    Jugement
+                                </span>
+                                {% endif %}
+                                
+                                {% if opp.opposition_formulee %}
+                                <span class="status-badge bg-danger bg-opacity-10 text-danger">
+                                    <i class="fas fa-check-circle me-1"></i>Opposition formulée
+                                </span>
+                                {% elif today > opp.opposition_possible_jusqua %}
+                                <span class="status-badge bg-secondary bg-opacity-10 text-secondary">
+                                    <i class="fas fa-times-circle me-1"></i>Délai expiré
+                                </span>
+                                {% else %}
+                                <span class="status-badge bg-warning bg-opacity-10 text-warning">
+                                    <i class="fas fa-hourglass-half me-1"></i>En attente
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-lg-5 mb-3 mb-lg-0">
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <p class="text-muted small mb-1"><i class="fas fa-bell me-1"></i>Notification</p>
+                                    <p class="mb-0 fw-semibold">{{ opp.date_notification.strftime('%d/%m/%Y') }}</p>
+                                </div>
+                                <div class="col-6">
+                                    <p class="text-muted small mb-1"><i class="fas fa-calendar-times me-1"></i>Date limite</p>
+                                    <p class="mb-1 fw-semibold">{{ opp.opposition_possible_jusqua.strftime('%d/%m/%Y') }}</p>
+                                    {% if days_left >= 0 %}
+                                    <span class="days-indicator {% if days_left <= 3 %}bg-danger bg-opacity-10 text-danger{% elif days_left <= 7 %}bg-warning bg-opacity-10 text-warning{% else %}bg-success bg-opacity-10 text-success{% endif %}">
+                                        <i class="fas fa-clock"></i>{{ days_left }} jour(s)
+                                    </span>
+                                    {% else %}
+                                    <span class="days-indicator bg-secondary bg-opacity-10 text-secondary">
+                                        <i class="fas fa-times"></i>Expiré
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if opp.date_opposition %}
+                            <div class="mt-3">
+                                <p class="text-muted small mb-1"><i class="fas fa-calendar-check me-1"></i>Opposition faite le</p>
+                                <p class="mb-0 fw-semibold text-danger">{{ opp.date_opposition.strftime('%d/%m/%Y') }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-lg-4 text-lg-end">
+                            <div class="d-flex flex-column flex-lg-row gap-2 justify-content-lg-end">
+                                {% if not opp.opposition_formulee and today <= opp.opposition_possible_jusqua and opp.decision_fond_id %}
+                                <a href="/oppositions/{{ opp.id }}/formuler" class="action-btn btn btn-warning">
+                                    <i class="fas fa-edit me-2"></i>Formuler
+                                </a>
+                                {% endif %}
+                                
+                                <button class="action-btn btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#detailModal{{ opp.id }}">
+                                    <i class="fas fa-eye me-2"></i>Détails
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="detailModal{{ opp.id }}" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content border-0 shadow rounded-3">
+                    <div class="modal-header modal-header-custom border-0 text-white">
+                        <h5 class="modal-title fw-bold">
+                            <i class="fas fa-info-circle me-2"></i>Détails de l'opposition
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-0">
+                        <div class="info-row">
+                            <div class="row align-items-center">
+                                <div class="col-4">
+                                    <span class="text-muted"><i class="fas fa-tag me-2"></i>Type</span>
+                                </div>
+                                <div class="col-8">
+                                    <span class="fw-semibold">
+                                        {% if opp.decision_fond_id %}
+                                        Opposition à une décision par défaut
+                                        {% elif opp.jugement_id %}
+                                        Opposition à un jugement
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="row align-items-center">
+                                <div class="col-4">
+                                    <span class="text-muted"><i class="fas fa-bell me-2"></i>Date notification</span>
+                                </div>
+                                <div class="col-8">
+                                    <span class="fw-semibold">{{ opp.date_notification.strftime('%d/%m/%Y') }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="row align-items-center">
+                                <div class="col-4">
+                                    <span class="text-muted"><i class="fas fa-calendar-times me-2"></i>Date limite</span>
+                                </div>
+                                <div class="col-8">
+                                    <span class="fw-semibold">{{ opp.opposition_possible_jusqua.strftime('%d/%m/%Y') }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="row align-items-center">
+                                <div class="col-4">
+                                    <span class="text-muted"><i class="fas fa-check-circle me-2"></i>Opposition formulée</span>
+                                </div>
+                                <div class="col-8">
+                                    {% if opp.opposition_formulee %}
+                                    <span class="badge bg-success">Oui</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Non</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if opp.date_opposition %}
+                        <div class="info-row">
+                            <div class="row align-items-center">
+                                <div class="col-4">
+                                    <span class="text-muted"><i class="fas fa-calendar-check me-2"></i>Date d'opposition</span>
+                                </div>
+                                <div class="col-8">
+                                    <span class="fw-semibold">{{ opp.date_opposition.strftime('%d/%m/%Y') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if opp.motifs_opposition %}
+                        <div class="info-row">
+                            <div class="row">
+                                <div class="col-12">
+                                    <span class="text-muted d-block mb-2"><i class="fas fa-align-left me-2"></i>Motifs</span>
+                                    <div class="p-3 bg-light rounded-3">
+                                        <p class="mb-0">{{ opp.motifs_opposition }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if opp.acte_opposition %}
+                        <div class="info-row">
+                            <div class="row align-items-center">
+                                <div class="col-4">
+                                    <span class="text-muted"><i class="fas fa-file-pdf me-2"></i>Acte d'opposition</span>
+                                </div>
+                                <div class="col-8">
+                                    <a href="/download/{{ opp.acte_opposition }}" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-download me-2"></i>Télécharger le PDF
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="info-row">
+                            <div class="row align-items-center">
+                                <div class="col-4">
+                                    <span class="text-muted"><i class="fas fa-envelope me-2"></i>Alerte envoyée</span>
+                                </div>
+                                <div class="col-8">
+                                    {% if opp.alerte_envoyee %}
+                                    <span class="badge bg-success"><i class="fas fa-check me-1"></i>Oui</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary"><i class="fas fa-times me-1"></i>Non</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 bg-light">
+                        <button type="button" class="btn btn-light border-2 rounded-3" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Fermer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,387 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Créer' if mode == 'create' else 'Modifier' }} Cassation{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_cassation_list.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="container">
+        <h2 class="text-white mb-0 d-flex align-items-center flex-wrap">
+            <i class="fas fa-balance-scale me-3"></i>
+            {{ 'Créer une procédure de cassation' if mode == 'create' else 'Modifier la cassation' }}
+            <span class="badge-mode badge-deliberation">Cassation</span>
+        </h2>
+        <p class="text-white-50 mb-0 mt-2">Dossier {{ dossier.numero_dossier }}</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="form-card">
+        <div class="form-section">
+             {% if errors %}
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <strong>Des erreurs ont été détectées :</strong>
+                <ul class="mb-0">
+                    {% for err in errors %}
+                        <li>{{ err['loc'][-1] | capitalize }} : {{ err['msg'] }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            <form method="post" enctype="multipart/form-data"
+                  action="{% if mode == 'create' %}/decisions_fond/{{ decision_fond.id }}/cassation{% else %}/cassations/{{ cassation.id }}/update{% endif %}">
+
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-calendar-check"></i>
+                        Étape 1 : Date de notification de la décision
+                    </h5>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label for="date_notification_decision" class="form-label">
+                                <i class="fas fa-bell"></i>
+                                Date de notification de la décision
+                                <span class="required-badge">Requis</span>
+                            </label>
+                            <input type="date"
+                                   class="form-control"
+                                   id="date_notification_decision"
+                                   name="date_notification_decision"
+                                   required
+                                   value="{{ cassation.date_notification_decision if cassation else '' }}">
+                            <small class="form-text text-muted mt-2 d-block">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Délai de cassation : 2 mois après cette date
+                            </small>
+                        </div>
+
+                        {% if cassation %}
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                <i class="fas fa-calendar-times"></i>
+                                Date limite de cassation
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   value="{{ cassation.date_limite_cassation.strftime('%d/%m/%Y') }}"
+                                   disabled>
+                            <small class="form-text text-muted mt-2 d-block">
+                                <i class="fas fa-robot me-1"></i>Calculé automatiquement
+                            </small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-file-alt"></i>
+                        Étape 2 : Dépôt de la requête en cassation
+                    </h5>
+
+                    <div class="alert alert-warning mb-4">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Alerte :</strong> Vous recevrez une alerte 15 jours avant la date limite de cassation
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label for="date_depot_requete" class="form-label">
+                                <i class="fas fa-calendar-plus"></i>
+                                Date de dépôt de la requête
+                            </label>
+                            <input type="date"
+                                   class="form-control"
+                                   id="date_depot_requete"
+                                   name="date_depot_requete"
+                                   value="{{ cassation.date_depot_requete if cassation and cassation.date_depot_requete else '' }}">
+                            <small class="form-text text-muted mt-2 d-block">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Laisser vide si non encore déposée
+                            </small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="copie_requete" class="form-label">
+                                <i class="fas fa-file-upload"></i>
+                                Copie de la requête
+                            </label>
+                            {% if cassation and cassation.copie_requete %}
+                            <div class="current-files-list mb-2">
+                                <div class="file-item">
+                                    <i class="fas fa-file-pdf"></i>
+                                    <a href="{{ request.url_for('documents', filepath=cassation.copie_requete.split('app/documents/')[-1]) }}"
+                                       target="_blank">
+                                        {{ cassation.copie_requete.split('/')[-1] }}
+                                    </a>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <input type="file"
+                                   class="form-control"
+                                   id="copie_requete"
+                                   name="copie_requete"
+                                   accept=".pdf,.jpg,.png,.jpeg">
+                        </div>
+                    </div>
+                </div>
+
+                {% if mode == 'update' %}
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-file-signature"></i>
+                        Étape 3 : Mémoire ampliatif (obligatoire)
+                    </h5>
+
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Délai :</strong> 2 mois après le dépôt de la requête. Alerte 1 mois après dépôt.
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label for="date_depot_memoire_ampliatif" class="form-label">
+                                <i class="fas fa-calendar-plus"></i>
+                                Date de dépôt du mémoire ampliatif
+                            </label>
+                            <input type="date"
+                                   class="form-control"
+                                   id="date_depot_memoire_ampliatif"
+                                   name="date_depot_memoire_ampliatif"
+                                   value="{{ cassation.date_depot_memoire_ampliatif if cassation.date_depot_memoire_ampliatif else '' }}">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="copie_memoire_ampliatif" class="form-label">
+                                <i class="fas fa-file-upload"></i>
+                                Copie du mémoire ampliatif
+                            </label>
+                            {% if cassation.copie_memoire_ampliatif %}
+                            <div class="current-files-list mb-2">
+                                <div class="file-item">
+                                    <i class="fas fa-file-pdf"></i>
+                                    <a href="{{ request.url_for('documents', filepath=cassation.copie_memoire_ampliatif.split('app/documents/')[-1]) }}"
+                                       target="_blank">
+                                        {{ cassation.copie_memoire_ampliatif.split('/')[-1] }}
+                                    </a>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <input type="file"
+                                   class="form-control"
+                                   id="copie_memoire_ampliatif"
+                                   name="copie_memoire_ampliatif"
+                                   accept=".pdf,.jpg,.png,.jpeg">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-shield-alt"></i>
+                        Étape 4 : Réception du mémoire de défense
+                    </h5>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label for="date_reception_memoire_defense" class="form-label">
+                                <i class="fas fa-calendar-check"></i>
+                                Date de réception du mémoire de défense
+                            </label>
+                            <input type="date"
+                                   class="form-control"
+                                   id="date_reception_memoire_defense"
+                                   name="date_reception_memoire_defense"
+                                   value="{{ cassation.date_reception_memoire_defense if cassation.date_reception_memoire_defense else '' }}">
+                            <small class="form-text text-muted mt-2 d-block">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Délai de réponse : 10 jours après réception
+                            </small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="copie_memoire_defense" class="form-label">
+                                <i class="fas fa-file-upload"></i>
+                                Copie du mémoire de défense
+                            </label>
+                            {% if cassation.copie_memoire_defense %}
+                            <div class="current-files-list mb-2">
+                                <div class="file-item">
+                                    <i class="fas fa-file-pdf"></i>
+                                    <a href="{{ request.url_for('documents', filepath=cassation.copie_memoire_defense.split('app/documents/')[-1]) }}"
+                                       target="_blank">
+                                        {{ cassation.copie_memoire_defense.split('/')[-1] }}
+                                    </a>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <input type="file"
+                                   class="form-control"
+                                   id="copie_memoire_defense"
+                                   name="copie_memoire_defense"
+                                   accept=".pdf,.jpg,.png,.jpeg">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-reply"></i>
+                        Étape 5 : Envoi de la réponse
+                    </h5>
+
+                    <div class="row g-4">
+                        <div class="col-md-12">
+                            <label for="copie_reponse" class="form-label">
+                                <i class="fas fa-file-upload"></i>
+                                Copie de la réponse
+                            </label>
+                            {% if cassation.copie_reponse %}
+                            <div class="current-files-list mb-2">
+                                <div class="file-item">
+                                    <i class="fas fa-file-pdf"></i>
+                                    <a href="{{ request.url_for('documents', filepath=cassation.copie_reponse.split('app/documents/')[-1]) }}"
+                                       target="_blank">
+                                        {{ cassation.copie_reponse.split('/')[-1] }}
+                                    </a>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <input type="file"
+                                   class="form-control"
+                                   id="copie_reponse"
+                                   name="copie_reponse"
+                                   accept=".pdf,.jpg,.png,.jpeg">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-gavel"></i>
+                        Étape 6 : Mise en délibéré
+                    </h5>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label for="date_delibere" class="form-label">
+                                <i class="fas fa-calendar-check"></i>
+                                Date de mise en délibéré
+                            </label>
+                            <input type="date"
+                                   class="form-control"
+                                   id="date_delibere"
+                                   name="date_delibere"
+                                   value="{{ cassation.date_delibere if cassation.date_delibere else '' }}">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="statut" class="form-label">
+                                <i class="fas fa-info-circle"></i>
+                                Statut actuel
+                            </label>
+                            <select class="form-select" id="statut" name="statut">
+                                <option value="en_attente_requete" {% if cassation.statut == 'en_attente_requete' %}selected{% endif %}>
+                                    En attente requête
+                                </option>
+                                <option value="requete_deposee" {% if cassation.statut == 'requete_deposee' %}selected{% endif %}>
+                                    Requête déposée
+                                </option>
+                                <option value="memoire_ampliatif_depose" {% if cassation.statut == 'memoire_ampliatif_depose' %}selected{% endif %}>
+                                    Mémoire ampliatif déposé
+                                </option>
+                                <option value="memoire_defense_recu" {% if cassation.statut == 'memoire_defense_recu' %}selected{% endif %}>
+                                    Mémoire défense reçu
+                                </option>
+                                <option value="reponse_envoyee" {% if cassation.statut == 'reponse_envoyee' %}selected{% endif %}>
+                                    Réponse envoyée
+                                </option>
+                                <option value="delibere" {% if cassation.statut == 'delibere' %}selected{% endif %}>
+                                    Délibéré
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-comment-dots"></i>
+                        Observations
+                    </h5>
+
+                    <div class="mb-0">
+                        <label for="observations" class="form-label">
+                            <i class="fas fa-clipboard-list"></i>
+                            Observations et remarques
+                        </label>
+                        <textarea class="form-control"
+                                  id="observations"
+                                  name="observations"
+                                  rows="6"
+                                  placeholder="Ajoutez des notes ou observations sur cette procédure de cassation...">{{ cassation.observations if cassation else '' }}</textarea>
+                    </div>
+                </div>
+
+                <div class="section-divider"></div>
+
+                <div class="d-flex justify-content-between align-items-center mt-5">
+                    <a href="/dossiers/{{ dossier.id }}/cassations" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Retour à la liste
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        {{ 'Créer la cassation' if mode == 'create' else 'Enregistrer les modifications' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="info-cards-row">
+        <div class="info-card">
+            <div class="info-card-icon">
+                <i class="fas fa-route"></i>
+            </div>
+            <div class="info-card-title">Processus de cassation</div>
+            <ul class="info-card-list">
+                <li><strong>1.</strong> Notification de la décision</li>
+                <li><strong>2.</strong> Dépôt requête (2 mois)</li>
+                <li><strong>3.</strong> Mémoire ampliatif (2 mois)</li>
+                <li><strong>4.</strong> Attente mémoire défense</li>
+                <li><strong>5.</strong> Réponse (10 jours)</li>
+                <li><strong>6.</strong> Délibéré</li>
+            </ul>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon secondary">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="info-card-title">Délais importants</div>
+            <ul class="info-card-list">
+                <li><i class="fas fa-bell text-warning me-2"></i>Alerte requête : 15j avant</li>
+                <li><i class="fas fa-bell text-info me-2"></i>Alerte mémoire : 1 mois après dépôt</li>
+                <li><i class="fas fa-clock text-danger me-2"></i>Réponse : 10j après défense</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

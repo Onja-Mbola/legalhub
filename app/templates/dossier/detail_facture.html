@@ -10,246 +10,350 @@
 
 {% block title %}Dossier {{ dossier.numero_dossier }}{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_detail_facture.css">
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
 
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">
-            📂 Dossier : {{ dossier.nom_dossier }}
-        </h1>
         <div>
-            <a href="/factures/nouveau?dossier_id={{ dossier.id }}" class="btn btn-primary btn-sm">
-                <i class="fas fa-file-invoice"></i> Nouvelle facture
+            <h1 class="h3 mb-1 text-gray-800">
+                <i class="fas fa-folder-open text-primary"></i> {{ dossier.nom_dossier }}
+            </h1>
+            <p class="text-muted mb-0">
+                <small>Dossier {{ dossier.numero_dossier }} • Créé le {{ dossier.date_creation.strftime('%d/%m/%Y') }}</small>
+            </p>
+        </div>
+        <div class="btn-group" role="group">
+            <a href="/factures/nouveau?dossier_id={{ dossier.id }}" class="btn btn-primary">
+                <i class="fas fa-plus-circle"></i> Nouvelle facture
             </a>
-            <a href="/dossiers/{{ dossier.id }}/download" class="btn btn-secondary btn-sm">
-                <i class="fas fa-download"></i> Télécharger tout
+            <a href="/dossiers/{{ dossier.id }}/download" class="btn btn-outline-secondary">
+                <i class="fas fa-download"></i> Tout télécharger
             </a>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-lg-6">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 bg-primary text-white">
-                    <h6 class="m-0 font-weight-bold">Informations générales</h6>
-                </div>
+    <div class="row mb-4">
+        {% set factures_principales = dossier.factures | selectattr('facture_parent_id', 'none') | list %}
+        {% set total_facture = factures_principales | sum(attribute='montant_total_avec_enfants') %}
+        {% set total_paye = factures_principales | sum(attribute='montant_paye_total_avec_enfants') %}
+        {% set total_restant = total_facture - total_paye %}
+        {% set pourcentage_paye = (total_paye / total_facture * 100) if total_facture > 0 else 0 %}
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2 hover-lift">
                 <div class="card-body">
-                    <p><strong>Numéro dossier :</strong> {{ dossier.numero_dossier }}</p>
-                    <p><strong>Client :</strong> {{ dossier.client.nom }}</p>
-                    <p><strong>Avocat responsable :</strong> {{ dossier.avocat_responsable_user.nom }}</p>
-                    <p><strong>Juridiction :</strong> {{ dossier.juridiction or '-' }}</p>
-                    <p><strong>Tribunal :</strong> {{ dossier.tribunal or '-' }}</p>
-                    <p><strong>Date création :</strong> {{ dossier.date_creation.strftime('%d/%m/%Y %H:%M') }}</p>
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Facturé</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ "{:,.2f}".format(total_facture) }} Ar</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file-invoice fa-2x text-primary-light"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-6">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 bg-info text-white">
-                    <h6 class="m-0 font-weight-bold">Résumé Financier</h6>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2 hover-lift">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Payé</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ "{:,.2f}".format(total_paye) }} Ar</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-success-light"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-{{ 'success' if total_restant <= 0 else 'danger' }} shadow h-100 py-2 hover-lift">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-{{ 'success' if total_restant <= 0 else 'danger' }} text-uppercase mb-1">Restant à Payer</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ "{:,.2f}".format(total_restant) }} Ar</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-{{ 'smile' if total_restant <= 0 else 'exclamation-triangle' }} fa-2x text-{{ 'success' if total_restant <= 0 else 'danger' }}-light"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2 hover-lift">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Progression</div>
+                            <div class="row no-gutters align-items-center">
+                                <div class="col-auto">
+                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{ "%.1f"|format(pourcentage_paye) }}%</div>
+                                </div>
+                                <div class="col">
+                                    <div class="progress progress-sm mr-2">
+                                        <div class="progress-bar bg-info" role="progressbar" style="width: {{ pourcentage_paye }}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-pie fa-2x text-info-light"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4 h-100">
+                <div class="card-header py-3 d-flex align-items-center">
+                    <i class="fas fa-info-circle text-primary mr-2"></i>
+                    <h6 class="m-0 font-weight-bold text-primary">Informations du Dossier</h6>
                 </div>
                 <div class="card-body">
-                    {% set factures_principales = dossier.factures | selectattr('facture_parent_id', 'none') | list %}
-                    {% set total_facture = factures_principales | sum(attribute='montant_total_avec_enfants') %}
-                    {% set total_paye = factures_principales | sum(attribute='montant_paye_total_avec_enfants') %}
-                    {% set total_restant = total_facture - total_paye %}
-
-                    <div class="row text-center">
-                        <div class="col-4">
-                            <h6 class="text-primary">{{ "%.2f"|format(total_facture) }} Ar</h6>
-                            <small class="text-muted">Total facturé</small>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item mb-3">
+                                <label class="text-muted small mb-1">Numéro de dossier</label>
+                                <p class="font-weight-bold mb-0">{{ dossier.numero_dossier }}</p>
+                            </div>
+                            <div class="info-item mb-3">
+                                <label class="text-muted small mb-1">Client</label>
+                                <p class="font-weight-bold mb-0">
+                                    <i class="fas fa-user-tie text-primary mr-1"></i>{{ dossier.client.nom }}
+                                </p>
+                            </div>
+                            <div class="info-item mb-3">
+                                <label class="text-muted small mb-1">Avocat responsable</label>
+                                <p class="font-weight-bold mb-0">
+                                    <i class="fas fa-balance-scale text-success mr-1"></i>{{ dossier.avocat_responsable_user.nom }}
+                                </p>
+                            </div>
                         </div>
-                        <div class="col-4">
-                            <h6 class="text-success">{{ "%.2f"|format(total_paye) }} Ar</h6>
-                            <small class="text-muted">Total payé</small>
-                        </div>
-                        <div class="col-4">
-                            <h6 class="text-{{ 'success' if total_restant <= 0 else 'danger' }}">{{ "%.2f"|format(total_restant) }} Ar</h6>
-                            <small class="text-muted">Restant</small>
+                        <div class="col-md-6">
+                            <div class="info-item mb-3">
+                                <label class="text-muted small mb-1">Juridiction</label>
+                                <p class="font-weight-bold mb-0">{{ dossier.juridiction or '-' }}</p>
+                            </div>
+                            <div class="info-item mb-3">
+                                <label class="text-muted small mb-1">Tribunal</label>
+                                <p class="font-weight-bold mb-0">{{ dossier.tribunal or '-' }}</p>
+                            </div>
+                            <div class="info-item mb-3">
+                                <label class="text-muted small mb-1">Date de création</label>
+                                <p class="font-weight-bold mb-0">
+                                    <i class="fas fa-calendar text-info mr-1"></i>{{ dossier.date_creation.strftime('%d/%m/%Y à %H:%M') }}
+                                </p>
+                            </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
 
-                    {% if total_restant > 0 %}
-                    <div class="progress mt-3">
-                        <div class="progress-bar bg-success" role="progressbar"
-                             style="width: {{ (total_paye / total_facture * 100) if total_facture > 0 else 0 }}%">
-                            {{ "%.1f"|format((total_paye / total_facture * 100) if total_facture > 0 else 0) }}%
-                        </div>
-                    </div>
+        <div class="col-lg-4">
+            <div class="card shadow mb-4 h-100 border-left-warning">
+                <div class="card-header py-3 d-flex align-items-center bg-gradient-warning text-white">
+                    <i class="fas fa-comments mr-2"></i>
+                    <h6 class="m-0 font-weight-bold">Commentaires</h6>
+                </div>
+                <div class="card-body">
+                    {% if dossier.commentaire %}
+                        <p class="mb-0 text-gray-700">{{ dossier.commentaire }}</p>
+                    {% else %}
+                        <p class="text-muted text-center mb-0">
+                            <i class="fas fa-comment-slash fa-2x mb-2 d-block"></i>
+                            Aucun commentaire
+                        </p>
                     {% endif %}
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 bg-info text-white">
-                    <h6 class="m-0 font-weight-bold">Commentaires</h6>
-                </div>
-                <div class="card-body">
-                    {{ dossier.commentaire or "Aucun commentaire" }}
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="card shadow mb-4">
-        <div class="card-header py-3 bg-success text-white d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold">💰 Factures liées ({{ dossier.factures|length }} factures)</h6>
+        <div class="card-header py-3 d-flex justify-content-between align-items-center bg-gradient-success text-white">
             <div>
-                <small class="text-white-50">
-                    {{ (dossier.factures | selectattr('facture_parent_id', 'none') | list) |length }} principales +
-                    {{ (dossier.factures | selectattr('facture_parent_id', 'ne', none) | list) |length }} soldes
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-file-invoice-dollar mr-2"></i>Factures liées
+                </h6>
+                <small class="d-block mt-1 text-white-75">
+                    {{ (dossier.factures | selectattr('facture_parent_id', 'none') | list) |length }} facture(s) principale(s) •
+                    {{ (dossier.factures | selectattr('facture_parent_id', 'ne', none) | list) |length }} facture(s) de solde
                 </small>
             </div>
+            <span class="badge badge-light badge-pill">{{ dossier.factures|length }} Total</span>
         </div>
-        <div class="card-body">
+        <div class="card-body p-0">
             {% if dossier.factures %}
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="thead-light">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="bg-light">
                         <tr>
-                            <th>Type</th>
-                            <th>#</th>
-                            <th>Description</th>
-                            <th>Montant TTC</th>
-                            <th>Payé</th>
-                            <th>Restant</th>
-                            <th>Statut</th>
-                            <th>Date émission</th>
-                            <th>Actions</th>
+                            <th class="border-0">Type</th>
+                            <th class="border-0">Numéro</th>
+                            <th class="border-0">Description</th>
+                            <th class="border-0 text-right">Montant TTC</th>
+                            <th class="border-0 text-right">Payé</th>
+                            <th class="border-0 text-right">Restant</th>
+                            <th class="border-0 text-center">Statut</th>
+                            <th class="border-0">Date émission</th>
+                            <th class="border-0 text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% set factures_principales = dossier.factures | selectattr('facture_parent_id', 'none') | list %}
-
                         {% for f in factures_principales %}
-                        <tr class="table-light">
+                        <tr class="facture-principale">
                             <td>
-                                <i class="fas fa-file-invoice text-primary" title="Facture principale"></i>
+                                <div class="badge badge-primary badge-pill">
+                                    <i class="fas fa-file-invoice"></i>
+                                </div>
                             </td>
                             <td>
-                                <a href="/factures/{{ f.id }}" class="text-primary font-weight-bold">
+                                <a href="/factures/{{ f.id }}" class="text-primary font-weight-bold text-decoration-none">
                                     {{ f.numero_facture }}
                                 </a>
                                 {% if f.factures_enfant %}
-                                <small class="text-muted d-block">{{ f.factures_enfant|length }} solde(s)</small>
-                                {% endif %}
-                            </td>
-                            <td>{{ f.description }}</td>
-                            <td>
-                                <strong>{{ "%.2f"|format(f.montant_ttc) }} Ariary</strong>
-                                {% if f.factures_enfant %}
-                                <small class="text-muted d-block">
-                                    Global: {{ "%.2f"|format(f.montant_total_avec_enfants) }} Ar
-                                </small>
-                                {% endif %}
-                            </td>
-                            <td class="text-success">
-                                <strong>{{ "%.2f"|format(f.montant_paye) }} Ariary</strong>
-                                {% if f.factures_enfant %}
-                                <small class="text-muted d-block">
-                                    Global: {{ "%.2f"|format(f.montant_paye_total_avec_enfants) }} Ar
-                                </small>
-                                {% endif %}
-                            </td>
-                            <td class="text-danger">
-                                <strong>{{ "%.2f"|format(f.montant_restant_facture_mere) }} Ariary</strong>
-                                {% if f.factures_enfant %}
-                                <small class="text-muted d-block">
-                                    Global: {{ "%.2f"|format(f.montant_restant_global) }} Ar
-                                </small>
+                                <span class="badge badge-secondary badge-sm ml-1">+{{ f.factures_enfant|length }}</span>
                                 {% endif %}
                             </td>
                             <td>
+                                <div class="text-truncate" style="max-width: 200px;" title="{{ f.description }}">
+                                    {{ f.description }}
+                                </div>
+                            </td>
+                            <td class="text-right">
+                                <strong class="text-gray-800">{{ "{:,.2f}".format(f.montant_ttc) }} Ar</strong>
+                                {% if f.factures_enfant %}
+                                <small class="text-muted d-block">
+                                    <i class="fas fa-layer-group fa-xs"></i> {{ "{:,.2f}".format(f.montant_total_avec_enfants) }} Ar
+                                </small>
+                                {% endif %}
+                            </td>
+                            <td class="text-right text-success">
+                                <strong>{{ "{:,.2f}".format(f.montant_paye) }} Ar</strong>
+                                {% if f.factures_enfant %}
+                                <small class="text-muted d-block">
+                                    <i class="fas fa-layer-group fa-xs"></i> {{ "{:,.2f}".format(f.montant_paye_total_avec_enfants) }} Ar
+                                </small>
+                                {% endif %}
+                            </td>
+                            <td class="text-right text-danger">
+                                <strong>{{ "{:,.2f}".format(f.montant_restant_facture_mere) }} Ar</strong>
+                                {% if f.factures_enfant %}
+                                <small class="text-muted d-block">
+                                    <i class="fas fa-layer-group fa-xs"></i> {{ "{:,.2f}".format(f.montant_restant_global) }} Ar
+                                </small>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
                                 {% if f.est_completement_payee %}
-                                    <span class="badge badge-success">PAYÉE</span>
+                                    <span class="badge badge-success"><i class="fas fa-check mr-1"></i>PAYÉE</span>
                                 {% elif f.montant_paye > 0 %}
-                                    <span class="badge badge-info">PARTIELLE</span>
+                                    <span class="badge badge-info"><i class="fas fa-hourglass-half mr-1"></i>PARTIELLE</span>
                                 {% elif f.statut.value == "en_retard" %}
-                                    <span class="badge badge-danger">EN RETARD</span>
+                                    <span class="badge badge-danger"><i class="fas fa-clock mr-1"></i>EN RETARD</span>
                                 {% elif f.statut.value == "envoyee" %}
-                                    <span class="badge badge-warning">ENVOYÉE</span>
+                                    <span class="badge badge-warning"><i class="fas fa-paper-plane mr-1"></i>ENVOYÉE</span>
                                 {% else %}
                                     <span class="badge badge-secondary">{{ f.statut.value.upper() }}</span>
                                 {% endif %}
                             </td>
                             <td>
                                 {% if f.date_emission %}
-                                    {{ f.date_emission.strftime("%d/%m/%Y") }}
+                                    <small><i class="far fa-calendar-alt text-muted mr-1"></i>{{ f.date_emission.strftime("%d/%m/%Y") }}</small>
                                 {% else %}
-                                    -
+                                    <small class="text-muted">-</small>
                                 {% endif %}
                             </td>
-                            <td>
-                                {% if f.fichier_facture %}
-                                <a href="/factures/{{ f.id }}/download" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-file-download"></i>
-                                </a>
-                                {% endif %}
-                                <a href="/factures/{{ f.id }}" class="btn btn-sm btn-outline-info">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                {% if f.montant_restant > 0 %}
-                                <a href="/factures/{{ f.id }}/paiements/create" class="btn btn-sm btn-outline-success" title="Ajouter paiement">
-                                    <i class="fas fa-plus"></i>
-                                </a>
-                                {% endif %}
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    {% if f.fichier_facture %}
+                                    <a href="/factures/{{ f.id }}/download" class="btn btn-outline-primary" title="Télécharger">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    {% endif %}
+                                    <a href="/factures/{{ f.id }}" class="btn btn-outline-info" title="Voir détails">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if f.montant_restant > 0 %}
+                                    <a href="/factures/{{ f.id }}/paiements/create" class="btn btn-outline-success" title="Ajouter paiement">
+                                        <i class="fas fa-plus"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
                             </td>
                         </tr>
 
                         {% for enfant in f.factures_enfant %}
-                        <tr class="table-warning">
+                        <tr class="facture-enfant">
                             <td class="pl-4">
-                                <i class="fas fa-level-down-alt fa-rotate-90 text-warning" title="Facture de solde"></i>
+                                <div class="badge badge-warning badge-pill">
+                                    <i class="fas fa-receipt"></i>
+                                </div>
                             </td>
                             <td class="pl-4">
-                                <a href="/factures/{{ enfant.id }}" class="text-warning">
+                                <a href="/factures/{{ enfant.id }}" class="text-warning font-weight-bold text-decoration-none">
                                     {{ enfant.numero_facture }}
                                 </a>
-                                <small class="text-muted d-block">Solde</small>
+                                <small class="text-muted d-block">Facture de solde</small>
                             </td>
                             <td>
-                                <small class="text-muted">{{ enfant.description }}</small>
+                                <small class="text-muted text-truncate d-block" style="max-width: 200px;" title="{{ enfant.description }}">
+                                    {{ enfant.description }}
+                                </small>
                             </td>
-                            <td>{{ "%.2f"|format(enfant.montant_ttc) }} Ariary</td>
-                            <td class="text-success">{{ "%.2f"|format(enfant.montant_paye) }} Ariary</td>
-                            <td class="text-danger">{{ "%.2f"|format(enfant.montant_restant) }} Ariary</td>
-                            <td>
+                            <td class="text-right">{{ "{:,.2f}".format(enfant.montant_ttc) }} Ar</td>
+                            <td class="text-right text-success">{{ "{:,.2f}".format(enfant.montant_paye) }} Ar</td>
+                            <td class="text-right text-danger">{{ "{:,.2f}".format(enfant.montant_restant) }} Ar</td>
+                            <td class="text-center">
                                 {% if enfant.montant_restant <= 0 %}
-                                    <span class="badge badge-success badge-sm">PAYÉE</span>
+                                    <span class="badge badge-success badge-sm"><i class="fas fa-check mr-1"></i>PAYÉE</span>
                                 {% elif enfant.montant_paye > 0 %}
-                                    <span class="badge badge-info badge-sm">PARTIELLE</span>
+                                    <span class="badge badge-info badge-sm"><i class="fas fa-hourglass-half mr-1"></i>PARTIELLE</span>
                                 {% elif enfant.statut.value == "en_retard" %}
-                                    <span class="badge badge-danger badge-sm">RETARD</span>
+                                    <span class="badge badge-danger badge-sm"><i class="fas fa-clock mr-1"></i>RETARD</span>
                                 {% else %}
                                     <span class="badge badge-secondary badge-sm">{{ enfant.statut.value.upper() }}</span>
                                 {% endif %}
                             </td>
                             <td>
                                 {% if enfant.date_emission %}
-                                    {{ enfant.date_emission.strftime("%d/%m/%Y") }}
+                                    <small><i class="far fa-calendar-alt text-muted mr-1"></i>{{ enfant.date_emission.strftime("%d/%m/%Y") }}</small>
                                 {% else %}
-                                    -
+                                    <small class="text-muted">-</small>
                                 {% endif %}
                             </td>
-                            <td>
-                                {% if enfant.fichier_facture %}
-                                <a href="/factures/{{ enfant.id }}/download" class="btn btn-sm btn-outline-warning">
-                                    <i class="fas fa-file-download"></i>
-                                </a>
-                                {% endif %}
-                                <a href="/factures/{{ enfant.id }}" class="btn btn-sm btn-outline-info">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                {% if enfant.montant_restant > 0 %}
-                                <a href="/factures/{{ enfant.id }}/paiements/create" class="btn btn-sm btn-outline-success" title="Ajouter paiement">
-                                    <i class="fas fa-plus"></i>
-                                </a>
-                                {% endif %}
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    {% if enfant.fichier_facture %}
+                                    <a href="/factures/{{ enfant.id }}/download" class="btn btn-outline-warning" title="Télécharger">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    {% endif %}
+                                    <a href="/factures/{{ enfant.id }}" class="btn btn-outline-info" title="Voir détails">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if enfant.montant_restant > 0 %}
+                                    <a href="/factures/{{ enfant.id }}/paiements/create" class="btn btn-outline-success" title="Ajouter paiement">
+                                        <i class="fas fa-plus"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -259,24 +363,21 @@
             </div>
 
             {% if factures_principales %}
-            <div class="row mt-4">
-                <div class="col-md-12">
-                    <div class="alert alert-info">
-                        <h6><i class="fas fa-info-circle"></i> Légende :</h6>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <small>
-                                    <i class="fas fa-file-invoice text-primary"></i> <strong>Factures principales</strong> : Factures originales<br>
-                                    <i class="fas fa-level-down-alt fa-rotate-90 text-warning"></i> <strong>Factures de solde</strong> : Compléments pour montants restants
-                                </small>
-                            </div>
-                            <div class="col-md-6">
-                                <small>
-                                    Les montants <strong>"Global"</strong> incluent la facture principale + ses soldes.<br>
-                                    Les paiements peuvent être effectués sur n'importe quelle facture de la série.
-                                </small>
-                            </div>
-                        </div>
+            <div class="bg-light border-top p-3">
+                <div class="row align-items-center">
+                    <div class="col-md-6 mb-2 mb-md-0">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle text-info mr-1"></i>
+                            <strong>Légende :</strong>
+                            <span class="badge badge-primary badge-pill ml-2"><i class="fas fa-file-invoice"></i> Principale</span>
+                            <span class="badge badge-warning badge-pill ml-1"><i class="fas fa-receipt"></i> Solde</span>
+                        </small>
+                    </div>
+                    <div class="col-md-6 text-md-right">
+                        <small class="text-muted">
+                            <i class="fas fa-layer-group fa-xs mr-1"></i>
+                            Les montants avec icône incluent les factures de solde
+                        </small>
                     </div>
                 </div>
             </div>
@@ -284,33 +385,18 @@
 
             {% else %}
                 <div class="text-center py-5">
-                    <i class="fas fa-file-invoice fa-4x text-muted mb-3"></i>
-                    <h5 class="text-muted">Aucune facture</h5>
-                    <p class="text-muted">Aucune facture n'est encore associée à ce dossier.</p>
-                    <a href="/factures/nouveau?dossier_id={{ dossier.id }}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Créer la première facture
-                    </a>
+                    <div class="empty-state">
+                        <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                        <h5 class="text-muted mb-2">Aucune facture trouvée</h5>
+                        <p class="text-muted mb-4">Ce dossier ne contient pas encore de factures.</p>
+                        <a href="/factures/nouveau?dossier_id={{ dossier.id }}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle mr-1"></i> Créer la première facture
+                        </a>
+                    </div>
                 </div>
             {% endif %}
         </div>
     </div>
 
 </div>
-{% endblock %}
-
-{% block extra_css %}
-<style>
-    .table tr.table-light {
-        background-color: #f8f9fc !important;
-    }
-    .table tr.table-warning {
-        background-color: #fff3cd !important;
-    }
-    .progress {
-        height: 8px;
-    }
-    .badge-sm {
-        font-size: 0.75em;
-    }
-</style>
 {% endblock %}

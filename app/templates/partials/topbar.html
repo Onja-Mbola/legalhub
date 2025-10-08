@@ -1,21 +1,22 @@
 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+        <i class="fa fa-bars"></i>
+    </button>
 
-        <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-            <i class="fa fa-bars"></i>
-        </button>
-
-        <form
-            class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
-            <div class="input-group">
-                <input type="text" class="form-control bg-light border-0 small" placeholder="Rechercher..."
-                    aria-label="Search" aria-describedby="basic-addon2">
-                <div class="input-group-append">
-                    <button class="btn btn-primary" type="button">
-                        <i class="fas fa-search fa-sm"></i>
-                    </button>
-                </div>
+    <form id="searchForm" class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+        <div class="input-group">
+            <input type="text" id="searchInput" class="form-control bg-light border-0 small"
+                   placeholder="Rechercher un dossier..." aria-label="Search">
+            <div class="input-group-append">
+                <button class="btn btn-primary" type="submit">
+                    <i class="fas fa-search fa-sm"></i>
+                </button>
             </div>
-        </form>
+        </div>
+        <div id="searchResults" class="dropdown-menu dropdown-menu-left shadow animated--grow-in"
+             style="display: none; width: 100%; max-height: 400px; overflow-y: auto;">
+        </div>
+    </form>
 
         <ul class="navbar-nav ml-auto">
 
@@ -167,14 +168,6 @@
                         <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                         Profil
                     </a>
-                    <a class="dropdown-item" href="/settings"> {# Assuming a settings page #}
-                        <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                        Paramètres
-                    </a>
-                    <a class="dropdown-item" href="/activity-log"> {# Assuming an activity log page #}
-                        <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-                        Journal d'activités
-                    </a>
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
                         <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
@@ -186,3 +179,88 @@
         </ul>
 
     </nav>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchForm = document.getElementById('searchForm');
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    let searchTimeout;
+
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value.trim();
+
+        if (query.length < 2) {
+            searchResults.style.display = 'none';
+            return;
+        }
+
+        searchTimeout = setTimeout(() => {
+            fetch(`/api/search/dossiers?q=${encodeURIComponent(query)}&size=10`)
+                .then(response => response.json())
+                .then(data => {
+                    displayResults(data.results, data.total);
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    searchResults.innerHTML = '<div class="dropdown-item text-danger">Erreur de recherche</div>';
+                    searchResults.style.display = 'block';
+                });
+        }, 300);
+    });
+
+    searchForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const query = searchInput.value.trim();
+        if (query.length >= 2) {
+            fetch(`/api/search/dossiers?q=${encodeURIComponent(query)}&size=10`)
+                .then(response => response.json())
+                .then(data => {
+                    displayResults(data.results, data.total);
+                })
+                .catch(error => console.error('Erreur:', error));
+        }
+    });
+
+    function displayResults(results, total) {
+        if (!results || results.length === 0) {
+            searchResults.innerHTML = '<div class="dropdown-item text-muted">Aucun résultat trouvé</div>';
+            searchResults.style.display = 'block';
+            return;
+        }
+
+        let html = `<h6 class="dropdown-header">${total} dossier(s) trouvé(s)</h6>`;
+
+        results.forEach(result => {
+            html += `
+                <a class="dropdown-item" href="${result.url}">
+                    <div class="py-2">
+                        <div class="font-weight-bold text-primary">
+                            ${result.numero_dossier || 'N/A'}
+                        </div>
+                        <div class="text-truncate">${result.nom_dossier || ''}</div>
+                        <div class="small text-muted">
+                            ${result.client_nom ? '<i class="fas fa-user"></i> ' + result.client_nom : ''}
+                            ${result.tribunal ? ' | <i class="fas fa-gavel"></i> ' + result.tribunal : ''}
+                        </div>
+                    </div>
+                </a>
+            `;
+        });
+
+        html += `<div class="dropdown-divider"></div>`;
+        html += `<a class="dropdown-item text-center small text-primary" href="/dossiers">Voir tous les dossiers</a>`;
+
+        searchResults.innerHTML = html;
+        searchResults.style.display = 'block';
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!searchForm.contains(e.target)) {
+            searchResults.style.display = 'none';
+        }
+    });
+});
+</script>

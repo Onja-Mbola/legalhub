@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Jugement définitif - Dossier #{{ dossier_id }}{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_jugement_definitif.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    {% if error_msg %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <strong>Erreur :</strong> {{ error_msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+    </div>
+    {% endif %}
+
+    <div class="page-header">
+        <div class="container-fluid">
+            <h2 class="text-white mb-1 font-weight-bold">
+                <i class="fas fa-gavel me-2"></i>Jugement Définitif
+            </h2>
+            <div class="decision-badge">
+                Dossier #{{ dossier_id }}
+            </div>
+        </div>
+    </div>
+
+    <div class="form-card">
+        <div class="form-section">
+            <div class="info-banner">
+                <i class="fas fa-info-circle"></i>
+                <div class="info-banner-content">
+                    <h6>Enregistrement du jugement définitif</h6>
+                    <p>Saisissez les informations relatives au jugement définitif et joignez les documents nécessaires.</p>
+                </div>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" action="/dossiers/{{ dossier_id }}/jugement_definitif">
+                
+                <div class="form-group-section">
+                    <div class="section-title">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Informations du jugement</span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="date_jugement" class="form-label">
+                            <i class="far fa-calendar"></i>
+                            Date du jugement
+                            <span class="required-badge">REQUIS</span>
+                        </label>
+                        <input type="date" 
+                               class="form-control" 
+                               id="date_jugement" 
+                               name="date_jugement" 
+                               required 
+                               value="{{ jugement.date_jugement if jugement else '' }}">
+                    </div>
+
+                    <input type="hidden" name="decision_fond_id" value="{{ decision_fond_id if decision_fond_id else '' }}">
+
+                    <div class="mb-4">
+                        <label for="texte_jugement" class="form-label">
+                            <i class="fas fa-file-alt"></i>
+                            Texte du jugement
+                        </label>
+                        <textarea class="form-control" 
+                                  id="texte_jugement" 
+                                  name="texte_jugement" 
+                                  rows="6" 
+                                  placeholder="Saisissez le texte intégral du jugement...">{{ jugement.texte_jugement if jugement else '' }}</textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="observations" class="form-label">
+                            <i class="fas fa-comment-dots"></i>
+                            Observations
+                        </label>
+                        <textarea class="form-control" 
+                                  id="observations" 
+                                  name="observations" 
+                                  rows="4" 
+                                  placeholder="Ajoutez vos observations ou remarques...">{{ jugement.observations if jugement else '' }}</textarea>
+                    </div>
+                </div>
+
+                <div class="file-upload-section">
+                    <div class="section-title">
+                        <i class="fas fa-paperclip"></i>
+                        <span>Documents joints</span>
+                    </div>
+
+                    {% if jugement and jugement.jugement_file %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            <i class="fas fa-folder-open"></i>
+                            Fichiers existants
+                        </label>
+                        {% for f in jugement.jugement_file %}
+                        <div class="current-file">
+                            <i class="fas fa-file-pdf"></i>
+                            <a href="{{ url_for('documents', filepath=f.split('app/documents/')[-1]) }}" target="_blank">
+                                {{ f.split('/')[-1] }}
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <label for="jugement_file" class="form-label">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        Joindre des fichiers
+                    </label>
+                    <input type="file" 
+                           class="form-control" 
+                           id="jugement_file" 
+                           name="fichiers" 
+                           multiple 
+                           accept=".pdf,.jpg,.png,.jpeg">
+                    <small class="text-muted mt-2 d-block">
+                        <i class="fas fa-info-circle"></i>
+                        Formats acceptés : PDF, JPG, PNG, JPEG
+                    </small>
+                </div>
+
+                <div class="text-end mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        Enregistrer le jugement
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

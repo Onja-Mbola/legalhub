@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, JSON
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 from datetime import datetime, timedelta
@@ -16,6 +16,9 @@ class PremiereAudience(Base):
     nom_judge = Column(String, nullable=True)
     observations_judge = Column(Text, nullable=True)
     observations_internes = Column(Text, nullable=True)
+
+    ocr_texte = Column(Text, nullable=True)
+    entites_extraites = Column(JSON, nullable=True)
 
     created_at = Column(DateTime, default=datetime.utcnow() + timedelta(hours=3),nullable=True)
 

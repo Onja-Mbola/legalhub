@@ -13,6 +13,8 @@ class EchangeConclusionBase(BaseModel):
 class EchangeConclusionCreate(EchangeConclusionBase):
     dossier_id: int
     retour_audience_id: Optional[int] = None
+    premiere_appel_id: Optional[int] = None
+    decision_add_id: Optional[int] = None
 
 
 class EchangeConclusionUpdate(BaseModel):

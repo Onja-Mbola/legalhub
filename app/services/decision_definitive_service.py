@@ -1,7 +1,9 @@
 import os
 from typing import Optional
+
 from fastapi import UploadFile, HTTPException
 from sqlalchemy.orm import Session
+
 from app.models.dossier import Dossier
 from app.core.workflow_enums import ProcessStage
 from app.repositories.decision_definitive import (
@@ -15,8 +17,7 @@ from app.schemas.decision_definitive import (
 )
 from app.services.dossier import get_dossier_by_id_service
 from app.services.workflow_guard import WorkflowGuard
-from app.services.FileStorageService import save_uploaded_files
-
+from app.services.upload_processor import process_upload
 
 def save_or_update_decision_definitive(
         db: Session,
@@ -37,34 +38,58 @@ def save_or_update_decision_definitive(
 
     existing = get_decision_definitive_by_dossier(db, dossier_id)
 
-    base = os.path.join("app/documents", str(avocat_nom), str(dossier.numero_dossier), "decision_definitive")
-    file_path = None
-
-    if jugement_file and jugement_file.filename:
-        saved_files = save_uploaded_files([jugement_file], base)
-        file_path = os.path.join(base, saved_files[0])
-    elif existing:
-        file_path = existing.jugement_file
+    has_new_file = jugement_file and jugement_file.filename
 
     if existing:
         update_data = DecisionDefinitiveUpdate(**data.dict())
         existing = update_decision_definitive(db, existing, update_data)
-        existing.jugement_file = file_path
         db.commit()
         db.refresh(existing)
-        return existing
-    else:
-        if existing is not None:
-            raise HTTPException(
-                status_code=400,
-                detail="Une décision définitive existe déjà pour ce dossier."
+
+        if has_new_file:
+            process_upload(
+                obj=existing,
+                files=[jugement_file],
+                db=db,
+                dossier=dossier,
+                file_field="jugement_file",
+                contenu_field="contenu",
+                ocr_all_files=False,
+                run_ml=True,
+                subfolder="decision_definitive"
             )
 
+        return existing
+    else:
         create_data = DecisionDefinitiveCreate(**data.dict())
         obj = create_decision_definitive(db, create_data)
-        obj.jugement_file = file_path
         db.commit()
         db.refresh(obj)
+
+        if has_new_file:
+            process_upload(
+                obj=obj,
+                files=[jugement_file],
+                db=db,
+                dossier=dossier,
+                file_field="jugement_file",
+                contenu_field="contenu",
+                ocr_all_files=False,
+                run_ml=True,
+                subfolder="decision_definitive"
+            )
+        else:
+            process_upload(
+                obj=obj,
+                files=[],
+                db=db,
+                dossier=dossier,
+                file_field="jugement_file",
+                contenu_field="contenu",
+                run_ml=True,
+                subfolder="decision_definitive"
+            )
+
         WorkflowGuard.advance(dossier, ProcessStage.DECISION_DEFINITIVE, db)
         return obj
 

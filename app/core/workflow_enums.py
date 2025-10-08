@@ -20,9 +20,17 @@ class ProcessStage(str, Enum):
     OPPOSITION = "opposition"
     RETOUR_AUDIENCE = "retour_audience"
     JUGEMENT_DEFINITIF= "jugement_definitif"
-    ECHANGE_CONCLUSIONS_JUGEMENT_PAR_DEFAUT = "echange_conclusions_jugement_par_defaut"
-    DELIBERATION_JUGEMENT_PAR_DEFAUT = "deliberation_jugement_par_defaut"
-    NOTIFICATION_CLIENT_JUGEMENT_PAR_DEFAUT = "notification_client_jugement_par_defaut"
+    ECHANGE_CONCLUSIONS_JUGEMENT_PAR_DEFAUT = "echange_conclusion"
+    DELIBERATION_JUGEMENT_PAR_DEFAUT = "deliberations"
+    NOTIFICATION_CLIENT_JUGEMENT_PAR_DEFAUT = "notification_clients"
     APPEL = "appel"
+    ENROLEMENT_APPEL = "enrolement_appel"
+    PREMIERE_AUDIENCE_APPEL = "premiere_audience_appel"
+    ECHANGE_CONCLUSIONS_APPEL = "echange_conclusions_appel"
+    DELIBERATION_APPEL = "deliberation_appel"
+    AVANT_DIRE_DROIT = "avant_dire_droit"
+    FOND = "fond"
+    CASSATION = "cassation"
+
 
 

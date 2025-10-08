@@ -1,12 +1,14 @@
 from datetime import datetime, timedelta
 
-from sqlalchemy import Column, Integer, String, ForeignKey, Text, JSON, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, Text, JSON, DateTime, Boolean
 from sqlalchemy.orm import relationship
 
 from app.core.workflow_enums import ProcessStage
 from app.db.base_class import Base
 from app.models.action_log import ActionLog
 from app.models.appel import Appel
+from app.models.avant_dire_droit import AvantDireDroit
+from app.models.cassation import Cassation
 from app.models.client import Client
 from app.models.decision_avant_dire_droit import DecisionAvantDireDroit
 from app.models.decision_definitive import DecisionDefinitive
@@ -14,6 +16,7 @@ from app.models.deliberation_decision import DeliberationDecision
 from app.models.echange_conclusion import EchangeConclusion
 from app.models.enrolement import Enrolement
 from app.models.facture import Facture
+from app.models.fond import Fond
 from app.models.jugement import Jugement
 from app.models.jugement_definitif import JugementDefinitif
 from app.models.opposition import Opposition
@@ -22,6 +25,7 @@ from app.models.premiere_audience import PremiereAudience
 from app.models.requete_assignation import RequeteAssignation
 from app.models.retour_audience import RetourAudience
 from app.models.user import User
+from app.models.premiere_audience_appel import PremiereAudienceAppel
 
 
 class Dossier(Base):
@@ -50,10 +54,18 @@ class Dossier(Base):
     client = relationship(lambda: Client, back_populates="dossiers")
     avocat_responsable_user = relationship(lambda: User, foreign_keys=[avocat_responsable])
 
+    resume_nlp = Column(Text, nullable=True)
+    entites_extraites = Column(JSON, nullable=True)
+    prediction_issue = Column(String, nullable=True)
+
+    consentement_rgpd = Column(Boolean, default=False)
+    date_consentement = Column(DateTime, nullable=True)
+    traitement_actif = Column(Boolean, default=False)
+
     type_affaire_param = relationship(lambda: ParamGeneral, foreign_keys=[type_affaire])
     sous_type_affaire_param = relationship(lambda: ParamGeneral, foreign_keys=[sous_type_affaire])
     urgence_param = relationship(lambda: ParamGeneral, foreign_keys=[urgence])
-    enrolement = relationship(lambda: Enrolement, back_populates="dossier", uselist=False)
+    enrolement = relationship(lambda: Enrolement, back_populates="dossier", uselist=True)
     requete_assignation = relationship(lambda: RequeteAssignation, back_populates="dossier", uselist=False)
     premieres_audiences = relationship(lambda: PremiereAudience, back_populates="dossier", cascade="all, delete-orphan")
     echanges_conclusions = relationship(lambda: EchangeConclusion, back_populates="dossier", cascade="all, delete-orphan")
@@ -68,4 +80,8 @@ class Dossier(Base):
     jugements_definitifs = relationship(lambda: JugementDefinitif, back_populates="dossier", cascade="all, delete-orphan")
     appels = relationship(lambda: Appel, back_populates="dossier", cascade="all, delete-orphan")
     factures = relationship(lambda: Facture, back_populates="dossier")
+    premieres_audiences_appel = relationship(lambda: PremiereAudienceAppel, back_populates="dossier", cascade="all, delete-orphan")
+    decisions_add = relationship(lambda: AvantDireDroit, back_populates="dossier", cascade="all, delete-orphan")
+    decisions_fond = relationship(lambda: Fond, back_populates="dossier", cascade="all, delete-orphan")
+    cassations = relationship(lambda: Cassation, back_populates="dossier", cascade="all, delete-orphan")
 

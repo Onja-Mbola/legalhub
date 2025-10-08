@@ -1,0 +1,62 @@
+.dossier-row {
+    transition: all 0.2s ease;
+}
+
+.dossier-row:hover {
+    background-color: #f8f9fa;
+    transform: scale(1.01);
+}
+
+.btn-group .btn {
+    transition: all 0.2s ease;
+}
+
+.btn-group .btn:hover {
+    transform: translateY(-2px);
+    z-index: 1;
+}
+
+.card {
+    transition: all 0.3s ease;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1rem 0.75rem;
+}
+
+.table td {
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+}
+
+.badge {
+    padding: 0.35rem 0.65rem;
+    font-weight: 500;
+}
+
+.input-group-text {
+    background-color: white;
+}
+
+.input-group .form-control:focus {
+    border-color: #ced4da;
+    box-shadow: none;
+}
+
+.input-group:focus-within .input-group-text {
+    border-color: var(--bs-primary);
+}
+
+.input-group:focus-within .form-control {
+    border-color: var(--bs-primary);
+}
+
+@media print {
+    .btn, .pagination, .input-group, .card-header .d-flex > div:last-child {
+        display: none !important;
+    }
+}

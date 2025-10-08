@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, Text, JSON
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
@@ -12,5 +12,8 @@ class DecisionDefinitive(Base):
     type_decision = Column(String, nullable=False)
     motivation = Column(Text, nullable=True)
     jugement_file = Column(String, nullable=True)
+
+    ocr_texte = Column(Text, nullable=True)
+    entites_extraites = Column(JSON, nullable=True)
 
     dossier = relationship("Dossier", back_populates="decisions_definitives")

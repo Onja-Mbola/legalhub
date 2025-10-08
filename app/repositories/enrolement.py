@@ -3,8 +3,8 @@ from app.models.enrolement import Enrolement
 from app.schemas.enrolement import EnrolementCreate, EnrolementUpdate
 
 
-def get_enrolement_by_dossier(db: Session, dossier_id: int) -> Enrolement | None:
-    return db.query(Enrolement).filter(Enrolement.dossier_id == dossier_id).first()
+def get_enrolement_by_dossier(db: Session, dossier_id: int) -> list[Enrolement] | None:
+    return db.query(Enrolement).filter(Enrolement.dossier_id == dossier_id).all()
 
 
 def create_enrolement(db: Session, dossier_id: int, enrolement_in: EnrolementCreate) -> Enrolement:

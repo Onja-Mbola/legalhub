@@ -10,120 +10,264 @@
 {% include "partials/topbar.html" %}
 {% endblock %}
 
-{% block content %}
-<div class="container mt-5">
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_echange_conclusion.css">
+{% endblock %}
 
+{% block content %}
+
+<div class="page-header">
+    <div class="container">
+        <h2 class="text-white mb-0 d-flex align-items-center flex-wrap">
+            <i class="fas fa-file-signature me-3"></i>
+            {% if mode == "update" %}
+            Mise à jour de l'échange
+            <span class="badge-mode badge-create">Modification</span>
+            {% else %}
+            Nouveau échange de conclusions
+            <span class="badge-mode badge-update">Création</span>
+            {% endif %}
+        </h2>
+        <p class="text-white-50 mb-0 mt-2">Dossier #{{ dossier.id }}</p>
+    </div>
+</div>
+
+<div class="container mb-5">
     {% if error_msg %}
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <strong>Erreur :</strong> {{ error_msg }}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
-            <span aria-hidden="true">x</span>
-        </button>
+        <div class="d-flex align-items-center">
+            <i class="fas fa-exclamation-circle me-3" style="font-size: 1.5rem;"></i>
+            <div>
+                <strong>Erreur :</strong> {{ error_msg }}
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
     </div>
     {% endif %}
 
-    <div class="card shadow-lg rounded-4 border-0 mb-4">
-        <div class="card-header bg-gradient-primary text-white py-3">
-            <h4 class="mb-0">
-                <i class="fas fa-file-signature me-2"></i>
-                {% if mode == "create" %}
-                Nouveau échange de conclusions - Dossier #{{ dossier.id }}
-                {% else %}
-                Mise à jour de l'échange - Dossier #{{ dossier.id }}
-                {% endif %}
-            </h4>
-        </div>
-        <div class="card-body">
+    <div class="form-card">
+        <div class="form-section">
             <form method="post" enctype="multipart/form-data"
                   action="{% if mode == 'update' %}
                 /dossiers/{{ dossier.id }}/echange_conclusions/{{ item.id }}/update
                 {% elif mode == 'create' %}
                 /dossiers/{{ dossier.id }}/echange_conclusions
                 {% elif mode == 'creates' %}
-                /dossiers/{{ dossier.id }}/echange_conclusions/retour_audience/{{ retour_audience_id }}
+                /dossiers/{{ dossier.id }}/echange_conclusions/retour_audience/{{ retour_audience.id }}
+                {% elif mode == 'creates_appel' %}
+                /dossiers/{{ dossier.id }}/echange_conclusions/premiere_appel/{{ premiere_appel_id }}
                 {% endif %}">
 
-                <div class="mb-3">
-                    <label for="partie" class="form-label fw-semibold">Partie qui a demandé <span
-                            class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="partie" name="partie" required
-                           value="{{ item.partie if item else '' }}">
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-info-circle"></i>
+                        Informations principales
+                    </h5>
+
+                    <div class="mb-4">
+                        <label for="partie" class="form-label">
+                            <i class="fas fa-users"></i>
+                            Partie qui a déposé
+                            <span class="required-badge">Requis</span>
+                        </label>
+                        <input type="text"
+                               class="form-control"
+                               id="partie"
+                               name="partie"
+                               required
+                               placeholder="Nom de la partie (demandeur, défendeur, etc.)"
+                               value="{{ item.partie if item else '' }}">
+                    </div>
+
+                    <input type="hidden" name="retour_audience_id"
+                           value="{{ retour_audience.id if retour_audience else '' }}">
+
+                    <input type="hidden" name="premiere_appel_id"
+                           value="{{ premiere_appel.id if premiere_appel else '' }}">
+
+                    <div class="mb-0">
+                        <label for="date_depot" class="form-label">
+                            <i class="fas fa-calendar-day"></i>
+                            Date de dépôt
+                            <span class="required-badge">Requis</span>
+                        </label>
+                        <input type="date"
+                               class="form-control"
+                               id="date_depot"
+                               name="date_depot"
+                               required
+                               value="{{ item.date_depot if item else '' }}">
+                    </div>
                 </div>
-                <input type="hidden" name="retour_audience_id"
-                       value="{{ retour_audience.id if retour_audience else '' }}">
 
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-align-left"></i>
+                        Contenu et observations
+                    </h5>
 
-                <div class="mb-3">
-                    <label for="date_depot" class="form-label fw-semibold">Date de dépôt <span
-                            class="text-danger">*</span></label>
-                    <input type="date" class="form-control" id="date_depot" name="date_depot" required
-                           value="{{ item.date_depot if item else '' }}">
+                    <div class="mb-4">
+                        <label for="contenu_resume" class="form-label">
+                            <i class="fas fa-file-alt"></i>
+                            Résumé du contenu
+                        </label>
+                        <textarea class="form-control"
+                                  id="contenu_resume"
+                                  name="contenu_resume"
+                                  placeholder="Résumez les points principaux des conclusions déposées..."
+                                  rows="5">{{ item.contenu_resume if item else '' }}</textarea>
+                    </div>
+
+                    <div class="mb-0">
+                        <label for="motif_renvoi" class="form-label">
+                            <i class="fas fa-clipboard-list"></i>
+                            Motif de renvoi
+                        </label>
+                        <textarea class="form-control"
+                                  id="motif_renvoi"
+                                  name="motif_renvoi"
+                                  placeholder="Indiquez le motif du renvoi si applicable..."
+                                  rows="4">{{ item.motif_renvoi if item else '' }}</textarea>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="contenu_resume" class="form-label fw-semibold">Contenu résumé</label>
-                    <textarea class="form-control" id="contenu_resume" name="contenu_resume">{{ item.contenu_resume if item else '' }}</textarea>
-                </div>
+                <div class="section-divider"></div>
 
-                <div class="mb-3">
-                    <label for="motif_renvoi" class="form-label fw-semibold">Motif de renvoi</label>
-                    <textarea class="form-control" id="motif_renvoi" name="motif_renvoi">{{ item.motif_renvoi if item else '' }}</textarea>
-                </div>
+                <h5 class="mb-4 text-muted">
+                    <i class="fas fa-paperclip me-2"></i>
+                    Documents joints
+                </h5>
 
-                <div class="mb-3">
-                    <label for="conclusions_file" class="form-label fw-semibold">Fichier de conclusion</label>
+                <div class="mb-4 file-upload-section">
+                    <label for="conclusions_file" class="form-label">
+                        <i class="fas fa-file-upload"></i>
+                        Fichiers de conclusions
+                    </label>
+                    <small class="d-block text-muted mb-3">
+                        Formats acceptés : PDF, JPG, JPEG, PNG • Plusieurs fichiers possibles
+                    </small>
+
                     {% if item and item.conclusions_file %}
-                    <p>Fichiers actuels :</p>
-                    <ul>
-                        {% for f in item.conclusions_file %}
-                        <li>
-                            <a href="{{ request.url_for('documents', filepath=f.split('app/documents/')[-1]) }}"
-                               target="_blank">
-                                {{ f.split('/')[-1] }}
-                            </a>
-                        </li>
-                        {% endfor %}
-                    </ul>
+                        <div class="current-files-list">
+                            <div class="text-muted small mb-2 fw-semibold">
+                                <i class="fas fa-folder-open me-1"></i>
+                                Fichiers actuels ({{ item.conclusions_file|length }})
+                            </div>
+                            {% for f in item.conclusions_file %}
+                            <div class="file-item">
+                                <i class="fas fa-file-pdf"></i>
+                                <a href="{{ request.url_for('documents', filepath=f.split('app/documents/')[-1]) }}" target="_blank">
+                                    <i class="fas fa-download me-1"></i>
+                                    {{ f.split('/')[-1] }}
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
                     {% endif %}
-                    <input type="file" class="form-control" id="conclusions_file" name="conclusions_file"
-                           accept=".pdf,.jpg,.png,.jpeg" multiple>
+
+                    <input type="file"
+                           class="form-control"
+                           id="conclusions_file"
+                           name="conclusions_file"
+                           accept=".pdf,.jpg,.png,.jpeg"
+                           multiple>
                 </div>
 
-                <button type="submit" class="btn btn-primary rounded-pill px-4">
-                    <i class="fas fa-save me-2"></i>
-                    {% if mode == "create" %}Créer{% else %}Mettre à jour{% endif %}
-                </button>
+                <div class="d-flex justify-content-end mt-5">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        {% if mode == "create" %}Créer l'échange{% else %}Mettre à jour{% endif %}
+                    </button>
+                </div>
             </form>
         </div>
     </div>
 
     {% if mode == "create" and items %}
-    <h5>Échanges existants :</h5>
-    <ul class="list-group mb-4">
+    <div class="exchanges-list-card">
+        <h5 class="exchanges-title">
+            <i class="fas fa-list-ul"></i>
+            Échanges existants ({{ items|length }})
+        </h5>
         {% for echange in items %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-            {{ echange.partie }} - {{ echange.date_depot }}
-            <a href="/dossiers/{{ dossier.id }}/echange_conclusions/{{ echange.id }}/update"
-               class="btn btn-sm btn-outline-secondary">Modifier</a>
-        </li>
+        <div class="exchange-item">
+            <div class="exchange-info">
+                <div class="exchange-icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <div class="exchange-details">
+                    <span class="exchange-partie">{{ echange.partie }}</span>
+                    <span class="exchange-date">
+                        <i class="fas fa-calendar me-1"></i>
+                        {{ echange.date_depot }}
+                    </span>
+                </div>
+            </div>
+            <a href="/dossiers/{{ dossier.id }}/echange_conclusions/{{ echange.id }}/update" class="btn-edit">
+                <i class="fas fa-edit"></i>
+                Modifier
+            </a>
+        </div>
         {% endfor %}
-    </ul>
+    </div>
     {% endif %}
 
     {% if mode == "creates" and retour_audience and retour_audience.echanges_conclusions %}
-    <div class="mt-3 bg-light p-3 rounded">
-
-        <h5>Échanges de conclusions liés à cette audience :</h5>
+    <div class="exchanges-list-card">
+        <h5 class="exchanges-title">
+            <i class="fas fa-link"></i>
+            Échanges liés à cette audience ({{ retour_audience.echanges_conclusions|length }})
+        </h5>
         {% for echange in retour_audience.echanges_conclusions %}
-        <ul class="list-group mb-4">
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                {{ echange.partie }} - {{ echange.date_depot }}
-                <a href="/dossiers/{{ dossier.id }}/echange_conclusions/{{ echange.id }}/update"
-                   class="btn btn-sm btn-outline-secondary">Modifier</a>
-            </li>
-            {% endfor %}
-        </ul>
-        {% endif %}
+        <div class="exchange-item">
+            <div class="exchange-info">
+                <div class="exchange-icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <div class="exchange-details">
+                    <span class="exchange-partie">{{ echange.partie }}</span>
+                    <span class="exchange-date">
+                        <i class="fas fa-calendar me-1"></i>
+                        {{ echange.date_depot }}
+                    </span>
+                </div>
+            </div>
+            <a href="/dossiers/{{ dossier.id }}/echange_conclusions/{{ echange.id }}/update" class="btn-edit">
+                <i class="fas fa-edit"></i>
+                Modifier
+            </a>
+        </div>
+        {% endfor %}
     </div>
+    {% endif %}
+
+    {% if mode == "creates_appel" and premiere_appel and premiere_appel.echanges_conclusions %}
+    <div class="exchanges-list-card">
+        <h5 class="exchanges-title">
+            <i class="fas fa-link"></i>
+            Échanges liés à cette audience ({{ premiere_appel.echanges_conclusions|length }})
+        </h5>
+        {% for echange in premiere_appel.echanges_conclusions %}
+        <div class="exchange-item">
+            <div class="exchange-info">
+                <div class="exchange-icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <div class="exchange-details">
+                    <span class="exchange-partie">{{ echange.partie }}</span>
+                    <span class="exchange-date">
+                        <i class="fas fa-calendar me-1"></i>
+                        {{ echange.date_depot }}
+                    </span>
+                </div>
+            </div>
+            <a href="/dossiers/{{ dossier.id }}/echange_conclusions/{{ echange.id }}/update" class="btn-edit">
+                <i class="fas fa-edit"></i>
+                Modifier
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

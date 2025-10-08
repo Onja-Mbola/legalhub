@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, Text, JSON
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
@@ -11,6 +11,9 @@ class DecisionAvantDireDroit(Base):
     date_decision = Column(Date, nullable=False)
     nature_incident = Column(String, nullable=False)
     contenu = Column(Text, nullable=True)
-    ordonnance_file = Column(String, nullable=True)    
+    ordonnance_file = Column(String, nullable=True)
+
+    ocr_texte = Column(Text, nullable=True)
+    entites_extraites = Column(JSON, nullable=True)
 
     dossier = relationship("Dossier", back_populates="decisions_avant_dire_droit")

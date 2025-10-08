@@ -10,63 +10,170 @@
 {% include "partials/topbar.html" %}
 {% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_enrolement.css">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-4 mb-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-transparent p-0">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fas fa-home"></i> Accueil</a></li>
+            <li class="breadcrumb-item"><a href="/dossiers" class="text-decoration-none">Dossiers</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Enrôlement #{{ dossier_id }}</li>
+        </ol>
+    </nav>
+
     {% if error_msg %}
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <strong>Erreur :</strong> {{ error_msg }}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
-            <span aria-hidden="true">x</span>
-        </button>
+    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-exclamation-circle fs-4 me-3"></i>
+            <div>
+                <strong>Erreur</strong>
+                <p class="mb-0 mt-1">{{ error_msg }}</p>
+            </div>
+        </div>
     </div>
     {% endif %}
-    <div class="card shadow-lg rounded-4 border-0">
-        <div class="card-header bg-gradient-primary text-white py-3">
-            <h4 class="mb-0"><i class="fas fa-file-signature me-2"></i> Enrôlement du dossier #{{ dossier_id }}</h4>
-        </div>
-        <div class="card-body">
-            <form method="post" enctype="multipart/form-data" action="">
-                <div class="mb-3">
-                    <label for="numero_role" class="form-label fw-semibold">Numéro de rôle <span
-                            class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="numero_role" name="numero_role" required
-                           value="{{ enrolement.numero_role if enrolement else '' }}">
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+                <div class="card-header border-0 py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="d-flex align-items-center text-white">
+                        <div>
+                            <h4 class="mb-1 fw-bold">Enrôlement du dossier</h4>
+                            <p class="mb-0 opacity-90">Dossier #{{ dossier_id }}</p>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="date_enrolement" class="form-label fw-semibold">Date d'enrôlement <span
-                            class="text-danger">*</span></label>
-                    <input type="date" class="form-control" id="date_enrolement" name="date_enrolement" required
-                           value="{{ enrolement.date_enrolement if enrolement else '' }}">
-                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data" action="">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label for="numero_role" class="form-label fw-semibold text-dark mb-2">
+                                    <i class="fas fa-hashtag text-primary me-2"></i>Numéro de rôle
+                                    <span class="text-danger ms-1">*</span>
+                                </label>
+                                <input type="text"
+                                       class="form-control form-control-lg border-2 rounded-3"
+                                       id="numero_role"
+                                       name="numero_role"
+                                       required
+                                       placeholder="Ex: R-2024-001"
+                                       value="{{ enrolement.numero_role if enrolement else '' }}">
+                            </div>
 
-                <div class="mb-3">
-                    <label for="frais_payes" class="form-label fw-semibold">Frais payés(en Ariary)</label>
-                    <input type="number" step="0.01" class="form-control" id="frais_payes" name="frais_payes"
-                           value="{{ enrolement.frais_payes if enrolement else '' }}">
-                </div>
+                            <div class="col-md-6">
+                                <label for="date_enrolement" class="form-label fw-semibold text-dark mb-2">
+                                    <i class="fas fa-calendar-alt text-primary me-2"></i>Date d'enrôlement
+                                    <span class="text-danger ms-1">*</span>
+                                </label>
+                                <input type="date"
+                                       class="form-control form-control-lg border-2 rounded-3"
+                                       id="date_enrolement"
+                                       name="date_enrolement"
+                                       required
+                                       value="{{ enrolement.date_enrolement if enrolement else '' }}">
+                            </div>
 
-                <div class="mb-3">
-                    <label for="greffier" class="form-label fw-semibold">Greffier</label>
-                    <input type="text" class="form-control" id="greffier" name="greffier"
-                           value="{{ enrolement.greffier if enrolement else '' }}">
-                </div>
+                            <div class="col-md-6">
+                                <label for="frais_payes" class="form-label fw-semibold text-dark mb-2">
+                                    <i class="fas fa-money-bill-wave text-success me-2"></i>Frais payés
+                                    <small class="text-muted">(en Ariary)</small>
+                                </label>
+                                <div class="input-group input-group-lg">
+                                    <input type="number"
+                                           step="0.01"
+                                           class="form-control border-2 rounded-start-3"
+                                           id="frais_payes"
+                                           name="frais_payes"
+                                           placeholder="0.00"
+                                           value="{{ enrolement.frais_payes if enrolement else '' }}">
+                                    <span class="input-group-text bg-light border-2 border-start-0 rounded-end-3">Ar</span>
+                                </div>
+                            </div>
 
-                <div class="mb-3">
-                    <label for="preuve_enrolement" class="form-label fw-semibold">Preuve d'enrôlement (fichier)</label>
-                    {% if enrolement and enrolement.preuve_enrolement %}
-                    <p>Fichier actuel : <a
-                            href="{{ request.url_for('documents', filepath=enrolement.preuve_enrolement.split('app/documents/')[-1]) }}"
-                            target="_blank">{{ enrolement.preuve_enrolement.split('/')[-1] }}</a></p>
-                    {% endif %}
-                    <input type="file" class="form-control" id="preuve_enrolement" name="preuve_enrolement"
-                           accept=".pdf,.jpg,.png,.jpeg">
-                </div>
+                            <div class="col-md-6">
+                                <label for="greffier" class="form-label fw-semibold text-dark mb-2">
+                                    <i class="fas fa-user-tie text-info me-2"></i>Greffier
+                                </label>
+                                <input type="text"
+                                       class="form-control form-control-lg border-2 rounded-3"
+                                       id="greffier"
+                                       name="greffier"
+                                       placeholder="Nom du greffier"
+                                       value="{{ enrolement.greffier if enrolement else '' }}">
+                            </div>
 
-                <button type="submit" class="btn btn-primary rounded-pill px-4">
-                    <i class="fas fa-save me-2"></i> Enregistrer
-                </button>
-            </form>
+                            <div class="col-12">
+                                <label for="preuve_enrolement" class="form-label fw-semibold text-dark mb-2">
+                                    <i class="fas fa-paperclip text-warning me-2"></i>Preuve d'enrôlement
+                                </label>
+
+                                {% if enrolement and enrolement.preuve_enrolement %}
+                                <div class="alert alert-info bg-light border-info border-2 rounded-3 mb-3" role="alert">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-file-pdf fs-3 text-danger me-3"></i>
+                                        <div class="flex-grow-1">
+                                            <p class="mb-0 fw-semibold">Fichier actuel :</p>
+                                            <a href="{{ request.url_for('documents', filepath=enrolement.preuve_enrolement.split('app/documents/')[-1]) }}"
+                                               target="_blank"
+                                               class="text-decoration-none">
+                                                <i class="fas fa-external-link-alt me-1"></i>
+                                                {{ enrolement.preuve_enrolement.split('/')[-1] }}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <div class="upload-area border-2 border-dashed rounded-3 p-4 text-center bg-light position-relative">
+                                    <input type="file"
+                                           class="form-control position-absolute opacity-0 w-100 h-100 top-0 start-0"
+                                           id="preuve_enrolement"
+                                           name="preuve_enrolement"
+                                           accept=".pdf,.jpg,.png,.jpeg"
+                                           style="cursor: pointer; z-index: 2;">
+                                    <div class="position-relative" style="z-index: 1; pointer-events: none;">
+                                        <i class="fas fa-cloud-upload-alt fs-1 text-primary mb-3 d-block"></i>
+                                        <p class="mb-2 fw-semibold">Cliquez pour sélectionner un fichier</p>
+                                        <p class="text-muted small mb-0">PDF, JPG, PNG (max 10MB)</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-5 pt-4 border-top">
+                            <div class="col-12">
+                                <div class="d-flex gap-3 justify-content-end">
+                                    <a href="/dossiers/{{ dossier_id }}" class="btn btn-light btn-lg px-4 rounded-3 border-2">
+                                        <i class="fas fa-times me-2"></i>Annuler
+                                    </a>
+                                    <button type="submit" class="btn btn-lg px-5 rounded-3 text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                        <i class="fas fa-save me-2"></i>Enregistrer l'enrôlement
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-3 mt-4 bg-light">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-dark mb-3">
+                        <i class="fas fa-info-circle text-primary me-2"></i>Informations importantes
+                    </h6>
+                    <ul class="list-unstyled mb-0 text-muted small">
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Les champs marqués d'un astérisque (*) sont obligatoires</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Le numéro de rôle doit être unique pour chaque dossier</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>La preuve d'enrôlement peut être mise à jour ultérieurement</li>
+                        <li><i class="fas fa-check-circle text-success me-2"></i>Formats acceptés : PDF, JPG, PNG, JPEG</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 </div>

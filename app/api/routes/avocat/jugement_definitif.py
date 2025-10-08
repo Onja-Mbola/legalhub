@@ -52,6 +52,31 @@ def jugement_definitif_form(
          "deliberation_id": deliberation_id},
     )
 
+@router.get("/dossiers/{dossier_id}/jugement_definitif/decision_fond/{decision_fond_id}", response_class=HTMLResponse)
+def jugement_definitif_form(
+        dossier_id: int,
+        decision_fond_id: int,
+        request: Request,
+        jugement_id: Optional[int] = None,
+        db: Session = Depends(get_db),
+        user: User = Depends(get_current_avocat_user),
+):
+    jugement = None
+    if jugement_id:
+        jugement = get_jugement_definitif_by_id_service(db, jugement_id)
+        if not jugement:
+            raise HTTPException(status_code=404, detail="Jugement définitif introuvable")
+    else:
+        jugements = get_jugements_definitifs_by_dossier_service(db, dossier_id)
+        if jugements:
+            jugement = jugements[0]
+
+    return templates.TemplateResponse(
+        "avocat/jugements_definitifs/form_decision_fond.html",
+        {"request": request, "user": user, "dossier_id": dossier_id, "jugement": jugement,
+         "decision_fond_id": decision_fond_id},
+    )
+
 
 @router.get("/dossiers/{dossier_id}/jugement_def/{jugement_id}/update", response_class=HTMLResponse)
 def jugement_definitif_form(
@@ -82,6 +107,7 @@ async def save_jugement_definitif(
         dossier_id: int,
         jugement_id: Optional[int] = Form(None),
         deliberation_id: Optional[int] = Form(None),
+        decision_fond_id: Optional[int] = Form(None),
         date_jugement: str = Form(...),
         texte_jugement: Optional[str] = Form(None),
         observations: Optional[str] = Form(None),
@@ -90,6 +116,12 @@ async def save_jugement_definitif(
         user: User = Depends(get_current_avocat_user),
         user1: User = Depends(get_current_user),
 ):
+    if deliberation_id and decision_fond_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Impossible de fournir à la fois deliberation_id et decision_fond_id"
+        )
+
     if jugement_id:
         data = JugementDefinitifUpdate(
             texte_jugement=texte_jugement,
@@ -107,14 +139,29 @@ async def save_jugement_definitif(
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
         redirect_url = f"/dossiers?jugement_definitif_update_success=1"
+
     else:
-        data = JugementDefinitifCreate(
-            dossier_id=dossier_id,
-            deliberation_id=deliberation_id,
-            date_jugement=datetime.strptime(date_jugement, "%Y-%m-%d").date(),
-            texte_jugement=texte_jugement,
-            observations=observations
-        )
+        new_data_kwargs = {
+            "dossier_id": dossier_id,
+            "date_jugement": datetime.strptime(date_jugement, "%Y-%m-%d").date(),
+            "texte_jugement": texte_jugement,
+            "observations": observations
+        }
+
+        if deliberation_id:
+            new_data_kwargs["deliberation_id"] = deliberation_id
+            new_data_kwargs["decision_fond_id"] = None
+        elif decision_fond_id:
+            new_data_kwargs["decision_fond_id"] = decision_fond_id
+            new_data_kwargs["deliberation_id"] = None
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail="Vous devez fournir soit deliberation_id soit decision_fond_id"
+            )
+
+        data = JugementDefinitifCreate(**new_data_kwargs)
+
         try:
             create_jugement_definitif_service(
                 db=db,

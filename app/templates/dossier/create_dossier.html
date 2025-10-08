@@ -10,143 +10,286 @@
     {% include "partials/topbar.html" %}
 {% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_create_dossier.css">
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid mt-5">
-       {% if request.query_params.get('error') == '1' %}
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <strong>Erreur !</strong> Veuillez remplir toute les champs.
-            <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
-                <span aria-hidden="true">&times;</span>
-            </button>
+<div class="container-fluid mt-4 px-4">
+    {% if request.query_params.get('error') == '1' %}
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-exclamation-circle me-3 fs-4"></i>
+                <div>
+                    <strong>Erreur !</strong> Veuillez remplir tous les champs obligatoires.
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
         </div>
-
     {% endif %}
-    <div class="card shadow-lg border-0 rounded-4">
-        <div class="card-header bg-gradient-primary text-white py-3">
-            <h4 class="mb-0"><i class="fas fa-folder-plus me-2"></i> Création d’un nouveau dossier</h4>
-        </div>
 
-        <div class="card-body">
-            <div class="progress mb-4" style="height: 10px;">
-                <div id="progressBar" class="progress-bar bg-primary" style="width: 25%;"></div>
+    <div class="row justify-content-center">
+        <div class="col-xl-10">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h3 class="mb-1 fw-bold text-dark">
+                                <i class="fas fa-folder-plus text-primary me-2"></i>
+                                Nouveau dossier
+                            </h3>
+                            <p class="text-muted mb-0">Complétez les informations en suivant les étapes ci-dessous</p>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-primary-subtle text-primary fs-6 px-3 py-2">
+                                Étape <span id="stepCounter">1</span>/4
+                            </span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <form id="creationDossierForm" enctype="multipart/form-data">
-                <div class="wizard-step" id="step-1">
-                    <h5 class="text-primary mb-3"><i class="fas fa-balance-scale me-2"></i> Informations principales</h5>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Type d'affaire</label>
-                            <select class="form-select rounded-pill" name="type_affaire" id="type_affaire" required>
-                                <option value="">-- Sélectionner --</option>
-                                {% for item in type_affaire %}
-                                    <option value="{{ item.id }}">{{ item.valeur | capitalize }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-6" id="sous_type_affaire_container" style="display: none;">
-                            <label class="form-label fw-semibold">Sous-type</label>
-                            <select class="form-select rounded-pill" name="sous_type_affaire" id="sous_type_affaire"></select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Urgence</label>
-                            <select class="form-select rounded-pill" name="urgence" id="urgence">
-                                <option value="">-- Sélectionner --</option>
-                                {% for item in urgences %}
-                                    <option value="{{ item.id }}">{{ item.valeur }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Rôle du Client</label>
-                            <select class="form-select rounded-pill" name="role_client" id="role_client">
-                                <option value="">-- Sélectionner --</option>
-                                {% for item in role_types %}
-                                    <option value="{{ item.id }}">{{ item.valeur }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <label for="nom_dossier" class="form-label fw-semibold">Nom du dossier</label>
-                            <input type="text" class="form-control shadow-sm" id="nom_dossier" name="nom_dossier" required>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    <div class="px-4 pt-4 pb-3">
+                        <div class="position-relative">
+                            <div class="progress" style="height: 6px; background-color: #e9ecef;">
+                                <div id="progressBar" class="progress-bar bg-gradient" style="width: 25%; background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%); transition: width 0.3s ease;"></div>
+                            </div>
+                            <div class="d-flex justify-content-between position-absolute w-100" style="top: -8px;">
+                                <div class="step-indicator active" data-step="1">
+                                    <div class="step-circle">
+                                        <i class="fas fa-balance-scale"></i>
+                                    </div>
+                                    <small class="step-label">Infos principales</small>
+                                </div>
+                                <div class="step-indicator" data-step="2">
+                                    <div class="step-circle">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <small class="step-label">Parties</small>
+                                </div>
+                                <div class="step-indicator" data-step="3">
+                                    <div class="step-circle">
+                                        <i class="fas fa-gavel"></i>
+                                    </div>
+                                    <small class="step-label">Détails</small>
+                                </div>
+                                <div class="step-indicator" data-step="4">
+                                    <div class="step-circle">
+                                        <i class="fas fa-paperclip"></i>
+                                    </div>
+                                    <small class="step-label">Finalisation</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="wizard-step d-none" id="step-2">
-                    <h5 class="text-primary mb-3"><i class="fas fa-users me-2"></i> Parties</h5>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Demandeurs</label>
-                            <div id="demandeurs-container"></div>
-                            <button type="button" class="btn btn-outline-primary btn-sm mt-2 rounded-pill" onclick="addDemandeur()">
-                                <i class="fas fa-user-plus me-1"></i> Ajouter
-                            </button>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Parties adverses</label>
-                            <div id="adverses-container"></div>
-                            <button type="button" class="btn btn-outline-danger btn-sm mt-2 rounded-pill" onclick="addAdverse()">
-                                <i class="fas fa-user-minus me-1"></i> Ajouter
-                            </button>
-                        </div>
+                    <div class="p-4 pt-5">
+                        <form id="creationDossierForm" enctype="multipart/form-data">
+                            <div class="wizard-step" id="step-1">
+                                <div class="mb-4">
+                                    <h5 class="fw-bold text-dark mb-1">
+                                        <i class="fas fa-balance-scale text-primary me-2"></i>
+                                        Informations principales
+                                    </h5>
+                                    <p class="text-muted small mb-4">Définissez les caractéristiques essentielles du dossier</p>
+                                </div>
+
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold text-dark mb-2">
+                                            Type d'affaire <span class="text-danger">*</span>
+                                        </label>
+                                        <select class="form-select form-select-lg border-2" name="type_affaire" id="type_affaire" required>
+                                            <option value="">Sélectionner un type</option>
+                                            {% for item in type_affaire %}
+                                                <option value="{{ item.id }}">{{ item.valeur | capitalize }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6" id="sous_type_affaire_container" style="display: none;">
+                                        <label class="form-label fw-semibold text-dark mb-2">
+                                            Sous-type <span class="text-danger">*</span>
+                                        </label>
+                                        <select class="form-select form-select-lg border-2" name="sous_type_affaire" id="sous_type_affaire"></select>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold text-dark mb-2">
+                                            Niveau d'urgence
+                                        </label>
+                                        <select class="form-select form-select-lg border-2" name="urgence" id="urgence">
+                                            <option value="">Sélectionner un niveau</option>
+                                            {% for item in urgences %}
+                                                <option value="{{ item.id }}">{{ item.valeur }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold text-dark mb-2">
+                                            Rôle du Client
+                                        </label>
+                                        <select class="form-select form-select-lg border-2" name="role_client" id="role_client">
+                                            <option value="">Sélectionner un rôle</option>
+                                            {% for item in role_types %}
+                                                <option value="{{ item.id }}">{{ item.valeur }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label for="nom_dossier" class="form-label fw-semibold text-dark mb-2">
+                                            Nom du dossier <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" class="form-control form-control-lg border-2" id="nom_dossier" name="nom_dossier" placeholder="Ex: Affaire Martin vs. Dupont" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="wizard-step d-none" id="step-2">
+                                <div class="mb-4">
+                                    <h5 class="fw-bold text-dark mb-1">
+                                        <i class="fas fa-users text-primary me-2"></i>
+                                        Parties impliquées
+                                    </h5>
+                                    <p class="text-muted small mb-4">Ajoutez les demandeurs et les parties adverses</p>
+                                </div>
+
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <div class="card border-2 border-success bg-success-subtle h-100">
+                                            <div class="card-body">
+                                                <h6 class="fw-bold text-success mb-3">
+                                                    <i class="fas fa-user-check me-2"></i>Demandeurs
+                                                </h6>
+                                                <div id="demandeurs-container" class="mb-3"></div>
+                                                <button type="button" class="btn btn-success btn-sm w-100" onclick="addDemandeur()">
+                                                    <i class="fas fa-plus-circle me-2"></i> Ajouter un demandeur
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="card border-2 border-danger bg-danger-subtle h-100">
+                                            <div class="card-body">
+                                                <h6 class="fw-bold text-danger mb-3">
+                                                    <i class="fas fa-user-times me-2"></i>Parties adverses
+                                                </h6>
+                                                <div id="adverses-container" class="mb-3"></div>
+                                                <button type="button" class="btn btn-danger btn-sm w-100" onclick="addAdverse()">
+                                                    <i class="fas fa-plus-circle me-2"></i> Ajouter une partie adverse
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="wizard-step d-none" id="step-3">
+                                <div class="mb-4">
+                                    <h5 class="fw-bold text-dark mb-1">
+                                        <i class="fas fa-gavel text-primary me-2"></i>
+                                        Détails juridiques
+                                    </h5>
+                                    <p class="text-muted small mb-4">Précisez les informations légales et administratives</p>
+                                </div>
+
+                                <div class="row g-4">
+                                    <div class="col-12">
+                                        <label class="form-label fw-semibold text-dark mb-2">
+                                            Adresse du client <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" class="form-control form-control-lg border-2" id="adresse_client" name="adresse_client" placeholder="Adresse complète du client" required>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold text-dark mb-2">Juridiction</label>
+                                        <input type="text" class="form-control form-control-lg border-2" id="juridiction" name="juridiction" placeholder="Ex: Tribunal de première instance">
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold text-dark mb-2">Tribunal</label>
+                                        <input type="text" class="form-control form-control-lg border-2" id="tribunal" name="tribunal" placeholder="Ex: Antananarivo">
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold text-dark mb-2">Avocat responsable</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-primary text-white">
+                                                <i class="fas fa-user-tie"></i>
+                                            </span>
+                                            <input type="text" class="form-control form-control-lg border-2" value="Maître {{ user.nom }}" readonly>
+                                        </div>
+                                        <input type="hidden" id="avocat_responsable" name="avocat_responsable" value="{{ user.id }}">
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold text-dark mb-2">Avocat de la partie adverse</label>
+                                        <input type="text" class="form-control form-control-lg border-2" id="avocat_adverse" name="avocat_adverse" placeholder="Nom de l'avocat adverse">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="wizard-step d-none" id="step-4">
+                                <div class="mb-4">
+                                    <h5 class="fw-bold text-dark mb-1">
+                                        <i class="fas fa-paperclip text-primary me-2"></i>
+                                        Finalisation du dossier
+                                    </h5>
+                                    <p class="text-muted small mb-4">Ajoutez des documents et commentaires</p>
+                                </div>
+
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold text-dark mb-2">Date et heure de création</label>
+                                        <input type="datetime-local" class="form-control form-control-lg border-2" id="date_creation" name="date_creation">
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold text-dark mb-2">Pièces jointes</label>
+                                        <input type="file" class="form-control form-control-lg border-2" id="pieces_jointes" name="pieces_jointes" multiple>
+                                        <small class="text-muted">Formats acceptés: PDF, DOCX, images</small>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label fw-semibold text-dark mb-2">Commentaires additionnels</label>
+                                        <textarea class="form-control border-2" id="commentaire" name="commentaire" rows="5" placeholder="Ajoutez des notes, observations ou informations complémentaires..."></textarea>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="card border-2 border-primary bg-light">
+                                            <div class="card-body">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="consentement_rgpd" name="consentement_rgpd" value="true" required>
+                                                    <label class="form-check-label fw-semibold text-dark" for="consentement_rgpd">
+                                                        <i class="fas fa-shield-alt text-primary me-2"></i>
+                                                        Consentement RGPD <span class="text-danger">*</span>
+                                                    </label>
+                                                    <p class="text-muted small mt-2 mb-0 ms-4">
+                                                        J'accepte que les données personnelles collectées dans ce dossier soient traitées conformément au Règlement Général sur la Protection des Données (RGPD) et à la politique de confidentialité du cabinet.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mt-5 pt-4 border-top">
+                                <button type="button" id="prevBtn" class="btn btn-outline-secondary btn-lg px-5" onclick="changeStep(-1)" disabled>
+                                    <i class="fas fa-arrow-left me-2"></i> Précédent
+                                </button>
+                                <button type="button" id="nextBtn" class="btn btn-primary btn-lg px-5" onclick="changeStep(1)">
+                                    Suivant <i class="fas fa-arrow-right ms-2"></i>
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-
-                <div class="wizard-step d-none" id="step-3">
-                    <h5 class="text-primary mb-3"><i class="fas fa-gavel me-2"></i> Détails supplémentaires</h5>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Adresse du client</label>
-                            <input type="text" class="form-control shadow-sm" id="adresse_client" name="adresse_client" required>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold">Juridiction</label>
-                            <input type="text" class="form-control shadow-sm" id="juridiction" name="juridiction">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold">Tribunal</label>
-                            <input type="text" class="form-control shadow-sm" id="tribunal" name="tribunal">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Avocat responsable</label>
-                            <input type="text" class="form-control shadow-sm" value="Maitre {{ user.nom }}" readonly>
-                            <input type="hidden" id="avocat_responsable" name="avocat_responsable" value="{{ user.id }}">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Avocat de la partie adverse</label>
-                            <input type="text" class="form-control shadow-sm" id="avocat_adverse" name="avocat_adverse">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="wizard-step d-none" id="step-4">
-                    <h5 class="text-primary mb-3"><i class="fas fa-paperclip me-2"></i> Fichiers & Commentaires</h5>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Date et heure de création</label>
-                            <input type="datetime-local" class="form-control shadow-sm" id="date_creation" name="date_creation">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Pièces jointes</label>
-                            <input type="file" class="form-control shadow-sm" id="pieces_jointes" name="pieces_jointes" multiple>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label fw-semibold">Commentaires</label>
-                            <textarea class="form-control shadow-sm" id="commentaire" name="commentaire" rows="4" placeholder="Entrez vos commentaires ici..."></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="d-flex justify-content-between mt-4">
-                    <button type="button" id="prevBtn" class="btn btn-outline-secondary rounded-pill px-4" onclick="changeStep(-1)" disabled>
-                        <i class="fas fa-arrow-left me-2"></i> Précédent
-                    </button>
-                    <button type="button" id="nextBtn" class="btn btn-primary rounded-pill px-4" onclick="changeStep(1)">
-                        Suivant <i class="fas fa-arrow-right ms-2"></i>
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
@@ -159,5 +302,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', path='/js/creation_dossier.js') }}?v=11"></script>
+<script src="{{ url_for('static', path='/js/creation_dossier.js') }}?v=13"></script>
 {% endblock %}

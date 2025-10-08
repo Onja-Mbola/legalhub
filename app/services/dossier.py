@@ -2,9 +2,12 @@ from typing import List
 
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
+
+from app.core.enums import RoleEnum
+from app.models.user import User
 from app.schemas.dossier import DossierCreate
 from app.repositories.dossier import create_dossier_with_files, get_dossiers_by_avocat, get_dossier_by_id, \
-    update_dossier_with_files, get_dossiers_archiver_by_avocat
+    update_dossier_with_files, get_dossiers_archiver_by_avocat, get_dossiers_for_clerk, get_dossiers_archiver_for_clerk
 
 
 def create_new_dossier_with_files(db: Session, dossier_in: DossierCreate, avocat_nom: str, files: List[UploadFile],
@@ -12,8 +15,25 @@ def create_new_dossier_with_files(db: Session, dossier_in: DossierCreate, avocat
     return create_dossier_with_files(db, dossier_in, avocat_nom, files, user_id)
 
 
+def get_dossiers_by_user_service(db: Session, user: User):
+    if user.role == RoleEnum.avocat:
+        return get_dossiers_by_avocat(db, user.id)
+    elif user.role == RoleEnum.clerk:
+        return get_dossiers_for_clerk(db, user)
+    return []
+
+
+def get_dossiers_archiver_by_user_service(db: Session, user: User):
+    if user.role == RoleEnum.avocat:
+        return get_dossiers_archiver_by_avocat(db, user.id)
+    elif user.role == RoleEnum.clerk:
+        return get_dossiers_archiver_for_clerk(db, user)
+    return []
+
+
 def get_dossiers_by_avocat_service(db: Session, avocat_id: int):
     return get_dossiers_by_avocat(db, avocat_id)
+
 
 def get_dossiers_archiver_by_avocat_service(db: Session, avocat_id: int):
     return get_dossiers_archiver_by_avocat(db, avocat_id)

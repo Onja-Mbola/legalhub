@@ -10,82 +10,176 @@
 {% include "partials/topbar.html" %}
 {% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_premiere_audience.css">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
+
+<div class="page-header">
+    <div class="container">
+        <h2 class="text-white mb-0">
+            <i class="fas fa-gavel me-3"></i>
+            Première Audience - Dossier #{{ dossier_id }}
+        </h2>
+    </div>
+</div>
+
+<div class="container mb-5">
     {% if error_msg %}
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <strong>Erreur :</strong> {{ error_msg }}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
-            <span aria-hidden="true">×</span>
-        </button>
+        <div class="d-flex align-items-center">
+            <i class="fas fa-exclamation-circle me-3" style="font-size: 1.5rem;"></i>
+            <div>
+                <strong>Erreur :</strong> {{ error_msg }}
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
     </div>
     {% endif %}
 
-    <div class="card shadow-lg rounded-4 border-0">
-        <div class="card-header bg-gradient-primary text-white py-3">
-            <h4 class="mb-0"><i class="fas fa-gavel me-2"></i> Première Audience du dossier #{{ dossier_id }}</h4>
-        </div>
-        <div class="card-body">
+    <div class="form-card">
+        <div class="form-section">
             <form method="post" enctype="multipart/form-data" action="">
-                <div class="mb-3">
-                    <label for="decision" class="form-label fw-semibold">Décision</label>
-                    <select class="form-select" id="decision" name="decision">
-                        <option value="" {% if not premiere_audience or not premiere_audience.decision %}selected{%
-                                endif %}>-- Sélectionner --
-                        </option>
-                        <option value="renvoi" {% if premiere_audience and premiere_audience.decision==
-                        'renvoi' %}selected{% endif %}>Renvoi</option>
-                        <option value="jugement" {% if premiere_audience and premiere_audience.decision==
-                        'jugement' %}selected{% endif %}>Jugement rendu</option>
-                        <option value="autre" {% if premiere_audience and premiere_audience.decision==
-                        'autre' %}selected{% endif %}>Autre</option>
-                    </select>
+
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-balance-scale"></i>
+                        Décision de l'audience
+                    </h5>
+
+                    <div class="mb-4">
+                        <label for="decision" class="form-label">
+                            <i class="fas fa-clipboard-check"></i>
+                            Type de décision
+                        </label>
+                        <select class="form-select" id="decision" name="decision">
+                            <option value="" {% if not premiere_audience or not premiere_audience.decision %}selected{% endif %}>
+                                -- Sélectionner une décision --
+                            </option>
+                            <option value="renvoi" {% if premiere_audience and premiere_audience.decision == 'renvoi' %}selected{% endif %}>
+                                📋 Renvoi à une date ultérieure
+                            </option>
+                            <option value="jugement" {% if premiere_audience and premiere_audience.decision == 'jugement' %}selected{% endif %}>
+                                ⚖️ Jugement rendu
+                            </option>
+                            <option value="autre" {% if premiere_audience and premiere_audience.decision == 'autre' %}selected{% endif %}>
+                                📝 Autre décision
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="mb-0">
+                        <label for="nouvelle_date_audience" class="form-label">
+                            <i class="fas fa-calendar-plus"></i>
+                            Nouvelle date de l'audience
+                            <span class="required-badge">Requis</span>
+                        </label>
+                        <input type="datetime-local"
+                               class="form-control"
+                               id="nouvelle_date_audience"
+                               name="nouvelle_date_audience"
+                               required
+                               value="{% if premiere_audience and premiere_audience.nouvelle_date_audience %}{{ premiere_audience.nouvelle_date_audience.strftime('%Y-%m-%dT%H:%M') }}{% endif %}">
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="nouvelle_date_audience" class="form-label fw-semibold">Nouvelle Date de l'audience <span
-                            class="text-danger">*</span></label>
-                    <input type="datetime-local"
-                           class="form-control"
-                           id="nouvelle_date_audience"
-                           name="nouvelle_date_audience"
-                           required
-                           value="{% if premiere_audience and premiere_audience.nouvelle_date_audience %}{{ premiere_audience.nouvelle_date_audience.strftime('%Y-%m-%dT%H:%M') }}{% endif %}">
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-user-tie"></i>
+                        Informations du juge
+                    </h5>
 
+                    <div class="mb-4">
+                        <label for="nom_judge" class="form-label">
+                            <i class="fas fa-id-badge"></i>
+                            Nom du juge
+                        </label>
+                        <input type="text"
+                               class="form-control"
+                               id="nom_judge"
+                               name="nom_judge"
+                               placeholder="Entrez le nom complet du juge"
+                               value="{{ premiere_audience.nom_judge if premiere_audience else '' }}">
+                    </div>
+
+                    <div class="mb-0">
+                        <label for="observations_judge" class="form-label">
+                            <i class="fas fa-comment-dots"></i>
+                            Observations du juge
+                        </label>
+                        <textarea class="form-control"
+                                  id="observations_judge"
+                                  name="observations_judge"
+                                  rows="4"
+                                  placeholder="Notez ici les remarques et observations formulées par le juge durant l'audience...">{{ premiere_audience.observations_judge if premiere_audience else '' }}</textarea>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="nom_judge" class="form-label fw-semibold">Nom du juge</label>
-                    <input type="text" class="form-control" id="nom_judge" name="nom_judge"
-                           value="{{ premiere_audience.nom_judge if premiere_audience else '' }}">
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-sticky-note"></i>
+                        Notes internes
+                    </h5>
+
+                    <div class="info-card">
+                        <i class="fas fa-info-circle"></i>
+                        <small class="text-muted">Ces observations sont confidentielles et ne seront pas partagées avec les parties externes.</small>
+                    </div>
+
+                    <div class="mb-0">
+                        <label for="observations_internes" class="form-label">
+                            <i class="fas fa-file-alt"></i>
+                            Observations internes
+                        </label>
+                        <textarea class="form-control"
+                                  id="observations_internes"
+                                  name="observations_internes"
+                                  rows="4"
+                                  placeholder="Notez vos observations internes, stratégies ou éléments à retenir pour la suite du dossier...">{{ premiere_audience.observations_internes if premiere_audience else '' }}</textarea>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="observations_judge" class="form-label fw-semibold">Observations du juge</label>
-                    <textarea class="form-control" id="observations_judge" name="observations_judge" rows="3">{{ premiere_audience.observations_judge if premiere_audience else '' }}</textarea>
-                </div>
+                <div class="section-divider"></div>
 
-                <div class="mb-3">
-                    <label for="observations_internes" class="form-label fw-semibold">Observations internes</label>
-                    <textarea class="form-control" id="observations_internes" name="observations_internes" rows="3">{{ premiere_audience.observations_internes if premiere_audience else '' }}</textarea>
-                </div>
+                <h5 class="mb-4 text-muted">
+                    <i class="fas fa-file-upload me-2"></i>
+                    Document de l'audience
+                </h5>
 
-                <div class="mb-3">
-                    <label for="pv_audience" class="form-label fw-semibold">PV de l'audience (PDF ou image)</label>
+                <div class="mb-4 file-upload-section">
+                    <label for="pv_audience" class="form-label">
+                        <i class="fas fa-file-pdf"></i>
+                        Procès-verbal de l'audience
+                    </label>
+                    <small class="d-block text-muted mb-3">Formats acceptés : PDF, JPG, JPEG, PNG</small>
+
                     {% if premiere_audience and premiere_audience.pv_audience %}
-                    <p>Fichier actuel :
-                        <a href="{{ url_for('documents', filepath=premiere_audience.pv_audience.split('app/documents/')[-1]) }}"
-                           target="_blank">
-                            {{ premiere_audience.pv_audience.split('/')[-1] }}
-                        </a>
-                    </p>
+                        <div class="current-file">
+                            <i class="fas fa-file-check"></i>
+                            <div class="flex-grow-1">
+                                <div class="text-muted small">Fichier actuel</div>
+                                <a href="{{ url_for('documents', filepath=premiere_audience.pv_audience.split('app/documents/')[-1]) }}" target="_blank">
+                                    <i class="fas fa-download me-1"></i>
+                                    {{ premiere_audience.pv_audience.split('/')[-1] }}
+                                </a>
+                            </div>
+                        </div>
                     {% endif %}
-                    <input type="file" class="form-control" id="pv_audience" name="pv_audience" accept=".pdf,.jpg,.jpeg,.png">
+
+                    <input type="file"
+                           class="form-control"
+                           id="pv_audience"
+                           name="pv_audience"
+                           accept=".pdf,.jpg,.jpeg,.png">
                 </div>
 
-                <button type="submit" class="btn btn-primary rounded-pill px-4">
-                    <i class="fas fa-save me-2"></i> Enregistrer
-                </button>
+                <div class="d-flex justify-content-end mt-5">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        Enregistrer les informations
+                    </button>
+                </div>
             </form>
         </div>
     </div>

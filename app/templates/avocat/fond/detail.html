@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block title %}Détail Décision Fond{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="/static/css/custom_detail_fond.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="container">
+        <h2 class="text-white mb-0 d-flex align-items-center flex-wrap">
+            <i class="fas fa-balance-scale me-3"></i>
+            Décision au Fond
+        </h2>
+        <p class="text-white-50 mb-0 mt-2">Détails complets de la décision rendue</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="dossier-info mb-4">
+        <i class="fas fa-folder-open me-2"></i>
+        <strong>Dossier :</strong> {{ dossier.numero_dossier }} - {{ dossier.nom_dossier }}
+    </div>
+
+    {% if request.query_params.get('updated') %}
+    <div class="alert mb-4">
+        <p class="alert-text mb-0">
+            <i class="fas fa-check-circle"></i>
+            Décision au fond mise à jour avec succès
+        </p>
+    </div>
+    {% endif %}
+
+    <div class="detail-card">
+        <div class="card-header-section">
+            <div>
+                <h3 class="text-dark fw-bold mb-0">Informations de la décision</h3>
+            </div>
+            <div class="btn-group d-flex gap-3">
+                <a href="/decisions_fond/{{ decision.id }}/update" class="btn btn-success">
+                    <i class="fas fa-edit"></i>
+                    Modifier
+                </a>
+                <a href="/dossiers/{{ dossier.id }}/decisions_fond" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Retour
+                </a>
+            </div>
+        </div>
+
+        <div class="card-body-section">
+            <h5 class="section-title">
+                <i class="fas fa-info-circle"></i>
+                Données principales
+            </h5>
+
+            <div class="info-grid">
+                <div class="info-box">
+                    <div class="info-label">
+                        <i class="fas fa-calendar-alt"></i>
+                        Date de la décision
+                    </div>
+                    <div class="info-value">
+                        {{ decision.date_decision_fond.strftime('%d/%m/%Y') if decision.date_decision_fond else '-' }}
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-label">
+                        <i class="fas fa-file-signature"></i>
+                        Type de décision
+                    </div>
+                    <div class="info-value">
+                        {% if decision.type_decision_fond == 'contradictoire' %}
+                        <span class="badge-status badge-contradictoire">
+                            <i class="fas fa-balance-scale"></i>
+                            Contradictoire
+                        </span>
+                        {% elif decision.type_decision_fond == 'par_defaut' %}
+                        <span class="badge-status badge-par-defaut">
+                            <i class="fas fa-exclamation-circle"></i>
+                            Par défaut
+                        </span>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-label">
+                        <i class="fas fa-arrow-right"></i>
+                        Sens de la décision
+                    </div>
+                    <div class="info-value">
+                        {% if decision.sens_decision == 'favorable' %}
+                        <span class="badge-status badge-favorable">
+                            <i class="fas fa-check-circle"></i>
+                            Favorable
+                        </span>
+                        {% elif decision.sens_decision == 'defavorable' %}
+                        <span class="badge-status badge-defavorable">
+                            <i class="fas fa-times-circle"></i>
+                            Défavorable
+                        </span>
+                        {% elif decision.sens_decision == 'mixte' %}
+                        <span class="badge-status badge-mixte">
+                            <i class="fas fa-adjust"></i>
+                            Mixte
+                        </span>
+                        {% else %}
+                        <span class="text-muted">Non renseigné</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <h5 class="section-title">
+                <i class="fas fa-bell"></i>
+                Notification et délais
+            </h5>
+
+            <div class="info-grid">
+                <div class="info-box">
+                    <div class="info-label">
+                        <i class="fas fa-paper-plane"></i>
+                        Date de notification
+                    </div>
+                    <div class="info-value">
+                        {{ decision.date_notification.strftime('%d/%m/%Y') if decision.date_notification else 'Non notifié' }}
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-label">
+                        <i class="fas fa-clock"></i>
+                        Délai d'appel
+                    </div>
+                    <div class="info-value">
+                        {{ decision.delai_appel }} jours
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-label">
+                        <i class="fas fa-hourglass-end"></i>
+                        Date limite d'appel
+                    </div>
+                    <div class="info-value {% if decision.date_limite_appel and decision.date_limite_appel < now %}text-expired{% endif %}">
+                        {% if decision.date_limite_appel %}
+                        {{ decision.date_limite_appel.strftime('%d/%m/%Y') }}
+                        {% if decision.date_limite_appel < now %}
+                        <span class="expired-badge">Dépassée</span>
+                        {% endif %}
+                        {% else %}
+                        Non calculée
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-label">
+                        <i class="fas fa-envelope"></i>
+                        Alerte envoyée
+                    </div>
+                    <div class="info-value">
+                        {% if decision.alerte_envoyee %}
+                        <span class="badge-status badge-alerte-oui">
+                            <i class="fas fa-check"></i>
+                            Oui
+                        </span>
+                        {% else %}
+                        <span class="badge-status badge-alerte-non">
+                            <i class="fas fa-times"></i>
+                            Non
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% if decision.texte_decision %}
+            <div class="section-divider"></div>
+
+            <h5 class="section-title">
+                <i class="fas fa-file-alt"></i>
+                Texte de la décision
+            </h5>
+
+            <div class="text-box">
+                <p class="text-content mb-0">{{ decision.texte_decision }}</p>
+            </div>
+            {% endif %}
+
+            <div class="section-divider"></div>
+
+            <h5 class="section-title">
+                <i class="fas fa-clipboard-list"></i>
+                Observations
+            </h5>
+
+            <div class="text-box">
+                <p class="text-content mb-0">
+                    {{ decision.observations if decision.observations else 'Aucune observation' }}
+                </p>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <h5 class="section-title">
+                <i class="fas fa-paperclip"></i>
+                Document joint
+            </h5>
+
+            <div class="file-display-section">
+                <label class="form-label fw-bold text-dark mb-3">
+                    <i class="fas fa-file-pdf me-2"></i>
+                    Copie de la décision au fond
+                </label>
+                <small class="d-block text-muted mb-3">
+                    Document officiel de la décision rendue
+                </small>
+                {% if decision.copie_decision_fond %}
+                <div class="current-file">
+                    <i class="fas fa-file-check"></i>
+                    <div class="flex-grow-1">
+                        <div class="text-muted small mb-1">Document disponible</div>
+                        <a href="{{ request.url_for('documents', filepath=decision.copie_decision_fond.split('app/documents/')[-1]) }}"
+                           target="_blank">
+                            <i class="fas fa-download me-1"></i>
+                            {{ decision.copie_decision_fond.split('/')[-1] }}
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-muted">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Aucun document téléversé
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="danger-zone">
+                <h5 class="danger-zone-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Zone de danger
+                </h5>
+                <p class="danger-zone-text mb-3">
+                    La suppression de cette décision au fond est définitive et irréversible. Toutes les données associées seront perdues.
+                </p>
+                <form method="post"
+                      action="/decisions_fond/{{ decision.id }}/delete"
+                      onsubmit="return confirm('⚠️ ATTENTION ⚠️\n\nÊtes-vous absolument sûr de vouloir supprimer cette décision au fond ?\n\nCette action est IRRÉVERSIBLE et entraînera la perte définitive de toutes les données associées.\n\nCliquez sur OK pour confirmer la suppression.');">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-2"></i>
+                        Supprimer définitivement la décision
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

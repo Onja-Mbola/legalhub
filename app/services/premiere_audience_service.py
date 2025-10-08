@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.workflow_enums import ProcessStage
 from app.models.premiere_audience import PremiereAudience
+from app.models.dossier import Dossier
 from app.repositories.dossier import get_dossier_by_id
 from app.repositories.premiere_audience import delete_premiere_audience
 from app.repositories.premiere_audience import (
@@ -15,9 +16,8 @@ from app.repositories.premiere_audience import (
     update_premiere_audience
 )
 from app.schemas.premiere_audience import PremiereAudienceCreate, PremiereAudienceUpdate
-from app.services.FileStorageService import save_uploaded_files
 from app.services.workflow_guard import WorkflowGuard
-
+from app.services.upload_processor import process_upload
 
 def insert_or_update_premiere_audience_with_file(
     db: Session,
@@ -31,7 +31,6 @@ def insert_or_update_premiere_audience_with_file(
     pv_audience: Optional[UploadFile]
 ) -> PremiereAudience:
 
-
     dossier = get_dossier_by_id(db, dossier_id)
     if not dossier:
         raise HTTPException(status_code=404, detail="Dossier non trouvé")
@@ -39,18 +38,11 @@ def insert_or_update_premiere_audience_with_file(
     if dossier.current_stage != ProcessStage.REQUETE_ASSIGNATION.value:
         raise HTTPException(status_code=400, detail="Vous devez d'abord passer par la Requête et l'Assignation.")
 
-    dossier_path = os.path.join("app/documents", avocat_nom, dossier.numero_dossier, "premiere_audience")
 
     audience_exist = get_premieres_audiences_by_dossier(db, dossier_id)
     audience_exist = audience_exist[0] if audience_exist else None
 
-    fichier_path = None
-    if pv_audience and pv_audience.filename:
-        saved_files = save_uploaded_files([pv_audience], dossier_path)
-        fichier_path = os.path.join(dossier_path, saved_files[0])
-    else:
-        if audience_exist and audience_exist.pv_audience:
-            fichier_path = audience_exist.pv_audience
+    has_new_file = pv_audience and pv_audience.filename
 
     try:
         nouvelle_date_audience = nouvelle_date_audience
@@ -63,14 +55,57 @@ def insert_or_update_premiere_audience_with_file(
         nom_judge=nom_judge,
         observations_judge=observations_judge,
         observations_internes=observations_internes,
-        pv_audience=fichier_path,
+        # pv_audience=None
     )
 
     if audience_exist:
         updated = update_premiere_audience(db, audience_exist, PremiereAudienceUpdate(**audience_in.dict()))
+        db.commit()
+        db.refresh(updated)
+
+        if has_new_file:
+            process_upload(
+                obj=updated,
+                files=[pv_audience],
+                db=db,
+                dossier=dossier,
+                file_field="pv_audience",
+                contenu_field="observations_judge",
+                ocr_all_files=False,
+                run_ml=True,
+                subfolder=""
+            )
+
         return updated
     else:
-        new = create_premiere_audience(db, dossier_id, audience_in, pv_audience=fichier_path)
+        new = create_premiere_audience(db, dossier_id, audience_in, pv_audience=None)
+        db.commit()
+        db.refresh(new)
+
+        if has_new_file:
+            process_upload(
+                obj=new,
+                files=[pv_audience],
+                db=db,
+                dossier=dossier,
+                file_field="pv_audience",
+                contenu_field="observations_judge",
+                ocr_all_files=False,
+                run_ml=True,
+                subfolder=""
+            )
+        else:
+            process_upload(
+                obj=new,
+                files=[],
+                db=db,
+                dossier=dossier,
+                file_field="pv_audience",
+                contenu_field="observations_judge",
+                run_ml=True,
+                subfolder=""
+            )
+
         WorkflowGuard.advance(dossier, ProcessStage.PREMIERE_AUDIENCE, db)
         return new
 

@@ -7,6 +7,7 @@ from pydantic import BaseModel
 class JugementDefinitifBase(BaseModel):
     dossier_id: int
     deliberation_id: Optional[int] = None
+    decision_fond_id: Optional[int] = None
     date_jugement: date
     texte_jugement: Optional[str] = None
     jugement_file: Optional[List[str]] = None

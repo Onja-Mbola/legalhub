@@ -12,7 +12,8 @@ from app.db.init_db import init_db
 from app.api.routes import clarck
 from app.api.routes.avocat import dossier, avocat, enrolement, requete_assignation, premiere_audience, \
     echange_conclusion, deliberation_decision, decision_definitive, decision_avant_dire_droit, jugement, opposition, \
-    retour_audience, jugement_definitif, appel, facturation, dashboard, facture
+    retour_audience, jugement_definitif, appel, facturation, dashboard, facture, profile, premiere_audience_appel, \
+    avant_dire_droit, fond, cassation, search
 from app.api.routes.admin import admin, auth, param_general
 
 app = FastAPI()
@@ -21,6 +22,14 @@ app = FastAPI()
 @app.on_event("startup")
 def startup_event():
     init_db()
+    from app.core.elasticsearch_config import es_client
+    try:
+        if es_client.ping():
+            print("Elasticsearch connecté")
+        else:
+            print("Elasticsearch non disponible")
+    except Exception as e:
+        print(f"Erreur Elasticsearch: {e}")
 
 
 app.include_router(auth.router)
@@ -44,6 +53,12 @@ app.include_router(appel.router)
 app.include_router(facturation.router)
 app.include_router(dashboard.router)
 app.include_router(facture.router)
+app.include_router(profile.router)
+app.include_router(premiere_audience_appel.router)
+app.include_router(avant_dire_droit.router)
+app.include_router(fond.router)
+app.include_router(cassation.router)
+app.include_router(search.router)
 
 documents_path = "app/documents"
 if not os.path.exists(documents_path):

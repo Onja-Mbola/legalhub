@@ -12,6 +12,8 @@ class DeliberationDecisionBase(BaseModel):
 class DeliberationDecisionCreate(DeliberationDecisionBase):
     dossier_id: int
     retour_audience_id: Optional[int] = None
+    premieres_audiences_appel_id: Optional[int] = None
+
 
 
 class DeliberationDecisionUpdate(BaseModel):

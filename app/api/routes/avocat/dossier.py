@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 from typing import List, Union
 
 from fastapi import APIRouter, Depends, Request, Form, UploadFile, File, HTTPException
@@ -8,16 +9,18 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from starlette.responses import RedirectResponse, HTMLResponse, FileResponse
 
-from app.core.auth import get_current_avocat_user
+from app.core.auth import get_current_avocat_user, get_current_avocat_or_clerk
 from app.db.session import get_db
 from app.models.user import User
 from app.repositories.dossier import get_dossier_by_id
 from app.repositories.facture import get_factures_by_dossier
 from app.schemas.dossier import DossierCreate
 from app.services.action_log import log_action_service
-from app.services.dossier import create_new_dossier_with_files, get_dossiers_by_avocat_service, \
-    get_dossier_by_id_service, update_dossier_with_files_service, get_dossiers_archiver_by_avocat_service
+from app.services.dossier import create_new_dossier_with_files, get_dossier_by_id_service, \
+    update_dossier_with_files_service, get_dossiers_archiver_by_user_service
+from app.services.elasticsearch_service import es_service
 from app.services.email import send_jugement_favorable_email_programmer
+from app.services.ml_service import predict_issue
 from app.services.param_general import get_param_ordered, to_dict_list
 
 router = APIRouter()
@@ -28,9 +31,9 @@ templates = Jinja2Templates(directory="app/templates")
 def list_dossiers(
         request: Request,
         db: Session = Depends(get_db),
-        user: User = Depends(get_current_avocat_user)
+        user: User = Depends(get_current_avocat_or_clerk)
 ):
-    dossiers = get_dossiers_by_avocat_service(db, user.id)
+    dossiers = get_dossiers_archiver_by_user_service(db, user)
     dossier = get_dossier_by_id_service(db, 1)
 
     if dossier:
@@ -51,7 +54,8 @@ def list_dossiers(
     return templates.TemplateResponse("dossier/list_dossier.html", {
         "request": request,
         "user": user,
-        "dossiers": dossiers
+        "dossiers": dossiers,
+        "date_now": datetime.utcnow().date()
     })
 
 
@@ -59,9 +63,9 @@ def list_dossiers(
 def list_dossiers_archiver(
         request: Request,
         db: Session = Depends(get_db),
-        user: User = Depends(get_current_avocat_user)
+        user: User = Depends(get_current_avocat_or_clerk)
 ):
-    dossiers = get_dossiers_archiver_by_avocat_service(db, user.id)
+    dossiers = get_dossiers_archiver_by_user_service(db, user)
     dossier = get_dossier_by_id_service(db, 1)
 
     dossier_data = {
@@ -119,7 +123,8 @@ async def create_dossier_endpoint(
     dossier_in = DossierCreate(**json.loads(dossier_data))
 
     try:
-        create_new_dossier_with_files(db, dossier_in, avocat_nom, files, user.id)
+        dossier = create_new_dossier_with_files(db, dossier_in, avocat_nom, files, user.id)
+        es_service.index_dossier(dossier)
         return {"redirect_url": "/dossiers?success=1"}
 
     except SQLAlchemyError:
@@ -129,10 +134,13 @@ async def create_dossier_endpoint(
 
 @router.get("/dossiers/{dossier_id}", response_class=HTMLResponse)
 def voir_dossier(dossier_id: int, request: Request, db: Session = Depends(get_db),
-                 user=Depends(get_current_avocat_user)):
+                 user=Depends(get_current_avocat_or_clerk)):
     dossier = get_dossier_by_id_service(db, dossier_id)
+
     return templates.TemplateResponse("dossier/detail_dossier.html",
-                                      {"request": request, "dossier": dossier, "user": user})
+                                      {"request": request, "dossier": dossier, "user": user,
+                                       "date_now": datetime.utcnow().date()
+                                       })
 
 
 @router.get("/dossiers/{dossier_id}/modifier", response_class=HTMLResponse)

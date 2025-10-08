@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="/static/css/custom_list_filter_fond.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="container">
+        <h2 class="text-white mb-0 d-flex align-items-center flex-wrap">
+            <i class="fas fa-filter me-3"></i>
+            {{ title }}
+            <span class="badge-filter {% if filter_type == 'par_defaut' %}badge-par-defaut{% else %}badge-contradictoire{% endif %}">
+                {% if filter_type == 'par_defaut' %}
+                    <i class="fas fa-exclamation-circle me-1"></i>Par défaut
+                {% else %}
+                    <i class="fas fa-balance-scale me-1"></i>Contradictoires
+                {% endif %}
+            </span>
+        </h2>
+        <p class="text-white-50 mb-0 mt-2">
+            {% if filter_type == 'par_defaut' %}
+                Liste de toutes les décisions rendues par défaut
+            {% else %}
+                Liste de toutes les décisions rendues contradictoirement
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="list-card">
+        <div class="card-header-section">
+            <div class="header-content">
+                <div>
+                    <h3 class="text-dark fw-bold mb-0">Décisions filtrées</h3>
+                </div>
+                <div class="filter-toggle">
+                    {% if filter_type == 'par_defaut' %}
+                        <a href="/decisions_fond/contradictoires" class="btn btn-success">
+                            <i class="fas fa-balance-scale"></i>
+                            Voir contradictoires
+                        </a>
+                    {% else %}
+                        <a href="/decisions_fond/par_defaut" class="btn btn-warning">
+                            <i class="fas fa-exclamation-circle"></i>
+                            Voir par défaut
+                        </a>
+                    {% endif %}
+                    <a href="/dossiers/" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Retour
+                    </a>
+                </div>
+            </div>
+
+            {% if decisions %}
+            <div class="stats-bar">
+                <i class="fas fa-chart-bar"></i>
+                <strong>{{ decisions|length }}</strong> décision(s) trouvée(s)
+            </div>
+            {% endif %}
+        </div>
+
+        {% if decisions %}
+        <div class="table-wrapper">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-folder me-2"></i>Dossier</th>
+                        <th><i class="fas fa-calendar me-2"></i>Date Décision</th>
+                        <th><i class="fas fa-arrow-right me-2"></i>Sens</th>
+                        <th><i class="fas fa-bell me-2"></i>Date Notification</th>
+                        <th><i class="fas fa-hourglass-end me-2"></i>Date Limite Appel</th>
+                        <th><i class="fas fa-info-circle me-2"></i>Statut</th>
+                        <th><i class="fas fa-cog me-2"></i>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for decision in decisions %}
+                    <tr>
+                        <td>
+                            <div class="dossier-cell">
+                                <div class="dossier-number">
+                                    {{ decision.dossier.numero_dossier if decision.dossier else '-' }}
+                                </div>
+                                <div class="dossier-name" title="{{ decision.dossier.nom_dossier if decision.dossier else '-' }}">
+                                    {{ decision.dossier.nom_dossier if decision.dossier else '-' }}
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <strong>{{ decision.date_decision_fond.strftime('%d/%m/%Y') if decision.date_decision_fond else '-' }}</strong>
+                        </td>
+                        <td>
+                            {% if decision.sens_decision == 'favorable' %}
+                                <span class="sens-favorable">
+                                    <i class="fas fa-check-circle me-1"></i>
+                                    Favorable
+                                </span>
+                            {% elif decision.sens_decision == 'defavorable' %}
+                                <span class="sens-defavorable">
+                                    <i class="fas fa-times-circle me-1"></i>
+                                    Défavorable
+                                </span>
+                            {% elif decision.sens_decision == 'mixte' %}
+                                <span class="sens-mixte">
+                                    <i class="fas fa-adjust me-1"></i>
+                                    Mixte
+                                </span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ decision.date_notification.strftime('%d/%m/%Y') if decision.date_notification else '-' }}
+                        </td>
+                        <td>
+                            {% if decision.date_limite_appel %}
+                                <span class="{% if decision.date_limite_appel < now %}date-expired{% endif %}">
+                                    {{ decision.date_limite_appel.strftime('%d/%m/%Y') }}
+                                    {% if decision.date_limite_appel < now %}
+                                        <i class="fas fa-exclamation-triangle ms-1"></i>
+                                    {% endif %}
+                                </span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if decision.date_limite_appel %}
+                                {% if decision.date_limite_appel < now %}
+                                    <span class="badge-status badge-depasse">
+                                        <i class="fas fa-times-circle"></i>
+                                        Délai dépassé
+                                    </span>
+                                {% else %}
+                                    <span class="badge-status badge-en-cours">
+                                        <i class="fas fa-check-circle"></i>
+                                        En cours
+                                    </span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge-status badge-na">
+                                    <i class="fas fa-minus-circle"></i>
+                                    N/A
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="/decisions_fond/{{ decision.id }}" class="btn-details">
+                                <i class="fas fa-eye"></i>
+                                Détails
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-inbox"></i>
+            </div>
+            <h3 class="empty-state-title">Aucune décision trouvée</h3>
+            <p class="empty-state-text">
+                {% if filter_type == 'par_defaut' %}
+                    Aucune décision par défaut n'a été enregistrée.
+                {% else %}
+                    Aucune décision contradictoire n'a été enregistrée.
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

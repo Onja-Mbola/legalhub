@@ -1,0 +1,344 @@
+{% extends "base.html" %}
+
+{% block title %}Mon Profil - LegalHub{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+{% block head %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/custom_profile.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid profile-container">
+    <div class="profile-header">
+        <div class="row align-items-center">
+            <div class="col-md-2 text-center">
+                <div class="profile-avatar mx-auto">
+                    <i class="fas fa-user"></i>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <h2 class="mb-1">Jean Dupont</h2>
+                <p class="mb-1"><i class="fas fa-envelope me-2"></i>jean.dupont@legalhub.com</p>
+                <span class="badge bg-success">
+                        <i class="fas fa-gavel me-1"></i>Avocat
+                    </span>
+                <span class="badge bg-info ms-2">
+                        <i class="fas fa-check-circle me-1"></i>Compte Actif
+                    </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="profile-card">
+        <ul class="nav nav-tabs" id="profileTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button"
+                        role="tab">
+                    <i class="fas fa-user me-2"></i>Informations
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button"
+                        role="tab">
+                    <i class="fas fa-lock me-2"></i>Mot de passe
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="clarck-tab" data-bs-toggle="tab" data-bs-target="#clarck" type="button"
+                        role="tab">
+                    <i class="fas fa-user-plus me-2"></i>Créer un Clarck
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="profileTabsContent">
+            <div class="tab-pane fade show active" id="info" role="tabpanel">
+                <h4 class="mb-4"><i class="fas fa-edit me-2"></i>Modifier mes informations</h4>
+
+                <form id="profileForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="nom" class="form-label">Nom complet</label>
+                                <input type="text" class="form-control" id="nom" value="Jean Dupont" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" value="jean.dupont@legalhub.com"
+                                       required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="role" class="form-label">Rôle</label>
+                                <select class="form-select" id="role" disabled>
+                                    <option value="avocat" selected>Avocat</option>
+                                    <option value="clarck">Clarck</option>
+                                </select>
+                                <small class="text-muted">Le rôle ne peut pas être modifié</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="phone" class="form-label">Téléphone</label>
+                                <input type="tel" class="form-control" id="phone" placeholder="+33 1 23 45 67 89">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Annuler
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="tab-pane fade" id="password" role="tabpanel">
+                <h4 class="mb-4"><i class="fas fa-shield-alt me-2"></i>Changer mon mot de passe</h4>
+
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Pour votre sécurité, un email de confirmation sera envoyé avant la modification du mot de passe.
+                </div>
+
+                <form id="passwordForm">
+                    <div class="form-group">
+                        <label for="current_password" class="form-label">Mot de passe actuel</label>
+                        <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            <input type="password" class="form-control" id="current_password" required>
+                            <button class="btn btn-outline-secondary" type="button"
+                                    onclick="togglePassword('current_password')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new_password" class="form-label">Nouveau mot de passe</label>
+                        <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-key"></i>
+                                </span>
+                            <input type="password" class="form-control" id="new_password" required>
+                            <button class="btn btn-outline-secondary" type="button"
+                                    onclick="togglePassword('new_password')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="password-strength" id="passwordStrength"></div>
+                        <small class="text-muted">Le mot de passe doit contenir au moins 8 caractères, une majuscule,
+                            une minuscule et un chiffre</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirm_password" class="form-label">Confirmer le nouveau mot de passe</label>
+                        <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-check"></i>
+                                </span>
+                            <input type="password" class="form-control" id="confirm_password" required>
+                            <button class="btn btn-outline-secondary" type="button"
+                                    onclick="togglePassword('confirm_password')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Annuler
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-envelope me-2"></i>Envoyer la demande de confirmation
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="tab-pane fade" id="clarck" role="tabpanel">
+                <h4 class="mb-4"><i class="fas fa-user-plus me-2"></i>Créer un compte Clarck</h4>
+
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Seuls les avocats peuvent créer des comptes Clarck. Un email d'activation sera envoyé au nouveau
+                    utilisateur.
+                </div>
+
+                <form id="clarckForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="clarck_nom" class="form-label">Nom complet du Clarck</label>
+                                <input type="text" class="form-control" id="clarck_nom" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="clarck_email" class="form-label">Email du Clarck</label>
+                                <input type="email" class="form-control" id="clarck_email" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="clarck_role" class="form-label">Rôle</label>
+                        <select class="form-select" id="clarck_role" required>
+                            <option value="" disabled selected>-- Sélectionnez un rôle --</option>
+                            <option value="clarck">Clarck</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="send_welcome_email" checked>
+                            <label class="form-check-label" for="send_welcome_email">
+                                Envoyer un email de bienvenue avec les instructions d'activation
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Annuler
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-user-plus me-2"></i>Créer le compte Clarck
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="confirmationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-check-circle me-2"></i>Confirmation
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmationMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script>
+    function togglePassword(fieldId) {
+        const field = document.getElementById(fieldId);
+        const button = field.nextElementSibling;
+        const icon = button.querySelector('i');
+
+        if (field.type === 'password') {
+            field.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            field.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    document.getElementById('new_password').addEventListener('input', function (e) {
+        const password = e.target.value;
+        const strengthBar = document.getElementById('passwordStrength');
+
+        let strength = 0;
+        if (password.length >= 8) strength++;
+        if (/[A-Z]/.test(password)) strength++;
+        if (/[a-z]/.test(password)) strength++;
+        if (/\d/.test(password)) strength++;
+        if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) strength++;
+
+        strengthBar.className = 'password-strength';
+        if (strength < 3) {
+            strengthBar.classList.add('strength-weak');
+        } else if (strength < 5) {
+            strengthBar.classList.add('strength-medium');
+        } else {
+            strengthBar.classList.add('strength-strong');
+        }
+    });
+
+    document.getElementById('profileForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        showConfirmation('Vos informations ont été mises à jour avec succès !');
+    });
+
+    document.getElementById('passwordForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const newPassword = document.getElementById('new_password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+
+        if (newPassword !== confirmPassword) {
+            alert('Les mots de passe ne correspondent pas !');
+            return;
+        }
+
+        if (newPassword.length < 8) {
+            alert('Le mot de passe doit contenir au moins 8 caractères !');
+            return;
+        }
+
+        showConfirmation('Un email de confirmation a été envoyé à votre adresse. Veuillez cliquer sur le lien pour confirmer le changement de mot de passe.');
+    });
+
+    document.getElementById('clarckForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const nom = document.getElementById('clarck_nom').value;
+        const email = document.getElementById('clarck_email').value;
+
+        showConfirmation(`Le compte Clarck pour ${nom} (${email}) a été créé avec succès ! Un email d'activation a été envoyé.`);
+
+        this.reset();
+    });
+
+    function showConfirmation(message) {
+        document.getElementById('confirmationMessage').textContent = message;
+        new bootstrap.Modal(document.getElementById('confirmationModal')).show();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const cards = document.querySelectorAll('.card');
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'all 0.5s ease';
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 100);
+            }, index * 100);
+        });
+    });
+</script>
+{% endblock %}

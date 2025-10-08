@@ -10,6 +10,7 @@ import os
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 
+
 def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
     token = request.cookies.get("access_token")
     if not token:
@@ -29,17 +30,29 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
 
     return user
 
+
 def get_current_admin_user(current_user: User = Depends(get_current_user)) -> User:
     if current_user.role != RoleEnum.admin:
         raise HTTPException(status_code=403, detail="Accès réservé aux administrateurs.")
     return current_user
+
 
 def get_current_avocat_user(current_user: User = Depends(get_current_user)) -> User:
     if current_user.role != RoleEnum.avocat:
         raise HTTPException(status_code=403, detail="Accès réservé aux avocats.")
     return current_user
 
-def get_current_clarck_user(current_user: User = Depends(get_current_user)) -> User:
-    if current_user.role != RoleEnum.clarck:
-        raise HTTPException(status_code=403, detail="Accès réservé aux Clarck.")
+
+def get_current_clerk_user(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role != RoleEnum.clerk:
+        raise HTTPException(status_code=403, detail="Accès réservé aux clerk.")
+    return current_user
+
+
+def get_current_avocat_or_clerk(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role not in [RoleEnum.avocat, RoleEnum.clerk]:
+        raise HTTPException(
+            status_code=403,
+            detail="Accès réservé aux avocats et clerks."
+        )
     return current_user

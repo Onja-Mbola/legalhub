@@ -23,6 +23,7 @@
                         <th>#</th>
                         <th>Dossier</th>
                         <th>Action</th>
+                        <th>Description</th>
                         <th>Effectué par</th>
                         <th>Date</th>
                     </tr>
@@ -32,13 +33,16 @@
                     <tr>
                         <td class="text-muted">{{ loop.index }}</td>
                         <td>
-                            <strong>{{ log.dossier.nom_dossier if log.dossier else 'N/A' }}</strong><br>
+                            <strong>{{ log.dossier.nom_dossier if log.dossier else 'Aucun Dossier' }}</strong><br>
                             <small class="text-muted">#{{ log.dossier.numero_dossier if log.dossier else '-' }}</small>
                         </td>
                         <td>
                                     <span class="badge bg-secondary text-white">
                                         <i class="fas fa-tasks"></i> {{ log.action_type }}
                                     </span>
+                        </td>
+                        <td>
+                            {{ log.description }}
                         </td>
                         <td>
                             <strong>{{ log.user.nom }}</strong><br>

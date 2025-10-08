@@ -10,77 +10,219 @@
 {% include "partials/topbar.html" %}
 {% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_jugement_defavorable.css">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <div class="card shadow-lg rounded-4 border-0 mb-4">
-        <div class="card-header bg-gradient-primary text-white py-3">
-            <h5 class="mb-0"><i class="fas fa-gavel me-2"></i> Jugement #{{ jugement.id }}</h5>
+<style>
+
+</style>
+
+<div class="page-header">
+    <div class="container">
+        <h2 class="text-white mb-0">
+            <i class="fas fa-exclamation-triangle me-3"></i>
+            Jugement Défavorable
+        </h2>
+        <div class="warning-badge">
+            <span class="warning-icon">
+                <i class="fas fa-gavel"></i>
+            </span>
+            Jugement #{{ jugement.id }} • Dossier #{{ dossier_id }}
         </div>
-        <div class="card-body">
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="warning-banner">
+        <i class="fas fa-shield-alt"></i>
+        <div class="warning-banner-content">
+            <h6>Décision défavorable enregistrée</h6>
+            <p>Documentez soigneusement ce jugement défavorable. Vérifiez les délais d'appel et évaluez les options de recours disponibles pour votre client.</p>
+        </div>
+    </div>
+
+    <div class="form-card">
+        <div class="form-section">
             <form method="post" enctype="multipart/form-data">
-                <div class="mb-3">
-                    <label for="date_jugement" class="form-label fw-semibold">Date du jugement <span
-                            class="text-danger">*</span></label>
-                    <input type="date" class="form-control" id="date_jugement" name="date_jugement" required
-                           value="{{ jugement.date_jugement }}">
+
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-calendar-alt"></i>
+                        Dates importantes
+                    </h5>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-4 mb-md-0">
+                            <label for="date_jugement" class="form-label">
+                                <i class="fas fa-calendar-day"></i>
+                                Date du jugement
+                                <span class="required-badge">Requis</span>
+                            </label>
+                            <input type="date"
+                                   class="form-control"
+                                   id="date_jugement"
+                                   name="date_jugement"
+                                   required
+                                   value="{{ jugement.date_jugement }}">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="date_notification" class="form-label">
+                                <i class="fas fa-bell"></i>
+                                Date de notification
+                                <span class="required-badge">Requis</span>
+                            </label>
+                            <input type="date"
+                                   class="form-control"
+                                   id="date_notification"
+                                   name="date_notification"
+                                   required
+                                   value="{{ jugement.date_notification }}">
+                        </div>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="date_notification" class="form-label fw-semibold">Date Notification <span
-                            class="text-danger">*</span></label>
-                    <input type="date" class="form-control" id="date_notification" name="date_notification" required
-                           value="{{ jugement.date_notification }}">
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-tags"></i>
+                        Classification du jugement
+                    </h5>
+
+                    <div class="mb-0">
+                        <label for="sous_type" class="form-label">
+                            <i class="fas fa-list-alt"></i>
+                            Sous-type du jugement
+                            <span class="required-badge">Requis</span>
+                        </label>
+                        <select class="form-select"
+                                id="sous_type"
+                                name="sous_type"
+                                required>
+                            <option value="">-- Sélectionner un sous-type --</option>
+                            {% for st in sous_type %}
+                            <option value="{{ st.valeur }}" {% if jugement.sous_type == st.valeur %}selected{% endif %}>
+                                {{ st.valeur | capitalize }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="texte_decision" class="form-label fw-semibold">Texte de la décision</label>
-                    <textarea class="form-control" id="texte_decision" name="texte_decision">{{ jugement.texte_decision }}</textarea>
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-file-alt"></i>
+                        Contenu de la décision
+                    </h5>
+
+                    <div class="mb-0">
+                        <label for="texte_decision" class="form-label">
+                            <i class="fas fa-align-left"></i>
+                            Texte de la décision
+                        </label>
+                        <textarea class="form-control"
+                                  id="texte_decision"
+                                  name="texte_decision"
+                                  placeholder="Décrivez les motifs de la décision défavorable et les points importants...">{{ jugement.texte_decision }}</textarea>
+                        <small class="text-muted d-block mt-2">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Documentez précisément les raisons du jugement défavorable pour préparer un éventuel appel
+                        </small>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="delai_appel" class="form-label fw-semibold">Délai d'appel (jours)</label>
-                    <input type="number" class="form-control" id="delai_appel" name="delai_appel"
-                           value="{{ jugement.delai_appel }}">
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-redo-alt"></i>
+                        Options de recours
+                    </h5>
+
+                    <div class="mb-4">
+                        <label for="delai_appel" class="form-label">
+                            <i class="fas fa-hourglass-half"></i>
+                            Délai d'appel (en jours)
+                        </label>
+                        <input type="number"
+                               class="form-control"
+                               id="delai_appel"
+                               name="delai_appel"
+                               placeholder="Ex: 30"
+                               min="0"
+                               value="{{ jugement.delai_appel }}">
+                        <div class="info-pill">
+                            <i class="fas fa-info-circle"></i>
+                            Généralement 30 jours à partir de la notification
+                        </div>
+                        <div class="appeal-reminder">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span class="appeal-reminder-text">
+                                Attention : Calculez précisément la date limite pour interjeter appel
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="checkbox-section">
+                        <div class="form-check">
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   id="execution_provisoire"
+                                   name="execution_provisoire"
+                                   {% if jugement.execution_provisoire %}checked{% endif %}>
+                            <label class="form-check-label" for="execution_provisoire">
+                                <i class="fas fa-bolt me-2"></i>
+                                Exécution provisoire
+                            </label>
+                        </div>
+                        <div class="checkbox-info">
+                            <i class="fas fa-arrow-right me-1"></i>
+                            Le jugement peut être exécuté immédiatement malgré l'appel possible
+                        </div>
+                    </div>
                 </div>
 
-                <div class="form-check mb-3">
-                    <input class="form-check-input" type="checkbox" id="execution_provisoire"
-                           name="execution_provisoire"
-                           {% if jugement.execution_provisoire %}checked{% endif %}>
-                    <label class="form-check-label" for="execution_provisoire">
-                        Exécution provisoire
+                <div class="section-divider"></div>
+
+                <h5 class="mb-4 text-muted">
+                    <i class="fas fa-file-signature me-2"></i>
+                    Document officiel
+                </h5>
+
+                <div class="mb-4 file-upload-section">
+                    <label for="jugement_file" class="form-label">
+                        <i class="fas fa-file-pdf"></i>
+                        Copie du jugement
                     </label>
-                </div>
+                    <small class="d-block text-muted mb-3">
+                        Formats acceptés : PDF, JPG, JPEG, PNG • Téléversez la copie officielle du jugement
+                    </small>
 
-                <div class="mb-3">
-                    <label for="sous_type" class="form-label fw-semibold">Sous-type du jugement <span
-                            class="text-danger">*</span></label>
-                    <select class="form-select" id="sous_type" name="sous_type" required>
-                        {% for st in sous_type %}
-                        <option value="{{ st.valeur }}" {% if jugement.sous_type== st.valeur %}selected{% endif %}>
-                            {{ st.valeur | capitalize }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="mb-3">
-                    <label for="jugement_file" class="form-label fw-semibold">Fichier du jugement</label>
                     {% if jugement.jugement_file %}
-                    <p>Fichier actuel :
-                        <a href="{{ request.url_for('documents', filepath=jugement.jugement_file.split('app/documents/')[-1]) }}"
-                           target="_blank">
-                            {{ jugement.jugement_file.split('/')[-1] }}
-                        </a>
-                    </p>
+                        <div class="current-file">
+                            <i class="fas fa-file-check"></i>
+                            <div class="flex-grow-1">
+                                <div class="text-muted small">Document actuel</div>
+                                <a href="{{ request.url_for('documents', filepath=jugement.jugement_file.split('app/documents/')[-1]) }}" target="_blank">
+                                    <i class="fas fa-download me-1"></i>
+                                    {{ jugement.jugement_file.split('/')[-1] }}
+                                </a>
+                            </div>
+                        </div>
                     {% endif %}
-                    <input type="file" class="form-control" id="jugement_file" name="jugement_file"
+
+                    <input type="file"
+                           class="form-control"
+                           id="jugement_file"
+                           name="jugement_file"
                            accept=".pdf,.jpg,.png,.jpeg">
                 </div>
 
-                <button type="submit" class="btn btn-primary rounded-pill px-4">
-                    <i class="fas fa-save me-2"></i> Enregistrer
-                </button>
+                <div class="d-flex justify-content-end mt-5">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        Enregistrer le jugement
+                    </button>
+                </div>
             </form>
         </div>
     </div>

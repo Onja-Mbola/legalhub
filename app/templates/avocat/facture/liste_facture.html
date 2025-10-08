@@ -169,7 +169,7 @@
                     <tbody>
                     {% for facture in factures %}
                     <tr>
-                        <td><strong>{{ facture.numero_facture }}</strong></td>
+                        <td><strong><a class="dropdown-item" href="/factures/{{ facture.id }}">{{ facture.numero_facture }}</a></strong></td>
                         <td>{{ facture.nom_client_anonyme }}</td>
                         <td>{{ facture.description[:50] }}{% if facture.description|length > 50 %}...{% endif %}</td>
                         <td class="text-right"><strong>{{ "%.2f"|format(facture.montant_ttc) }} Ariary</strong></td>

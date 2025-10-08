@@ -47,7 +47,7 @@ def downgrade() -> None:
     sa.Column('nom', sa.VARCHAR(), autoincrement=False, nullable=False),
     sa.Column('email', sa.VARCHAR(), autoincrement=False, nullable=False),
     sa.Column('password', sa.VARCHAR(), autoincrement=False, nullable=True),
-    sa.Column('role', postgresql.ENUM('admin', 'avocat', 'clarck', name='roleenum'), autoincrement=False, nullable=False),
+    sa.Column('role', postgresql.ENUM('admin', 'avocat', 'clerk', name='roleenum'), autoincrement=False, nullable=False),
     sa.Column('is_active', sa.BOOLEAN(), autoincrement=False, nullable=True),
     sa.Column('created_by_id', sa.INTEGER(), autoincrement=False, nullable=True),
     sa.ForeignKeyConstraint(['created_by_id'], ['users.id'], name='users_created_by_id_fkey'),

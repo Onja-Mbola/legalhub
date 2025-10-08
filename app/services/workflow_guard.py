@@ -33,7 +33,14 @@ class WorkflowGuard:
             ProcessStage.JUGEMENT_DEFINITIF: [ProcessStage.NOTIFICATION_CLIENT_JUGEMENT_PAR_DEFAUT],
             ProcessStage.NOTIFICATION_CLIENT_JUGEMENT_PAR_DEFAUT: [ProcessStage.FIN_ARCHIVAGE],
             ProcessStage.JUGEMENT_CONTRADICTOIRE: [ProcessStage.APPEL],
-            ProcessStage.APPEL: [ProcessStage.JUGEMENT_CONTRADICTOIRE],
+            ProcessStage.APPEL: [ProcessStage.JUGEMENT_CONTRADICTOIRE, ProcessStage.ENROLEMENT_APPEL],
+            ProcessStage.ENROLEMENT_APPEL: [ProcessStage.PREMIERE_AUDIENCE_APPEL],
+            ProcessStage.PREMIERE_AUDIENCE_APPEL: [ProcessStage.ECHANGE_CONCLUSIONS_APPEL],
+            ProcessStage.ECHANGE_CONCLUSIONS_APPEL: [ProcessStage.DELIBERATION_APPEL],
+            ProcessStage.DELIBERATION_APPEL: [ProcessStage.AVANT_DIRE_DROIT, ProcessStage.FOND],
+            ProcessStage.AVANT_DIRE_DROIT: [ProcessStage.ECHANGE_CONCLUSIONS_APPEL],
+            ProcessStage.FOND: [ProcessStage.OPPOSITION, ProcessStage.JUGEMENT_DEFINITIF, ProcessStage.CASSATION],
+            ProcessStage.CASSATION: [ProcessStage.JUGEMENT_DEFINITIF]
         }
 
         if stage not in allowed[current]:

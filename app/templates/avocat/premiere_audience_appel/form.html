@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Première Audience d'Appel - Dossier #{{ dossier_id }}{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_premiere_audience_appel.css">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-transparent p-0">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none"><i class="fas fa-home"></i> Accueil</a>
+            </li>
+            <li class="breadcrumb-item"><a href="/dossiers" class="text-decoration-none">Dossiers</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Première Audience d'Appel #{{ dossier_id }}</li>
+        </ol>
+    </nav>
+
+    {% if error_msg %}
+    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-exclamation-circle fs-4 me-3"></i>
+            <div>
+                <strong>Erreur</strong>
+                <p class="mb-0 mt-1">{{ error_msg }}</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+                <div class="card-header border-0 py-4"
+                     style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="d-flex align-items-center text-white">
+                        <div>
+                            <h4 class="mb-1 fw-bold">Première Audience d'Appel</h4>
+                            <p class="mb-0 opacity-90">Dossier #{{ dossier_id }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    {% if enrolement_appel %}
+                    <div class="alert alert-info bg-light border-info border-2 rounded-3 mb-4">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle fs-4 text-info me-3"></i>
+                            <div>
+                                <strong>Enrôlement d'appel :</strong>
+                                <span class="ms-2">{{ enrolement_appel.numero_role }}</span>
+                                <span class="ms-3 text-muted">|</span>
+                                <span class="ms-3">Date : {{ enrolement_appel.date_enrolement }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data" action="">
+                        <input type="hidden" name="enrolement_appel_id"
+                               value="{{ enrolement_appel.id if enrolement_appel else '' }}">
+
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label for="date_audience" class="form-label fw-semibold text-dark mb-2">
+                                    <i class="fas fa-calendar-alt text-primary me-2"></i>Date de l'audience
+                                    <span class="text-danger ms-1">*</span>
+                                </label>
+                                <input type="date"
+                                       class="form-control form-control-lg border-2 rounded-3"
+                                       id="date_audience"
+                                       name="date_audience"
+                                       required
+                                       value="{{ premiere_audience_appel.date_audience if premiere_audience_appel else '' }}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="heure_audience" class="form-label fw-semibold text-dark mb-2">
+                                    <i class="fas fa-clock text-primary me-2"></i>Heure de l'audience
+                                </label>
+                                <input type="time"
+                                       class="form-control form-control-lg border-2 rounded-3"
+                                       id="heure_audience"
+                                       name="heure_audience"
+                                       value="{{ premiere_audience_appel.heure_audience.strftime('%H:%M') if premiere_audience_appel and premiere_audience_appel.heure_audience else '' }}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="lieu_audience" class="form-label fw-semibold text-dark mb-2">
+                                    <i class="fas fa-map-marker-alt text-danger me-2"></i>Lieu de l'audience
+                                </label>
+                                <input type="text"
+                                       class="form-control form-control-lg border-2 rounded-3"
+                                       id="lieu_audience"
+                                       name="lieu_audience"
+                                       placeholder="Ex: Cour d'Appel - Salle 3"
+                                       value="{{ premiere_audience_appel.lieu_audience if premiere_audience_appel else '' }}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="juge_rapporteur" class="form-label fw-semibold text-dark mb-2">
+                                    <i class="fas fa-user-tie text-info me-2"></i>Juge Rapporteur
+                                </label>
+                                <input type="text"
+                                       class="form-control form-control-lg border-2 rounded-3"
+                                       id="juge_rapporteur"
+                                       name="juge_rapporteur"
+                                       placeholder="Nom du juge rapporteur"
+                                       value="{{ premiere_audience_appel.juge_rapporteur if premiere_audience_appel else '' }}">
+                            </div>
+
+                            <div class="col-12">
+                                <label for="observations" class="form-label fw-semibold text-dark mb-2">
+                                    <i class="fas fa-comment-dots text-warning me-2"></i>Observations
+                                </label>
+                                <textarea class="form-control border-2 rounded-3"
+                                          id="observations"
+                                          name="observations"
+                                          rows="4"
+                                          placeholder="Ajoutez vos observations concernant cette audience...">{{ premiere_audience_appel.observations if premiere_audience_appel else '' }}</textarea>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="convocation_recue"
+                                       class="form-label fw-semibold text-dark mb-3 d-flex align-items-center">
+                                    <i class="fas fa-paperclip text-warning me-2 fs-5"></i>
+                                    Convocation Reçue
+                                </label>
+
+                                {% if premiere_audience_appel and premiere_audience_appel.convocation_recue %}
+                                <div class="current-files-list">
+                                    <div class="text-muted small mb-2 fw-semibold d-flex align-items-center">
+                                        <i class="fas fa-check-circle text-success me-1"></i>
+                                        Fichier actuel
+                                    </div>
+
+                                    <div class="file-item">
+                                        <i class="fas fa-file-pdf"></i>
+                                        <a href="{{ request.url_for('documents', filepath=premiere_audience_appel.convocation_recue.split('app/documents/')[-1]) }}"
+                                           target="_blank">
+                                            <i class="fas fa-download me-1"></i>
+                                            {{ premiere_audience_appel.convocation_recue.split('/')[-1] }}
+                                        </a>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <div class="file-upload-section">
+                                    <label for="convocation_recue"
+                                           class="form-label fw-semibold mb-2 d-flex align-items-center">
+                                        <i class="fas fa-file-upload text-warning me-2 fs-5"></i>
+                                        Télécharger une nouvelle convocation
+                                    </label>
+                                    <small class="d-block text-muted mb-3">
+                                        Formats acceptés : PDF, JPG, JPEG, PNG • Maximum 10 MB
+                                    </small>
+
+                                    <input type="file"
+                                           class="form-control"
+                                           id="convocation_recue"
+                                           name="convocation_recue"
+                                           accept=".pdf,.jpg,.png,.jpeg">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-5 pt-4 border-top">
+                            <div class="col-12">
+                                <div class="d-flex gap-3 justify-content-end">
+                                    <a href="/dossiers/{{ dossier_id }}"
+                                       class="btn btn-light btn-lg px-4 rounded-3 border-2">
+                                        <i class="fas fa-times me-2"></i>Annuler
+                                    </a>
+                                    <button type="submit" class="btn btn-lg px-5 rounded-3 text-white"
+                                            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                        <i class="fas fa-save me-2"></i>Enregistrer l'audience
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

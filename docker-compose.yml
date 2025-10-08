@@ -1,14 +1,14 @@
-version: '3.8'
-
 services:
   legalhub:
     build: .
     container_name: legalhub_app
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --ssl-keyfile=localhost-key.pem --ssl-certfile=localhost.pem
     ports:
       - "8000:8000"
     volumes:
       - .:/app
+      - ./app/model:/app/app/model
+      - ./whoosh_index:/app/whoosh_index
     env_file:
       - .env
     depends_on:
@@ -69,8 +69,23 @@ services:
     networks:
       - legalhub-network
 
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+
 volumes:
   postgres_data:
+  minio_data:
+  whoosh_data:
 
 networks:
   legalhub-network:
+    driver: bridge

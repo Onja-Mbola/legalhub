@@ -1,69 +1,198 @@
 {% extends "base.html" %}
-
 {% block title %}Modifier le dossier - {{ dossier.nom_dossier }}{% endblock %}
-
 {% block sidebar %}
 {% include "partials/sidebar.html" %}
 {% endblock %}
-
 {% block topbar %}
 {% include "partials/topbar.html" %}
 {% endblock %}
-
+{% block head %}
+<link rel="stylesheet" href="/static/css/dossier_modif.css">
+{% endblock %}
 {% block content %}
-<div class="container py-4">
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-primary text-white">
-            <h2 class="mb-0">Modifier le dossier : <small class="fw-light">{{ dossier.nom_dossier }}</small></h2>
+<div class="container py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/dossiers" class="text-decoration-none">Dossiers</a></li>
+            <li class="breadcrumb-item"><a href="/dossiers/{{ dossier.id }}" class="text-decoration-none">{{ dossier.nom_dossier }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Modifier</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 fw-bold">Modifier le dossier</h1>
+            <p class="text-muted mb-0">{{ dossier.nom_dossier }}</p>
         </div>
-        <div class="card-body">
-            <form action="/dossiers/{{ dossier.id }}/modifier" method="post" enctype="multipart/form-data"
-                  class="needs-validation" novalidate>
-                <div class="mb-4">
-                    <label for="nom_dossier" class="form-label fw-semibold">Nom du dossier <span
-                            class="text-danger">*</span></label>
-                    <input type="text" id="nom_dossier" name="nom_dossier" class="form-control form-control-lg"
-                           value="{{ dossier.nom_dossier }}" required>
-                    <div class="invalid-feedback">Ce champ est obligatoire.</div>
-                </div>
+    </div>
 
-                <div class="mb-4">
-                    <label for="commentaire" class="form-label fw-semibold">Commentaires</label>
-                    <textarea id="commentaire" name="commentaire" class="form-control" rows="5"
-                              placeholder="Ajouter des notes ou précisions...">{{ dossier.commentaire }}</textarea>
-                </div>
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <form action="/dossiers/{{ dossier.id }}/modifier" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
 
-                <div class="mb-4">
-                    <label for="pieces_jointes" class="form-label fw-semibold">Pièces jointes (ajouter)</label>
-                    {% if dossier and dossier.pieces_jointes %}
-                    {% for filepath in dossier.pieces_jointes %}
-                    <p>Fichier actuel :
-                        <a href="{{ url_for('documents', filepath=filepath.split('app/documents/')[-1]) }}"
-                           target="_blank">
-                            {{ filepath.split('/')[-1] }}
-                        </a>
-                    </p>
-                    {% endfor %}
-                    {% endif %}
+                        <div class="mb-4">
+                            <label for="nom_dossier" class="form-label fw-semibold mb-2">
+                                <i class="fas fa-tag text-primary me-2"></i>
+                                Nom du dossier
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                id="nom_dossier"
+                                name="nom_dossier"
+                                class="form-control form-control-lg border-2"
+                                value="{{ dossier.nom_dossier }}"
+                                placeholder="Ex: Projet Alpha 2025"
+                                required>
+                            <div class="invalid-feedback">
+                                <i class="fas fa-exclamation-circle me-1"></i>
+                                Veuillez saisir un nom de dossier.
+                            </div>
+                        </div>
 
-                    <input type="file" id="pieces_jointes" name="pieces_jointes" class="form-control" multiple>
-                    <small class="form-text text-muted">Vous pouvez ajouter plusieurs fichiers à la fois.</small>
-                </div>
+                        <hr class="my-4">
 
-                <div class="d-flex justify-content-between align-items-center">
-                    <button type="submit" class="btn btn-success btn-lg px-4">
-                        <i class="fas fa-save me-2"></i> Mettre à jour
-                    </button>
-                    <a href="/dossiers/{{ dossier.id }}" class="btn btn-outline-secondary btn-lg px-4">
-                        <i class="fas fa-times me-2"></i> Annuler
-                    </a>
+                        <div class="mb-4">
+                            <label for="commentaire" class="form-label fw-semibold mb-2">
+                                <i class="fas fa-comment-dots text-primary me-2"></i>
+                                Commentaires
+                            </label>
+                            <textarea
+                                id="commentaire"
+                                name="commentaire"
+                                class="form-control border-2"
+                                rows="6"
+                                placeholder="Ajoutez des notes, descriptions ou précisions sur ce dossier...">{{ dossier.commentaire }}</textarea>
+                            <small class="form-text text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Optionnel - Ces informations vous aideront à mieux organiser vos dossiers
+                            </small>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="mb-4">
+                            <label for="pieces_jointes" class="form-label fw-semibold mb-3">
+                                <i class="fas fa-paperclip text-primary me-2"></i>
+                                Pièces jointes
+                            </label>
+
+                            {% if dossier and dossier.pieces_jointes %}
+                            <div class="mb-3">
+                                <p class="text-muted small mb-2">
+                                    <i class="fas fa-file-alt me-1"></i>
+                                    Fichiers actuels :
+                                </p>
+                                <div class="list-group mb-3">
+                                    {% for filepath in dossier.pieces_jointes %}
+                                    <a href="{{ url_for('documents', filepath=filepath.split('app/documents/')[-1]) }}"
+                                       target="_blank"
+                                       class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-light rounded p-2 me-3">
+                                                <i class="fas fa-file text-secondary"></i>
+                                            </div>
+                                            <span class="text-truncate">{{ filepath.split('/')[-1] }}</span>
+                                        </div>
+                                        <i class="fas fa-external-link-alt text-muted small"></i>
+                                    </a>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <div class="border-2 border-dashed rounded-3 p-4 text-center bg-light">
+                                <i class="fas fa-cloud-upload-alt text-primary fs-2 mb-3"></i>
+                                <div class="mb-3">
+                                    <label for="pieces_jointes" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-plus me-2"></i>
+                                        Ajouter des fichiers
+                                    </label>
+                                    <input
+                                        type="file"
+                                        id="pieces_jointes"
+                                        name="pieces_jointes"
+                                        class="d-none"
+                                        multiple
+                                        onchange="displayFileNames(this)">
+                                </div>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Vous pouvez sélectionner plusieurs fichiers simultanément
+                                </small>
+                                <div id="file-list" class="mt-3"></div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-3 justify-content-end mt-5 pt-4 border-top">
+                            <a href="/dossiers/{{ dossier.id }}" class="btn btn-lg btn-light px-4">
+                                <i class="fas fa-times me-2"></i>
+                                Annuler
+                            </a>
+                            <button type="submit" class="btn btn-lg btn-primary px-4 shadow-sm">
+                                <i class="fas fa-save me-2"></i>
+                                Enregistrer les modifications
+                            </button>
+                        </div>
+                    </form>
                 </div>
-            </form>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-bold mb-3">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        Conseils
+                    </h5>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-3 d-flex">
+                            <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                            <small>Utilisez un nom clair et descriptif pour faciliter la recherche</small>
+                        </li>
+                        <li class="mb-3 d-flex">
+                            <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                            <small>Les commentaires vous aident à contextualiser vos dossiers</small>
+                        </li>
+                        <li class="mb-3 d-flex">
+                            <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                            <small>Joignez tous les documents pertinents en une seule fois</small>
+                        </li>
+                        <li class="d-flex">
+                            <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                            <small>Vos modifications sont enregistrées instantanément</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mt-3">
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-bold mb-3">
+                        <i class="fas fa-info-circle text-info me-2"></i>
+                        Informations
+                    </h5>
+                    <div class="small text-muted">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Créé le :</span>
+                            <span class="fw-semibold">{{ dossier.date_creation or "N/A" }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Dernière modification :</span>
+                            <span class="fw-semibold">{{ dossier.date_modification or "N/A" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-{% endblock %}
 
+
+{% endblock %}
 
 {% block extra_js %}
 <script src="{{ url_for('static', path='/js/dossier_modif.js') }}?v=3"></script>

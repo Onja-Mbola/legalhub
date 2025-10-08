@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if mode == "create" %}Nouvelle Décision Avant Dire Droit{% else %}Modifier Décision ADD{% endif %}
+{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="/static/css/custom_form_add.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="container">
+        <h2 class="text-white mb-0 d-flex align-items-center flex-wrap">
+            <i class="fas fa-file-contract me-3"></i>
+            {% if mode == "create" %}Nouvelle Décision Avant Dire Droit{% else %}Modifier Décision ADD{% endif %}
+            <span class="badge-mode">Décision procédurale</span>
+        </h2>
+        <p class="text-white-50 mb-0 mt-2">
+            {% if mode == "create" %}Enregistrement d'une nouvelle décision ADD{% else %}Modification de la décision ADD{% endif %}
+        </p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="dossier-info mb-4">
+        <i class="fas fa-folder-open me-2"></i>
+        <strong>Dossier :</strong> {{ dossier.numero_dossier }} - {{ dossier.nom_dossier }}
+    </div>
+
+    <div class="form-card">
+        <div class="form-section">
+            <form method="post"
+                  action="{% if mode == 'create' %}/dossiers/{{ dossier.id }}/deliberation/{{ deliberation_id }}/decision_add{% else %}/decisions_add/{{ decision.id }}/update{% endif %}"
+                  enctype="multipart/form-data">
+
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-calendar-check"></i>
+                        Informations principales
+                    </h5>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label for="date_decision_add" class="form-label">
+                                <i class="fas fa-calendar-alt"></i>
+                                Date de la décision ADD
+                                <span class="required-badge">Requis</span>
+                            </label>
+                            <input type="date"
+                                   id="date_decision_add"
+                                   name="date_decision_add"
+                                   value="{% if decision %}{{ decision.date_decision_add }}{% endif %}"
+                                   required
+                                   class="form-control">
+                            <small class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>Date de la décision avant dire droit
+                            </small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="delai_conclusions" class="form-label">
+                                <i class="fas fa-clock"></i>
+                                Délai pour conclusions (jours)
+                            </label>
+                            <input type="number"
+                                   id="delai_conclusions"
+                                   name="delai_conclusions"
+                                   value="{% if decision %}{{ decision.delai_conclusions }}{% endif %}"
+                                   min="1"
+                                   placeholder="Ex: 30"
+                                   class="form-control">
+                            <small class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>Nombre de jours accordés pour les conclusions
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-comment-dots"></i>
+                        Détails et observations
+                    </h5>
+
+                    <div class="mb-4">
+                        <label for="motif_renvoi" class="form-label">
+                            <i class="fas fa-clipboard-list"></i>
+                            Motif du renvoi
+                        </label>
+                        <textarea id="motif_renvoi"
+                                  name="motif_renvoi"
+                                  rows="4"
+                                  class="form-control"
+                                  placeholder="Saisissez les motifs justifiant la décision avant dire droit...">{% if decision %}{{ decision.motif_renvoi }}{% endif %}</textarea>
+                        <small class="form-text">
+                            <i class="fas fa-pen me-1"></i>Champ facultatif - Raisons du renvoi de l'affaire
+                        </small>
+                    </div>
+
+                    <div class="mb-0">
+                        <label for="observations" class="form-label">
+                            <i class="fas fa-edit"></i>
+                            Observations
+                        </label>
+                        <textarea id="observations"
+                                  name="observations"
+                                  rows="4"
+                                  class="form-control"
+                                  placeholder="Ajoutez des observations ou remarques complémentaires...">{% if decision %}{{ decision.observations }}{% endif %}</textarea>
+                        <small class="form-text">
+                            <i class="fas fa-pen me-1"></i>Champ facultatif - Notes additionnelles
+                        </small>
+                    </div>
+                </div>
+
+                <div class="section-divider"></div>
+
+                <h5 class="mb-4 text-muted">
+                    <i class="fas fa-paperclip me-2"></i>
+                    Document joint
+                </h5>
+
+                <div class="mb-4 file-upload-section">
+                    <label for="copie_decision_add" class="form-label">
+                        <i class="fas fa-file-upload"></i>
+                        Copie de la décision ADD
+                    </label>
+                    <small class="d-block text-muted mb-3">
+                        Formats acceptés : PDF, DOC, DOCX • Maximum 10 MB
+                    </small>
+
+                    {% if decision and decision.copie_decision_add %}
+                    <div class="current-file-display">
+                        <div class="text-muted small mb-2 fw-semibold">
+                            <i class="fas fa-check-circle text-success me-1"></i>
+                            Fichier actuel
+                        </div>
+                        <div class="file-item">
+                            <i class="fas fa-file-pdf"></i>
+                            <span class="flex-grow-1">{{ decision.copie_decision_add }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <input type="file"
+                           id="copie_decision_add"
+                           name="copie_decision_add"
+                           accept=".pdf,.doc,.docx"
+                           class="form-control">
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-5">
+                    <a href="/dossiers/{{ dossier.id }}/decisions_add" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        {% if mode == "create" %}Créer la décision{% else %}Mettre à jour{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

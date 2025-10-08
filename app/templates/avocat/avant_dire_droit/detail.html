@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Détail Décision ADD{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="/static/css/custom_detail_add.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="container">
+        <h2 class="text-white mb-0 d-flex align-items-center flex-wrap">
+            <i class="fas fa-file-contract me-3"></i>
+            Décision Avant Dire Droit
+        </h2>
+        <p class="text-white-50 mb-0 mt-2">Détails complets de la décision ADD</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="dossier-info mb-4">
+        <i class="fas fa-folder-open me-2"></i>
+        <strong>Dossier :</strong> {{ dossier.numero_dossier }} - {{ dossier.nom_dossier }}
+    </div>
+
+    {% if request.query_params.get('updated') %}
+    <div class="alert mb-4">
+        <p class="alert-text mb-0">
+            <i class="fas fa-check-circle"></i>
+            Décision ADD mise à jour avec succès
+        </p>
+    </div>
+    {% endif %}
+
+    <div class="detail-card">
+        <div class="card-header-section">
+            <div>
+                <h3 class="text-dark fw-bold mb-0">Informations de la décision</h3>
+            </div>
+            <div class="btn-group d-flex gap-3">
+                <a href="/decisions_add/{{ decision.id }}/update" class="btn btn-success">
+                    <i class="fas fa-edit"></i>
+                    Modifier
+                </a>
+                <a href="/dossiers/{{ dossier.id }}/decisions_add" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Retour
+                </a>
+            </div>
+        </div>
+
+        <div class="card-body-section">
+            <h5 class="section-title">
+                <i class="fas fa-info-circle"></i>
+                Données principales
+            </h5>
+
+            <div class="info-grid">
+                <div class="info-box">
+                    <div class="info-label">
+                        <i class="fas fa-calendar-alt"></i>
+                        Date de la décision
+                    </div>
+                    <div class="info-value">
+                        {{ decision.date_decision_add.strftime('%d/%m/%Y') if decision.date_decision_add else '-' }}
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-label">
+                        <i class="fas fa-clock"></i>
+                        Délai pour conclusions
+                    </div>
+                    <div class="info-value">
+                        {% if decision.delai_conclusions %}
+                        {{ decision.delai_conclusions }} jours
+                        {% else %}
+                        <span class="text-muted">Non défini</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-label">
+                        <i class="fas fa-hourglass-end"></i>
+                        Date limite conclusions
+                    </div>
+                    <div class="info-value {% if decision.date_limite_conclusions and decision.date_limite_conclusions < now %}text-expired{% endif %}">
+                        {% if decision.date_limite_conclusions %}
+                        {{ decision.date_limite_conclusions.strftime('%d/%m/%Y') }}
+                        {% if decision.date_limite_conclusions < now %}
+                        <span class="expired-badge">Dépassée</span>
+                        {% endif %}
+                        {% else %}
+                        <span class="text-muted">Non calculée</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-label">
+                        <i class="fas fa-envelope"></i>
+                        Alerte envoyée
+                    </div>
+                    <div class="info-value">
+                        {% if decision.alerte_envoyee %}
+                        <span class="badge-status badge-alerte-oui">
+                            <i class="fas fa-check"></i>
+                            Oui
+                        </span>
+                        {% else %}
+                        <span class="badge-status badge-alerte-non">
+                            <i class="fas fa-times"></i>
+                            Non
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <h5 class="section-title">
+                <i class="fas fa-clipboard-list"></i>
+                Motif du renvoi
+            </h5>
+
+            <div class="text-box">
+                <p class="text-content mb-0">
+                    {{ decision.motif_renvoi if decision.motif_renvoi else 'Non renseigné' }}
+                </p>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <h5 class="section-title">
+                <i class="fas fa-edit"></i>
+                Observations
+            </h5>
+
+            <div class="text-box">
+                <p class="text-content mb-0">
+                    {{ decision.observations if decision.observations else 'Aucune observation' }}
+                </p>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <h5 class="section-title">
+                <i class="fas fa-paperclip"></i>
+                Document joint
+            </h5>
+
+            <div class="file-display-section">
+                <label class="form-label fw-bold text-dark mb-3">
+                    <i class="fas fa-file-pdf me-2"></i>
+                    Copie de la décision ADD
+                </label>
+                <small class="d-block text-muted mb-3">
+                    Document officiel de la décision avant dire droit
+                </small>
+                {% if decision.copie_decision_add %}
+                <div class="current-file">
+                    <i class="fas fa-file-check"></i>
+                    <div class="flex-grow-1">
+                        <div class="text-muted small mb-1">Document disponible</div>
+                        <a href="{{ request.url_for('documents', filepath=decision.copie_decision_add.split('app/documents/')[-1]) }}"
+                           target="_blank">
+                            <i class="fas fa-download me-1"></i>
+                            {{ decision.copie_decision_add.split('/')[-1] }}
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-muted">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Aucun document téléversé
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="danger-zone">
+                <h5 class="danger-zone-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Zone de danger
+                </h5>
+                <p class="danger-zone-text mb-3">
+                    La suppression de cette décision ADD est définitive et irréversible. Toutes les données associées seront perdues.
+                </p>
+                <form method="post"
+                      action="/decisions_add/{{ decision.id }}/delete"
+                      onsubmit="return confirm('⚠️ ATTENTION ⚠️\n\nÊtes-vous absolument sûr de vouloir supprimer cette décision ADD ?\n\nCette action est IRRÉVERSIBLE et entraînera la perte définitive de toutes les données associées.\n\nCliquez sur OK pour confirmer la suppression.');">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-2"></i>
+                        Supprimer définitivement la décision
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

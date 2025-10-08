@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from app.models.echange_conclusion import EchangeConclusion
 from app.schemas.echange_conclusion import EchangeConclusionCreate, EchangeConclusionUpdate
+from app.services.FileStorageService import storage
 
 
 def create_echange_conclusion(db: Session, obj_in: EchangeConclusionCreate) -> EchangeConclusion:
@@ -18,6 +19,7 @@ def get_echange_conclusion_by_id(db: Session, id: int):
 def get_echange_conclusion_by_dossier(db: Session, dossier_id: int):
     return db.query(EchangeConclusion).filter(EchangeConclusion.dossier_id == dossier_id).all()
 
+
 def get_echanges_by_retour(db: Session, retour_audience_id: int):
     return db.query(EchangeConclusion).filter(EchangeConclusion.retour_audience_id == retour_audience_id).all()
 
@@ -28,3 +30,13 @@ def update_echange_conclusion(db: Session, db_obj: EchangeConclusion, obj_in: Ec
     db.commit()
     db.refresh(db_obj)
     return db_obj
+
+
+def delete_echange_conclusion(db: Session, echange_id: int):
+    obj = get_echange_conclusion_by_id(db, echange_id)
+    if obj and obj.file_paths:
+        for path in obj.file_paths:
+            storage.delete_object(path)
+    db.delete(obj)
+    db.commit()
+    return True

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, Text, JSON
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
@@ -12,6 +12,9 @@ class RequeteAssignation(Base):
     nom_huissier = Column(String, nullable=True)
     date_signification = Column(Date, nullable=True)
     date_audience = Column(Date, nullable=True)
+
+    ocr_texte = Column(Text, nullable=True)
+    entites_extraites = Column(JSON, nullable=True)
 
     dossier = relationship("Dossier", back_populates="requete_assignation")
 

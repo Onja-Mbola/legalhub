@@ -10,6 +10,7 @@ class EnrolementBase(BaseModel):
 
 class EnrolementCreate(EnrolementBase):
     preuve_enrolement: Optional[str] = None
+    jugement_id: Optional[int] = None
 
 class EnrolementUpdate(EnrolementBase):
     preuve_enrolement: Optional[str] = None

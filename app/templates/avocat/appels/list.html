@@ -10,60 +10,186 @@
 {% include "partials/topbar.html" %}
 {% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_appels_list.css">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold"><i class="fas fa-balance-scale me-2"></i> Appels du dossier #{{ dossier.numero_dossier }}</h3>
-        <a href="/dossiers/{{ dossier.id }}/appels/create" class="btn btn-primary rounded-pill">
-            <i class="fas fa-plus-circle me-1"></i> Nouvel appel
-        </a>
+
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h2 class="text-white mb-0 d-flex align-items-center">
+                    <i class="fas fa-balance-scale me-3"></i>
+                    Appels du dossier
+                </h2>
+                <p class="text-white-50 mb-0 mt-2">
+                    <i class="fas fa-folder me-2"></i>Dossier #{{ dossier.numero_dossier }}
+                </p>
+            </div>
+            <a href="/dossiers/{{ dossier.id }}/appels/create" class="btn btn-create">
+                <i class="fas fa-plus-circle me-2"></i>
+                Nouvel appel
+            </a>
+        </div>
     </div>
+</div>
+
+<div class="container mb-5">
+    {% if appels %}
+    <div class="stats-row mb-4">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-balance-scale"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ appels|length }}</div>
+                <div class="stat-label">Appel(s) total</div>
+            </div>
+        </div>
+
+        <div class="stat-card secondary">
+            <div class="stat-icon">
+                <i class="fas fa-hourglass-half"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">
+                    {{ appels|selectattr('statut', 'equalto', 'en_attente')|list|length }}
+                </div>
+                <div class="stat-label">En attente</div>
+            </div>
+        </div>
+
+        <div class="stat-card success">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">
+                    {{ appels|selectattr('statut', 'equalto', 'accepte')|list|length }}
+                </div>
+                <div class="stat-label">Accepté(s)</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     {% if appels %}
-    <div class="card shadow-lg border-0 rounded-4">
-        <div class="card-body">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th scope="col">Motif</th>
-                        <th scope="col">Date de dépôt</th>
-                        <th scope="col">Statut</th>
-                        <th scope="col" class="text-end">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for appel in appels %}
-                    <tr>
-                        <td>{{ appel.motif }}</td>
-                        <td>{{ appel.date_depot.strftime('%d/%m/%Y') }}</td>
-                        <td>
-                            <span class="badge badge-{% if appel.statut == 'en_attente' %}warning{% elif appel.statut == 'accepte' %}success{% else %}danger{% endif %}">
-                                {{ appel.statut|capitalize }}
-                            </span>
-                        </td>
-                        <td class="text-end">
-                            <a href="/dossiers/{{ dossier.id }}/appels/{{ appel.id }}/update"
-                               class="btn btn-sm btn-outline-primary rounded-pill">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <form action="/dossiers/{{ dossier.id }}/appels/{{ appel.id }}/delete"
-                                  method="post" class="d-inline">
-                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill"
-                                        onclick="return confirm('Voulez-vous vraiment supprimer cet appel ?')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+    <div class="appels-card">
+        <div class="appels-card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-list me-2"></i>
+                Liste des appels
+                <span class="badge-count">{{ appels|length }}</span>
+            </h5>
+        </div>
+        <div class="appels-card-body">
+            <div class="table-responsive">
+                <table class="table appels-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">
+                                <i class="fas fa-gavel me-2"></i>Motif
+                            </th>
+                            <th scope="col">
+                                <i class="fas fa-calendar-alt me-2"></i>Date de dépôt
+                            </th>
+                            <th scope="col">
+                                <i class="fas fa-flag me-2"></i>Statut
+                            </th>
+                            <th scope="col" class="text-end">
+                                <i class="fas fa-cog me-2"></i>Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appel in appels %}
+                        <tr class="appel-row">
+                            <td class="appel-motif">
+                                <div class="motif-content">
+                                    <i class="fas fa-file-alt text-muted me-2"></i>
+                                    <span>{{ appel.motif }}</span>
+                                </div>
+                            </td>
+                            <td class="appel-date">
+                                <span class="date-badge">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    {{ appel.date_depot.strftime('%d/%m/%Y') if appel.date_depot else 'Non définie' }}
+                                </span>
+                            </td>
+                            <td class="appel-statut">
+                                {% if appel.statut == 'en_attente' %}
+                                <span class="status-badge status-warning">
+                                    <i class="fas fa-hourglass-half me-1"></i>
+                                    En attente
+                                </span>
+                                {% elif appel.statut == 'accepte' %}
+                                <span class="status-badge status-success">
+                                    <i class="fas fa-check-circle me-1"></i>
+                                    Accepté
+                                </span>
+                                {% elif appel.statut == 'rejete' %}
+                                <span class="status-badge status-danger">
+                                    <i class="fas fa-times-circle me-1"></i>
+                                    Rejeté
+                                </span>
+                                {% else %}
+                                <span class="status-badge status-secondary">
+                                    <i class="fas fa-question-circle me-1"></i>
+                                    {{ appel.statut|capitalize if appel.statut else 'Non défini' }}
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="appel-actions text-end">
+                                <div class="action-buttons">
+                                    <a href="/dossiers/{{ dossier.id }}/appels/{{ appel.id }}/update"
+                                       class="btn-action btn-edit"
+                                       title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form action="/dossiers/{{ dossier.id }}/appels/{{ appel.id }}/delete"
+                                          method="post"
+                                          class="d-inline">
+                                        <button type="submit"
+                                                class="btn-action btn-delete"
+                                                title="Supprimer"
+                                                onclick="return confirm('Voulez-vous vraiment supprimer cet appel ?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     {% else %}
-    <div class="alert alert-info rounded-4 shadow-sm">
-        <i class="fas fa-info-circle me-2"></i> Aucun appel enregistré pour ce dossier.
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i class="fas fa-balance-scale"></i>
+        </div>
+        <h4 class="empty-state-title">Aucun appel enregistré</h4>
+        <p class="empty-state-text">
+            Ce dossier ne contient actuellement aucun appel.<br>
+            Commencez par créer un nouvel appel pour suivre les procédures de recours.
+        </p>
+        <a href="/dossiers/{{ dossier.id }}/appels/create" class="btn btn-primary btn-lg">
+            <i class="fas fa-plus-circle me-2"></i>
+            Créer le premier appel
+        </a>
     </div>
     {% endif %}
+
+    <div class="text-center mt-4">
+        <a href="/dossiers/{{ dossier.id }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Retour au dossier
+        </a>
+    </div>
 </div>
+
 {% endblock %}
