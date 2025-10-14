@@ -1,14 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Création de dossier - Avocat{% endblock %}
-
-{% block sidebar %}
-    {% include "partials/sidebar.html" %}
-{% endblock %}
-
-{% block topbar %}
-    {% include "partials/topbar.html" %}
-{% endblock %}
+{% block title %}Création de dossier{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="/static/css/custom_create_dossier.css">
@@ -16,18 +8,6 @@
 
 {% block content %}
 <div class="container-fluid mt-4 px-4">
-    {% if request.query_params.get('error') == '1' %}
-        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
-            <div class="d-flex align-items-center">
-                <i class="fas fa-exclamation-circle me-3 fs-4"></i>
-                <div>
-                    <strong>Erreur !</strong> Veuillez remplir tous les champs obligatoires.
-                </div>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
-        </div>
-    {% endif %}
-
     <div class="row justify-content-center">
         <div class="col-xl-10">
             <div class="card border-0 shadow-sm mb-4">
@@ -59,21 +39,21 @@
                             <div class="d-flex justify-content-between position-absolute w-100" style="top: -8px;">
                                 <div class="step-indicator active" data-step="1">
                                     <div class="step-circle">
+                                        <i class="fas fa-user-circle"></i>
+                                    </div>
+                                    <small class="step-label">Mode & Client</small>
+                                </div>
+                                <div class="step-indicator" data-step="2">
+                                    <div class="step-circle">
                                         <i class="fas fa-balance-scale"></i>
                                     </div>
                                     <small class="step-label">Infos principales</small>
                                 </div>
-                                <div class="step-indicator" data-step="2">
+                                <div class="step-indicator" data-step="3">
                                     <div class="step-circle">
                                         <i class="fas fa-users"></i>
                                     </div>
                                     <small class="step-label">Parties</small>
-                                </div>
-                                <div class="step-indicator" data-step="3">
-                                    <div class="step-circle">
-                                        <i class="fas fa-gavel"></i>
-                                    </div>
-                                    <small class="step-label">Détails</small>
                                 </div>
                                 <div class="step-indicator" data-step="4">
                                     <div class="step-circle">
@@ -87,7 +67,131 @@
 
                     <div class="p-4 pt-5">
                         <form id="creationDossierForm" enctype="multipart/form-data">
+
                             <div class="wizard-step" id="step-1">
+                                <div class="mb-4">
+                                    <h5 class="fw-bold text-dark mb-1">
+                                        <i class="fas fa-user-circle text-primary me-2"></i>
+                                        Mode de création
+                                    </h5>
+                                    <p class="text-muted small mb-4">Choisissez comment créer le dossier</p>
+                                </div>
+
+                                <div class="mode-selector">
+                                    <div class="mode-card active" onclick="selectMode('nouveau')" data-mode="nouveau">
+                                        <div class="mode-icon">
+                                            <i class="fas fa-plus-circle"></i>
+                                        </div>
+                                        <h6 class="fw-bold mb-2">Nouveau client</h6>
+                                        <p class="text-muted small mb-0">Créer un dossier avec un nouveau client</p>
+                                    </div>
+
+                                    <div class="mode-card" onclick="selectMode('client_existant')" data-mode="client_existant">
+                                        <div class="mode-icon">
+                                            <i class="fas fa-user-check"></i>
+                                        </div>
+                                        <h6 class="fw-bold mb-2">Client existant</h6>
+                                        <p class="text-muted small mb-0">Lier à un client déjà enregistré</p>
+                                    </div>
+                                </div>
+
+                                <input type="hidden" id="mode_creation" name="mode_creation" value="nouveau">
+
+                                <div id="client-existant-container" class="d-none">
+                                    <div class="card bg-light border-2 border-primary">
+                                        <div class="card-body">
+                                            <label class="form-label fw-semibold text-dark mb-2">
+                                                <i class="fas fa-search me-2"></i>
+                                                Rechercher un client
+                                            </label>
+                                            <div class="client-search-container">
+                                                <input type="text"
+                                                       class="form-control form-control-lg"
+                                                       id="client_search"
+                                                       placeholder="Tapez le nom du client..."
+                                                       autocomplete="off">
+                                                <div class="client-suggestions" id="client_suggestions"></div>
+                                            </div>
+
+                                            <div class="client-selected-info" id="client_selected_info">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <h6 class="fw-bold mb-2">
+                                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                                            Client sélectionné
+                                                        </h6>
+                                                        <div id="selected_client_details"></div>
+                                                    </div>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearClientSelection()">
+                                                        <i class="fas fa-times"></i> Changer
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <input type="hidden" id="client_id" name="client_id">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="nouveau-client-container">
+                                    <div class="card bg-light border-2">
+                                        <div class="card-body">
+                                            <h6 class="fw-bold mb-3">
+                                                <i class="fas fa-user-plus me-2"></i>
+                                                Informations du nouveau client
+                                            </h6>
+
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label fw-semibold">
+                                                        Nom du client <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text"
+                                                           class="form-control"
+                                                           id="nouveau_client_nom"
+                                                           placeholder="Nom complet">
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <label class="form-label fw-semibold">Email</label>
+                                                    <input type="email"
+                                                           class="form-control"
+                                                           id="nouveau_client_email"
+                                                           placeholder="email@example.com">
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <label class="form-label fw-semibold">Téléphone</label>
+                                                    <input type="tel"
+                                                           class="form-control"
+                                                           id="nouveau_client_telephone"
+                                                           placeholder="+261 34 12 345 67">
+                                                </div>
+                                                <input type="hidden" id="avocat_responsable" name="avocat_responsable" value="{{ user.id }}">
+
+
+                                                <div class="col-md-6">
+                                                    <label class="form-label fw-semibold">Type</label>
+                                                    <select class="form-select" id="nouveau_client_type">
+                                                        <option value="personne_physique">Personne physique</option>
+                                                        <option value="personne_morale">Personne morale</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="col-12">
+                                                    <label class="form-label fw-semibold">Adresse</label>
+                                                    <input type="text"
+                                                           class="form-control"
+                                                           id="nouveau_client_adresse"
+                                                           placeholder="Adresse complète">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="wizard-step d-none" id="step-2">
                                 <div class="mb-4">
                                     <h5 class="fw-bold text-dark mb-1">
                                         <i class="fas fa-balance-scale text-primary me-2"></i>
@@ -111,7 +215,7 @@
 
                                     <div class="col-md-6" id="sous_type_affaire_container" style="display: none;">
                                         <label class="form-label fw-semibold text-dark mb-2">
-                                            Sous-type <span class="text-danger">*</span>
+                                            Sous-type
                                         </label>
                                         <select class="form-select form-select-lg border-2" name="sous_type_affaire" id="sous_type_affaire"></select>
                                     </div>
@@ -128,28 +232,26 @@
                                         </select>
                                     </div>
 
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-semibold text-dark mb-2">
-                                            Rôle du Client
-                                        </label>
-                                        <select class="form-select form-select-lg border-2" name="role_client" id="role_client">
-                                            <option value="">Sélectionner un rôle</option>
-                                            {% for item in role_types %}
-                                                <option value="{{ item.id }}">{{ item.valeur }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-
                                     <div class="col-12">
                                         <label for="nom_dossier" class="form-label fw-semibold text-dark mb-2">
                                             Nom du dossier <span class="text-danger">*</span>
                                         </label>
                                         <input type="text" class="form-control form-control-lg border-2" id="nom_dossier" name="nom_dossier" placeholder="Ex: Affaire Martin vs. Dupont" required>
                                     </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold text-dark mb-2">Juridiction</label>
+                                        <input type="text" class="form-control form-control-lg border-2" id="juridiction" name="juridiction" placeholder="Ex: Tribunal de première instance">
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold text-dark mb-2">Tribunal</label>
+                                        <input type="text" class="form-control form-control-lg border-2" id="tribunal" name="tribunal" placeholder="Ex: Antananarivo">
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="wizard-step d-none" id="step-2">
+                            <div class="wizard-step d-none" id="step-3">
                                 <div class="mb-4">
                                     <h5 class="fw-bold text-dark mb-1">
                                         <i class="fas fa-users text-primary me-2"></i>
@@ -189,51 +291,6 @@
                                 </div>
                             </div>
 
-                            <div class="wizard-step d-none" id="step-3">
-                                <div class="mb-4">
-                                    <h5 class="fw-bold text-dark mb-1">
-                                        <i class="fas fa-gavel text-primary me-2"></i>
-                                        Détails juridiques
-                                    </h5>
-                                    <p class="text-muted small mb-4">Précisez les informations légales et administratives</p>
-                                </div>
-
-                                <div class="row g-4">
-                                    <div class="col-12">
-                                        <label class="form-label fw-semibold text-dark mb-2">
-                                            Adresse du client <span class="text-danger">*</span>
-                                        </label>
-                                        <input type="text" class="form-control form-control-lg border-2" id="adresse_client" name="adresse_client" placeholder="Adresse complète du client" required>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-semibold text-dark mb-2">Juridiction</label>
-                                        <input type="text" class="form-control form-control-lg border-2" id="juridiction" name="juridiction" placeholder="Ex: Tribunal de première instance">
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-semibold text-dark mb-2">Tribunal</label>
-                                        <input type="text" class="form-control form-control-lg border-2" id="tribunal" name="tribunal" placeholder="Ex: Antananarivo">
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-semibold text-dark mb-2">Avocat responsable</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text bg-primary text-white">
-                                                <i class="fas fa-user-tie"></i>
-                                            </span>
-                                            <input type="text" class="form-control form-control-lg border-2" value="Maître {{ user.nom }}" readonly>
-                                        </div>
-                                        <input type="hidden" id="avocat_responsable" name="avocat_responsable" value="{{ user.id }}">
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-semibold text-dark mb-2">Avocat de la partie adverse</label>
-                                        <input type="text" class="form-control form-control-lg border-2" id="avocat_adverse" name="avocat_adverse" placeholder="Nom de l'avocat adverse">
-                                    </div>
-                                </div>
-                            </div>
-
                             <div class="wizard-step d-none" id="step-4">
                                 <div class="mb-4">
                                     <h5 class="fw-bold text-dark mb-1">
@@ -259,6 +316,7 @@
                                         <label class="form-label fw-semibold text-dark mb-2">Commentaires additionnels</label>
                                         <textarea class="form-control border-2" id="commentaire" name="commentaire" rows="5" placeholder="Ajoutez des notes, observations ou informations complémentaires..."></textarea>
                                     </div>
+
                                     <div class="col-12">
                                         <div class="card border-2 border-primary bg-light">
                                             <div class="card-body">
@@ -269,7 +327,7 @@
                                                         Consentement RGPD <span class="text-danger">*</span>
                                                     </label>
                                                     <p class="text-muted small mt-2 mb-0 ms-4">
-                                                        J'accepte que les données personnelles collectées dans ce dossier soient traitées conformément au Règlement Général sur la Protection des Données (RGPD) et à la politique de confidentialité du cabinet.
+                                                        J'accepte que les données personnelles collectées dans ce dossier soient traitées conformément au RGPD.
                                                     </p>
                                                 </div>
                                             </div>
@@ -278,6 +336,7 @@
                                 </div>
                             </div>
 
+                            <!-- Boutons navigation -->
                             <div class="d-flex justify-content-between align-items-center mt-5 pt-4 border-top">
                                 <button type="button" id="prevBtn" class="btn btn-outline-secondary btn-lg px-5" onclick="changeStep(-1)" disabled>
                                     <i class="fas fa-arrow-left me-2"></i> Précédent
@@ -298,9 +357,10 @@
     const civilTypes = {{ civil_types | tojson }};
     const penalTypes = {{ penal_types | tojson }};
     const qualiteTypes = {{ qualite_types | tojson }};
+    const existingClients = {{ clients | tojson }};
 </script>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', path='/js/creation_dossier.js') }}?v=13"></script>
+<script src="{{ url_for('static', path='/js/creation_dossier_refonte.js') }}"></script>
 {% endblock %}

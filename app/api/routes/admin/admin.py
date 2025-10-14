@@ -24,11 +24,12 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 
+
 @router.get("/admin/dashboard")
 def dashboard_admin(
-    request: Request,
-    user: User = Depends(get_current_admin_user),
-    db: Session = Depends(get_db)
+        request: Request,
+        user: User = Depends(get_current_admin_user),
+        db: Session = Depends(get_db)
 ):
     users = list_users(db)
     return templates.TemplateResponse("admin/dashboard_admin.html", {
@@ -47,14 +48,15 @@ def create_user_page(request: Request, current_user: User = Depends(get_current_
         "roles": roles
     })
 
+
 @router.post("/admin/users/create", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 async def create_user_api(
-    request: Request,
-    nom: str = Form(...),
-    email: str = Form(...),
-    role: str = Form(...),
-    db: Session = Depends(get_db),
-    current_user=Depends(get_current_admin_user)
+        request: Request,
+        nom: str = Form(...),
+        email: str = Form(...),
+        role: str = Form(...),
+        db: Session = Depends(get_db),
+        current_user=Depends(get_current_admin_user)
 ):
     try:
         await register_user(db, nom, email, role, current_user.id)
@@ -68,7 +70,11 @@ async def create_user_api(
             "roles": [RoleEnum.admin, RoleEnum.avocat],
             "error": str(e)
         })
-    except Exception:
+    except Exception as e:
+        import traceback
+        print(f"❌ ERREUR lors de la création utilisateur: {str(e)}")
+        print(f"❌ Traceback: {traceback.format_exc()}")
+
         db.rollback()
         return templates.TemplateResponse("admin/admin_create_user.html", {
             "request": request,
@@ -80,10 +86,10 @@ async def create_user_api(
 
 @router.get("/admin/users/{user_id}/toggle")
 async def toggle_user_activation(
-    user_id: int,
-    request: Request,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+        user_id: int,
+        request: Request,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
 ):
     user = get_user_by_id(db, user_id)
     if not user:
@@ -102,9 +108,9 @@ async def toggle_user_activation(
 
 @router.get("/admin/history", response_class=HTMLResponse)
 def view_history(
-    request: Request,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin_user)
+        request: Request,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_admin_user)
 ):
     history = list_activation_history(db)
 
@@ -113,6 +119,7 @@ def view_history(
         "user": current_user,
         "history": history
     })
+
 
 @router.get("/admin/action_logs")
 def list_action_logs(request: Request, db: Session = Depends(get_db), user: User = Depends(get_current_admin_user)):

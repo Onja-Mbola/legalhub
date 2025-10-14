@@ -6,7 +6,7 @@
     <form id="searchForm" class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
         <div class="input-group">
             <input type="text" id="searchInput" class="form-control bg-light border-0 small"
-                   placeholder="Rechercher un dossier..." aria-label="Search">
+                   placeholder="Rechercher un dossier (nom, numéro, contenu)..." aria-label="Search">
             <div class="input-group-append">
                 <button class="btn btn-primary" type="submit">
                     <i class="fas fa-search fa-sm"></i>
@@ -18,178 +18,135 @@
         </div>
     </form>
 
-        <ul class="navbar-nav ml-auto">
+    <ul class="navbar-nav ml-auto">
 
-            <li class="nav-item dropdown no-arrow d-sm-none">
-                <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
-                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="fas fa-search fa-fw"></i>
+        <li class="nav-item dropdown no-arrow d-sm-none">
+            <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-search fa-fw"></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
+                aria-labelledby="searchDropdown">
+                <form class="form-inline mr-auto w-100 navbar-search" id="mobileSearchForm">
+                    <div class="input-group">
+                        <input type="text" id="mobileSearchInput" class="form-control bg-light border-0 small"
+                            placeholder="Rechercher..." aria-label="Search"
+                            aria-describedby="basic-addon2">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search fa-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="mobileSearchResults" class="dropdown-menu dropdown-menu-left shadow animated--grow-in mt-2"
+                         style="display: none; width: 100%; max-height: 300px; overflow-y: auto;">
+                    </div>
+                </form>
+            </div>
+        </li>
+
+        <div class="topbar-divider d-none d-sm-block"></div>
+
+        <li class="nav-item dropdown no-arrow">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Maître {{ user.nom }}</span>
+                <img class="img-profile rounded-circle"
+                    src="/static/img/undraw_profile.svg">
+            </a>
+            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                aria-labelledby="userDropdown">
+                <a class="dropdown-item" href="/profil">
+                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                    Profil
                 </a>
-                <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
-                    aria-labelledby="searchDropdown">
-                    <form class="form-inline mr-auto w-100 navbar-search">
-                        <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small"
-                                placeholder="Rechercher..." aria-label="Search"
-                                aria-describedby="basic-addon2">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
-                                    <i class="fas fa-search fa-sm"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </li>
-
-            <li class="nav-item dropdown no-arrow mx-1">
-                <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
-                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="fas fa-bell fa-fw"></i>
-                    <span class="badge badge-danger badge-counter">3+</span>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                    Déconnexion
                 </a>
-                <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                    aria-labelledby="alertsDropdown">
-                    <h6 class="dropdown-header">
-                        Centre d'alertes
-                    </h6>
-                    <a class="dropdown-item d-flex align-items-center" href="#">
-                        <div class="mr-3">
-                            <div class="icon-circle bg-primary">
-                                <i class="fas fa-file-alt text-white"></i>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="small text-gray-500">12 Décembre 2019</div>
-                            <span class="font-weight-bold">Un nouveau rapport mensuel est prêt à être téléchargé!</span>
-                        </div>
-                    </a>
-                    <a class="dropdown-item d-flex align-items-center" href="#">
-                        <div class="mr-3">
-                            <div class="icon-circle bg-success">
-                                <i class="fas fa-donate text-white"></i>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="small text-gray-500">7 Décembre 2019</div>
-                            $290.29 a été déposé sur votre compte!
-                        </div>
-                    </a>
-                    <a class="dropdown-item d-flex align-items-center" href="#">
-                        <div class="mr-3">
-                            <div class="icon-circle bg-warning">
-                                <i class="fas fa-exclamation-triangle text-white"></i>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="small text-gray-500">2 Décembre 2019</div>
-                            Alerte de dépenses: Nous avons constaté des dépenses inhabituellement élevées pour votre compte.
-                        </div>
-                    </a>
-                    <a class="dropdown-item text-center small text-gray-500" href="#">Afficher toutes les alertes</a>
-                </div>
-            </li>
+            </div>
+        </li>
 
-            <li class="nav-item dropdown no-arrow mx-1">
-                <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
-                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="fas fa-envelope fa-fw"></i>
-                    <span class="badge badge-danger badge-counter">7</span>
-                </a>
-                <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                    aria-labelledby="messagesDropdown">
-                    <h6 class="dropdown-header">
-                        Centre de messages
-                    </h6>
-                    <a class="dropdown-item d-flex align-items-center" href="#">
-                        <div class="dropdown-list-image mr-3">
-                            <img class="rounded-circle" src="/static/img/undraw_profile_1.svg"
-                                alt="...">
-                            <div class="status-indicator bg-success"></div>
-                        </div>
-                        <div class="font-weight-bold">
-                            <div class="text-truncate">Bonjour! Je me demande si vous pouvez m'aider avec un
-                                problème que j'ai.</div>
-                            <div class="small text-gray-500">Emily Fowler · 58m</div>
-                        </div>
-                    </a>
-                    <a class="dropdown-item d-flex align-items-center" href="#">
-                        <div class="dropdown-list-image mr-3">
-                            <img class="rounded-circle" src="/static/img/undraw_profile_2.svg"
-                                alt="...">
-                            <div class="status-indicator"></div>
-                        </div>
-                        <div>
-                            <div class="text-truncate">J'ai les photos que vous avez commandées le mois dernier, comment
-                                souhaitez-vous que je vous les envoie ?</div>
-                            <div class="small text-gray-500">Jae Chun · 1j</div>
-                        </div>
-                    </a>
-                    <a class="dropdown-item d-flex align-items-center" href="#">
-                        <div class="dropdown-list-image mr-3">
-                            <img class="rounded-circle" src="/static/img/undraw_profile_3.svg"
-                                alt="...">
-                            <div class="status-indicator bg-warning"></div>
-                        </div>
-                        <div>
-                            <div class="text-truncate">Le rapport du mois dernier est excellent, je suis très satisfait de
-                                progrès jusqu'à présent, continuez votre bon travail!</div>
-                            <div class="small text-gray-500">Morgan Alvarez · 2j</div>
-                        </div>
-                    </a>
-                    <a class="dropdown-item d-flex align-items-center" href="#">
-                        <div class="dropdown-list-image mr-3">
-                            <img class="rounded-circle" src="https://source.unsplash.com/Mv9hjnEUHR4/60x60"
-                                alt="...">
-                            <div class="status-indicator bg-success"></div>
-                        </div>
-                        <div>
-                            <div class="text-truncate">Suis-je un bon garçon? La raison pour laquelle je demande est parce que quelqu'un
-                                m'a dit que les gens disent ça à tous les chiens, même s'ils ne sont pas bons...</div>
-                            <div class="small text-gray-500">Chicken the Dog · 2s</div>
-                        </div>
-                    </a>
-                    <a class="dropdown-item text-center small text-gray-500" href="#">Lire plus de messages</a>
-                </div>
-            </li>
+    </ul>
 
-            <div class="topbar-divider d-none d-sm-block"></div>
-
-            <li class="nav-item dropdown no-arrow">
-                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <span class="mr-2 d-none d-lg-inline text-gray-600 small">Maître {{ user.nom }}</span>
-                    <img class="img-profile rounded-circle"
-                        src="/static/img/undraw_profile.svg">
-                </a>
-                <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                    aria-labelledby="userDropdown">
-                    <a class="dropdown-item" href="/profil">
-                        <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                        Profil
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
-                        <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                        Déconnexion
-                    </a>
-                </div>
-            </li>
-
-        </ul>
-
-    </nav>
-
+</nav>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    function performSearch(query, limit = 10) {
+        return fetch(`/search?q=${encodeURIComponent(query)}&limit=${limit}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                return data;
+            })
+            .catch(error => {
+                console.error('Erreur de recherche:', error);
+                throw error;
+            });
+    }
+
+    function displayResults(containerId, results, total, query) {
+        const container = document.getElementById(containerId);
+        if (!results || results.length === 0) {
+            container.innerHTML = '<div class="dropdown-item text-muted">Aucun résultat trouvé pour "' + query + '"</div>';
+            container.style.display = 'block';
+            return;
+        }
+
+        let html = `<h6 class="dropdown-header">${total} dossier(s) trouvé(s)</h6>`;
+
+        results.forEach(result => {
+            const dossierId = result.id ? result.id.split('_')[1] : null;
+            const url = dossierId ? `/dossiers/${dossierId}` : '#';  // Lien vers la page dossier
+
+            let tribunal = '';
+            if (result.entites) {
+                const tribunalMatch = result.entites.match(/tribunal_malgache:([^ ]+)/);
+                if (tribunalMatch) {
+                    tribunal = tribunalMatch[1];
+                }
+            }
+
+            const clientNom = 'Client anonyme';
+
+            html += `
+                <a class="dropdown-item" href="${url}">
+                    <div class="py-2">
+                        <div class="font-weight-bold text-primary">
+                            ${result.numero_dossier || 'N/A'}
+                        </div>
+                        <div class="text-truncate">${result.nom_dossier || 'Sans nom'}</div>
+                        <div class="small text-muted">
+                            <i class="fas fa-user"></i> ${clientNom}
+                            ${tribunal ? ' | <i class="fas fa-gavel"></i> ' + tribunal : ''}
+                            ${result.score ? ` | Score: ${result.score.toFixed(2)}` : ''}
+                        </div>
+                        <div class="small text-gray-500 mt-1">${(result.contenu_resume || '').substring(0, 100)}...</div>
+                    </div>
+                </a>
+            `;
+        });
+
+        html += `<div class="dropdown-divider"></div>`;
+        html += `<a class="dropdown-item text-center small text-primary" href="/dossiers?search=${encodeURIComponent(query)}">Voir tous les résultats</a>`;
+
+        container.innerHTML = html;
+        container.style.display = 'block';
+    }
+
     const searchForm = document.getElementById('searchForm');
     const searchInput = document.getElementById('searchInput');
     const searchResults = document.getElementById('searchResults');
-    let searchTimeout;
+    let desktopTimeout;
 
     searchInput.addEventListener('input', function() {
-        clearTimeout(searchTimeout);
+        clearTimeout(desktopTimeout);
         const query = this.value.trim();
 
         if (query.length < 2) {
@@ -197,14 +154,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        searchTimeout = setTimeout(() => {
-            fetch(`/api/search/dossiers?q=${encodeURIComponent(query)}&size=10`)
-                .then(response => response.json())
+        desktopTimeout = setTimeout(() => {
+            performSearch(query)
                 .then(data => {
-                    displayResults(data.results, data.total);
+                    displayResults('searchResults', data.results, data.total, data.query);
                 })
                 .catch(error => {
-                    console.error('Erreur:', error);
                     searchResults.innerHTML = '<div class="dropdown-item text-danger">Erreur de recherche</div>';
                     searchResults.style.display = 'block';
                 });
@@ -215,51 +170,62 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         const query = searchInput.value.trim();
         if (query.length >= 2) {
-            fetch(`/api/search/dossiers?q=${encodeURIComponent(query)}&size=10`)
-                .then(response => response.json())
+            performSearch(query)
                 .then(data => {
-                    displayResults(data.results, data.total);
+                    displayResults('searchResults', data.results, data.total, data.query);
                 })
-                .catch(error => console.error('Erreur:', error));
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Erreur lors de la recherche. Veuillez réessayer.');
+                });
         }
     });
 
-    function displayResults(results, total) {
-        if (!results || results.length === 0) {
-            searchResults.innerHTML = '<div class="dropdown-item text-muted">Aucun résultat trouvé</div>';
-            searchResults.style.display = 'block';
+    const mobileSearchForm = document.getElementById('mobileSearchForm');
+    const mobileSearchInput = document.getElementById('mobileSearchInput');
+    const mobileSearchResults = document.getElementById('mobileSearchResults');
+    let mobileTimeout;
+
+    mobileSearchInput.addEventListener('input', function() {
+        clearTimeout(mobileTimeout);
+        const query = this.value.trim();
+
+        if (query.length < 2) {
+            mobileSearchResults.style.display = 'none';
             return;
         }
 
-        let html = `<h6 class="dropdown-header">${total} dossier(s) trouvé(s)</h6>`;
+        mobileTimeout = setTimeout(() => {
+            performSearch(query)
+                .then(data => {
+                    displayResults('mobileSearchResults', data.results, data.total, data.query);
+                })
+                .catch(error => {
+                    mobileSearchResults.innerHTML = '<div class="dropdown-item text-danger">Erreur de recherche</div>';
+                    mobileSearchResults.style.display = 'block';
+                });
+        }, 300);
+    });
 
-        results.forEach(result => {
-            html += `
-                <a class="dropdown-item" href="${result.url}">
-                    <div class="py-2">
-                        <div class="font-weight-bold text-primary">
-                            ${result.numero_dossier || 'N/A'}
-                        </div>
-                        <div class="text-truncate">${result.nom_dossier || ''}</div>
-                        <div class="small text-muted">
-                            ${result.client_nom ? '<i class="fas fa-user"></i> ' + result.client_nom : ''}
-                            ${result.tribunal ? ' | <i class="fas fa-gavel"></i> ' + result.tribunal : ''}
-                        </div>
-                    </div>
-                </a>
-            `;
-        });
-
-        html += `<div class="dropdown-divider"></div>`;
-        html += `<a class="dropdown-item text-center small text-primary" href="/dossiers">Voir tous les dossiers</a>`;
-
-        searchResults.innerHTML = html;
-        searchResults.style.display = 'block';
-    }
+    mobileSearchForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const query = mobileSearchInput.value.trim();
+        if (query.length >= 2) {
+            performSearch(query)
+                .then(data => {
+                    displayResults('mobileSearchResults', data.results, data.total, data.query);
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Erreur lors de la recherche. Veuillez réessayer.');
+                });
+        }
+    });
 
     document.addEventListener('click', function(e) {
-        if (!searchForm.contains(e.target)) {
+        if (!searchForm.contains(e.target) && !document.getElementById('searchDropdown').contains(e.target)) {
             searchResults.style.display = 'none';
+            mobileSearchResults.style.display = 'none';
         }
     });
 });

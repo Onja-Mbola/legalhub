@@ -20,8 +20,7 @@ class FactureCreate(FactureBase):
     dossier_id: int
 
     class Config:
-        from_attributes = True
-
+        orm_mode = True
 
 class FactureUpdate(BaseModel):
     nom_client_anonyme: Optional[str] = Field(None, min_length=3, max_length=50)
@@ -37,7 +36,7 @@ class FactureUpdate(BaseModel):
     preuve_paiement: Optional[str] = None
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class FactureResponse(FactureBase):
@@ -55,7 +54,7 @@ class FactureResponse(FactureBase):
     preuve_paiement: Optional[str]
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class FactureListResponse(BaseModel):
@@ -68,7 +67,7 @@ class FactureListResponse(BaseModel):
     nombre_relances: int
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class StatistiqueFacturation(BaseModel):

@@ -9,7 +9,6 @@ from sqlalchemy.orm import Session
 from app.models.dossier import Dossier  # Adaptez l'import selon votre structure
 from app.services.search_service import get_all_dossier_texts  # On l'ajoutera plus bas (pour recommandations)
 
-# Chemins modèles (créez ./app/models/)
 MODEL_PATH = "app/model/model.pkl"
 SUMMARY_MODEL = "t5-small"  # Léger ; pour français : "VikOS/t5-french-summarization" si besoin
 SIM_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"  # Multilingue, inclut français

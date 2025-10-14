@@ -96,6 +96,10 @@ async def create_facture(
         user: User = Depends(get_current_avocat_user)
 ):
     try:
+
+        if isinstance(date_echeance, date) and not isinstance(date_echeance, datetime):
+            date_echeance = datetime.combine(date_echeance, datetime.min.time())
+
         facture_data = FactureCreate(
             dossier_id=dossier_id,
             nom_client_anonyme=nom_client_anonyme,
@@ -207,6 +211,9 @@ async def update_facture(
                 status_code=400,
                 detail="Impossible de modifier le montant d'une facture déjà payée."
             )
+
+        if isinstance(date_echeance, date) and not isinstance(date_echeance, datetime):
+            date_echeance = datetime.combine(date_echeance, datetime.min.time())
 
         facture_update = FactureUpdate(
             nom_client_anonyme=nom_client_anonyme,
@@ -396,12 +403,18 @@ def statistiques_facturation(
         user: User = Depends(get_current_avocat_user)
 ):
     try:
-        stats_facturation = facture_service.get_facture_statistics(db, user.id, "annee")
 
-        print("DEBUG stats_facturation:", stats_facturation)
+        print("=== Début statistiques ===")
+
+        print("1. Récupération stats facturation...")
+        stats_facturation = facture_service.get_facture_statistics(db, user.id, "annee")
+        print(f"   OK: {stats_facturation}")
+
+        print("2. Récupération stats revenus...")
+        stats_revenus = facture_service.get_facture_statistics(db, user.id, "revenus")
+        print(f"   OK: {stats_revenus}")
 
         stats_revenus = facture_service.get_facture_statistics(db, user.id, "revenus")
-        print("DEBUG stats_revenus:", stats_revenus)
 
         if stats_revenus is None:
             from app.schemas.facture import StatistiqueRevenu
@@ -411,25 +424,32 @@ def statistiques_facturation(
                 evolution_mensuelle={}
             )
 
+        print("3. Récupération factures en retard...")
+
         factures_en_retard = []
         try:
             factures_en_retard = facture_repo.get_factures_en_retard(db, user.id)
+            print(f"   OK: {len(factures_en_retard)} factures")
             pass
         except Exception as e:
             print(f"Erreur récupération factures en retard: {e}")
             factures_en_retard = []
 
         top_clients = []
+        print("4. Récupération top clients...")
         try:
             top_clients = facture_repo.get_top_clients(db, user.id, limit=5)
+            print(f"   OK: {len(top_clients)} clients")
             pass
         except Exception as e:
             print(f"Erreur récupération top clients: {e}")
             top_clients = []
 
         delai_paiement_moyen = "N/A"
+        print("5. Calcul délai paiement...")
         try:
             delai_paiement_moyen = facture_repo.get_delai_paiement_moyen(db, user.id)
+            print(f"   OK: {delai_paiement_moyen}")
             pass
         except Exception as e:
             print(f"Erreur calcul délai paiement: {e}")

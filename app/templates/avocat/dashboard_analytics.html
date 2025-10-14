@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Performance - Clerk{% endblock %}
+
+{% block sidebar %}
+    {% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+    {% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Analytics Performance</h1>
+    <div>
+        <span class="badge badge-primary badge-lg px-3 py-2">
+            <i class="fas fa-chart-bar mr-2"></i>Statistiques
+        </span>
+    </div>
+</div>
+
+{% if analytics_data.analytics %}
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Total Dossiers Analysés</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_dossiers_analyzed }}</div>
+                        <div class="small text-muted">Tous tribunaux confondus</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-folder fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Taux Favorable Global</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ global_favorable_rate|round(1) }}%</div>
+                        <div class="small text-muted">{{ global_count_favorable }} / {{ total_dossiers_analyzed }} cas</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Nombre de Tribunaux</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ analytics_data.total_dossiers }}</div>
+                        <div class="small text-muted">Groupes analysés</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-building fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Taux Moyen Favorable</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ average_favorable_rate|round(1) }}%</div>
+                        <div class="small text-muted">Moyenne par tribunal</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-percentage fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Répartition des Dossiers par Tribunal</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-bar pt-4 pb-2">
+                    <canvas id="tribunalCountChart"></canvas>
+                </div>
+                <div class="mt-4 small text-muted text-center">
+                    <i class="fas fa-info-circle mr-1"></i>Graphique en barres : Nombre de dossiers par tribunal (ordonné par volume décroissant)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Taux Favorable par Tribunal</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-pie pt-4 pb-2">
+                    <canvas id="favorableRateChart"></canvas>
+                </div>
+                <div class="mt-4 small text-muted text-center">
+                    <i class="fas fa-info-circle mr-1"></i>Graphique en donut : Taux de succès (%) par tribunal
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-12">
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Détails par Tribunal</h6>
+                <a href="#" class="btn btn-sm btn-primary btn-icon-split" onclick="exportToCSV()">
+                    <span class="icon text-white-50">
+                        <i class="fas fa-download"></i>
+                    </span>
+                    <span class="text">Exporter CSV</span>
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-sm" id="analyticsTable">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Tribunal</th>
+                                <th>Nombre de Dossiers</th>
+                                <th>Cas Favorables</th>
+                                <th>Taux Favorable</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in analytics_data.analytics %}
+                            <tr>
+                                <td>
+                                    <strong>{{ item.tribunal }}</strong>
+                                    {% if item.tribunal == 'Inconnu' %}
+                                    <span class="badge badge-warning ml-2">Non spécifié</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge badge-info">{{ item.count }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-success">{{ item.count_favorable }}</span>
+                                </td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar {% if item.taux_favorable >= 0.7 %}bg-success{% elif item.taux_favorable >= 0.4 %}bg-warning{% else %}bg-danger{% endif %}"
+                                             role="progressbar" style="width: {{ (item.taux_favorable * 100)|round(1) }}%"
+                                             aria-valuenow="{{ item.taux_favorable * 100 }}" aria-valuemin="0" aria-valuemax="100">
+                                            {{ (item.taux_favorable * 100)|round(1) }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="/analytics/tribunal/{{ item.tribunal|urlencode }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye mr-1"></i>Voir détails
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="thead-light">
+                            <tr>
+                                <th>Total</th>
+                                <th>{{ total_dossiers_analyzed }}</th>
+                                <th>{{ global_count_favorable }}</th>
+                                <th>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-info" role="progressbar" style="width: {{ (global_favorable_rate)|round(1) }}%"
+                                             aria-valuenow="{{ global_favorable_rate }}" aria-valuemin="0" aria-valuemax="100">
+                                            {{ global_favorable_rate|round(1) }}%
+                                        </div>
+                                    </div>
+                                </th>
+                                <th>-</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                {% if not analytics_data.analytics %}
+                <div class="text-center py-5">
+                    <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Aucune donnée d'analytics disponible. Assurez-vous que les entités sont extraites pour vos dossiers.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<div class="alert alert-warning text-center py-5">
+    <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+    <h4>Aucune donnée disponible</h4>
+    <p>Les analytics nécessitent des entités extraites (e.g., tribunal_malgache) dans les dossiers. Vérifiez vos données NLP.</p>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+<script>
+Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
+Chart.defaults.global.defaultFontColor = '#858796';
+
+var analyticsData = {{ analytics_data.analytics|tojson if analytics_data.analytics else '[]' }};
+
+var totalDossiers = analyticsData.reduce((sum, item) => sum + item.count, 0);
+var totalFavorable = analyticsData.reduce((sum, item) => sum + item.count_favorable, 0);
+var globalRate = totalDossiers > 0 ? (totalFavorable / totalDossiers * 100) : 0;
+
+var ctxBar = document.getElementById("tribunalCountChart");
+if (ctxBar && analyticsData.length > 0) {
+    var labelsBar = analyticsData.map(item => item.tribunal);
+    var dataBar = analyticsData.map(item => item.count);
+
+    var colorsBar = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796', '#5a5c69'];
+    var myBarChart = new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+            labels: labelsBar,
+            datasets: [{
+                label: "Nombre de Dossiers",
+                data: dataBar,
+                backgroundColor: colorsBar.slice(0, labelsBar.length),
+                borderColor: colorsBar.slice(0, labelsBar.length),
+                borderWidth: 1,
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                yAxes: [{
+                    ticks: { beginAtZero: true },
+                    gridLines: { display: true }
+                }],
+                xAxes: [{
+                    gridLines: { display: false }
+                }]
+            },
+            legend: { display: false },
+            tooltips: {
+                backgroundColor: "rgb(255,255,255)",
+                bodyFontColor: "#858796",
+                borderColor: '#dddfeb',
+                borderWidth: 1,
+                xPadding: 15,
+                yPadding: 15,
+                displayColors: false,
+                callbacks: {
+                    label: function(tooltipItem) { return tooltipItem.yLabel + ' dossiers'; }
+                }
+            }
+        }
+    });
+}
+
+var ctxPie = document.getElementById("favorableRateChart");
+if (ctxPie && analyticsData.length > 0) {
+    var labelsPie = analyticsData.map(item => item.tribunal + ' (' + (item.taux_favorable * 100).toFixed(1) + '%)');
+    var dataPie = analyticsData.map(item => item.taux_favorable * 100);
+
+    var colorsPie = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796', '#5a5c69'];
+    var hoverColorsPie = ['#2e59d9', '#17a673', '#2c9faf', '#f4b619', '#e02d1b', '#6e707e', '#4a5c69'];
+
+    var myPieChart = new Chart(ctxPie, {
+        type: 'doughnut',
+        data: {
+            labels: labelsPie,
+            datasets: [{
+                data: dataPie,
+                backgroundColor: colorsPie.slice(0, labelsPie.length),
+                hoverBackgroundColor: hoverColorsPie.slice(0, labelsPie.length),
+                hoverBorderColor: "rgba(234, 236, 244, 1)",
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            tooltips: {
+                backgroundColor: "rgb(255,255,255)",
+                bodyFontColor: "#858796",
+                borderColor: '#dddfeb',
+                borderWidth: 1,
+                xPadding: 15,
+                yPadding: 15,
+                displayColors: false,
+                caretPadding: 10,
+                callbacks: {
+                    label: function(tooltipItem) { return tooltipItem.label + ': ' + tooltipItem.value.toFixed(1) + '%'; }
+                }
+            },
+            legend: {
+                display: true,
+                position: 'bottom',
+            },
+            cutoutPercentage: 60,
+        },
+    });
+}
+
+function exportToCSV() {
+    if (analyticsData.length === 0) {
+        alert('Aucune donnée à exporter.');
+        return;
+    }
+    let csv = 'Tribunal,Nombre de Dossiers,Cas Favorables,Taux Favorable (%)\n';
+    analyticsData.forEach(item => {
+        csv += `"${item.tribunal}",${item.count},${item.count_favorable},${(item.taux_favorable * 100).toFixed(1)}\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'analytics_performance.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}

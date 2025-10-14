@@ -39,4 +39,4 @@ class DecisionADDOut(DecisionADDBase):
     alerte_envoyee: bool
 
     class Config:
-        from_attributes = True
+        orm_mode = True

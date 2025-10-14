@@ -1,6 +1,7 @@
-from pydantic import BaseModel
 from datetime import date
 from typing import Optional, List
+
+from pydantic import BaseModel
 
 
 class JugementBase(BaseModel):
@@ -15,8 +16,10 @@ class JugementBase(BaseModel):
     fichier_jugement: Optional[str] = None
     scans_grosse: Optional[List[str]] = None
 
+
 class JugementCreate(JugementBase):
     pass
+
 
 class JugementUpdate(BaseModel):
     texte_decision: Optional[str] = None
@@ -26,6 +29,7 @@ class JugementUpdate(BaseModel):
     statut: Optional[str] = None
     fichier_jugement: Optional[str] = None
     scans_grosse: Optional[List[str]] = None
+
 
 class JugementOut(JugementBase):
     id: int

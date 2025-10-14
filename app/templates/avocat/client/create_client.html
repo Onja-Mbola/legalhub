@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Nouveau Client{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_deliberation.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="container">
+        <h2 class="text-white mb-0 d-flex align-items-center flex-wrap">
+            <i class="fas fa-user-plus me-3"></i>
+            Création d'un nouveau client
+            <span class="badge-mode badge-deliberation">Gestion clients</span>
+        </h2>
+        <p class="text-white-50 mb-0 mt-2">Enregistrez les informations du nouveau client</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    {% if error_msg %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-exclamation-circle me-3" style="font-size: 1.5rem;"></i>
+            <div>
+                <strong>Erreur :</strong> {{ error_msg }}
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+    </div>
+    {% endif %}
+
+    <div class="form-card">
+        <div class="form-section">
+            <form method="post" action="{{ request.url }}">
+
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-id-card"></i>
+                        Informations personnelles
+                    </h5>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label for="nom" class="form-label">
+                                <i class="fas fa-user"></i>
+                                Nom complet
+                                <span class="required-badge">Requis</span>
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="nom"
+                                   name="nom"
+                                   required
+                                   placeholder="Ex: Jean Dupont"
+                                   value="{{ nom if nom else '' }}">
+                            <small class="form-text text-muted mt-2 d-block">
+                                <i class="fas fa-info-circle me-1"></i>Nom complet du client
+                            </small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope"></i>
+                                Adresse email
+                            </label>
+                            <input type="email"
+                                   class="form-control"
+                                   id="email"
+                                   name="email"
+                                   placeholder="exemple@email.com"
+                                   value="{{ email if email else '' }}">
+                            <small class="form-text text-muted mt-2 d-block">
+                                <i class="fas fa-info-circle me-1"></i>Adresse email du client (facultatif)
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-phone"></i>
+                        Coordonnées de contact
+                    </h5>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label for="telephone" class="form-label">
+                                <i class="fas fa-mobile-alt"></i>
+                                Numéro de téléphone
+                            </label>
+                            <input type="tel"
+                                   class="form-control"
+                                   id="telephone"
+                                   name="telephone"
+                                   placeholder="Ex: +261 34 12 345 67"
+                                   value="{{ telephone if telephone else '' }}">
+                            <small class="form-text text-muted mt-2 d-block">
+                                <i class="fas fa-info-circle me-1"></i>Numéro de téléphone du client
+                            </small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="qualite" class="form-label">
+                                <i class="fas fa-tag"></i>
+                                Type de client
+                            </label>
+                            <select class="form-select" id="qualite" name="qualite">
+                                <option value="">Sélectionner un type</option>
+                                <option value="particulier" {% if qualite == 'particulier' %}selected{% endif %}>Particulier</option>
+                                <option value="entreprise" {% if qualite == 'entreprise' %}selected{% endif %}>Entreprise</option>
+                                <option value="association" {% if qualite == 'association' %}selected{% endif %}>Association</option>
+                                <option value="administration" {% if qualite == 'administration' %}selected{% endif %}>Administration</option>
+                            </select>
+                            <small class="form-text text-muted mt-2 d-block">
+                                <i class="fas fa-info-circle me-1"></i>Catégorie du client
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group-section">
+                    <h5 class="section-title">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Adresse
+                    </h5>
+
+                    <div class="mb-0">
+                        <label for="adresse" class="form-label">
+                            <i class="fas fa-home"></i>
+                            Adresse complète
+                        </label>
+                        <textarea class="form-control"
+                                  id="adresse"
+                                  name="adresse"
+                                  rows="4"
+                                  placeholder="Saisissez l'adresse complète du client...">{{ adresse if adresse else '' }}</textarea>
+                        <small class="form-text text-muted mt-2 d-block">
+                            <i class="fas fa-pen me-1"></i>Adresse postale du client (facultatif)
+                        </small>
+                    </div>
+                </div>
+
+                <div class="section-divider"></div>
+
+                <div class="info-cards-row">
+                    <div class="info-card">
+                        <div class="info-card-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <div class="info-card-title">Conseils</div>
+                        <ul class="info-card-list">
+                            <li><i class="fas fa-check-circle text-success me-2"></i>Vérifiez l'orthographe du nom</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i>L'email permet les notifications automatiques</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i>Le téléphone facilite les contacts urgents</li>
+                        </ul>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="info-card-icon secondary">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="info-card-title">Confidentialité</div>
+                        <ul class="info-card-list">
+                            <li><i class="fas fa-lock text-primary me-2"></i>Les données sont sécurisées</li>
+                            <li><i class="fas fa-lock text-primary me-2"></i>Accès restreint à votre cabinet</li>
+                            <li><i class="fas fa-lock text-primary me-2"></i>Conformité RGPD respectée</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-5">
+                    <a href="/clients" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Retour à la liste
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        Créer le client
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

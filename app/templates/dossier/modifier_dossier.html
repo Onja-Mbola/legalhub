@@ -103,6 +103,26 @@
                             </div>
                             {% endif %}
 
+                         <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card border-2 border-primary bg-light">
+                                    <div class="card-body">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="consentement_rgpd" name="consentement_rgpd" value="true" {% if dossier.consentement_rgpd %}checked{% endif %} required>
+                                            <label class="form-check-label fw-semibold text-dark" for="consentement_rgpd">
+                                                <i class="fas fa-shield-alt text-primary me-2"></i>
+                                                Consentement RGPD
+                                                <span class="text-danger">*</span>
+                                            </label>
+                                            <p class="text-muted small mt-2 mb-0 ms-4">
+                                                J'accepte que les données personnelles collectées dans ce dossier soient traitées conformément au Règlement Général sur la Protection des Données (RGPD) et à la politique de confidentialité du cabinet.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                             <div class="border-2 border-dashed rounded-3 p-4 text-center bg-light">
                                 <i class="fas fa-cloud-upload-alt text-primary fs-2 mb-3"></i>
                                 <div class="mb-3">

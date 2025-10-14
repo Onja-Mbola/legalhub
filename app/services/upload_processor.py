@@ -74,6 +74,7 @@ def process_upload(
             doc_type,
             obj.id,
             dossier.numero_dossier,
+            dossier.nom_dossier,
             obj.ocr_texte or "",
             contenu,
             entites,

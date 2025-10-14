@@ -1,29 +1,51 @@
 from datetime import datetime
 from typing import Optional, List
-
 from pydantic import BaseModel
-
-from app.schemas.client import ClientBase
+from app.schemas.client import ClientCreate
+from app.schemas.demandeur import DemandeurCreate
+from app.schemas.adverse import AdverseCreate
 
 
 class DossierCreate(BaseModel):
     nom_dossier: str
-    type_affaire: str
-    sous_type_affaire: Optional[str]
-    urgence: Optional[str]
-    juridiction: Optional[str]
-    tribunal: Optional[str]
-    avocat_responsable: str
-    avocat_adverse: Optional[str]
-    date_creation: Optional[datetime]
-    commentaire: Optional[str]
-    client: Optional[ClientBase]
+    type_affaire: int
+    sous_type_affaire: Optional[int] = None
+    urgence: Optional[int] = None
+    juridiction: Optional[str] = None
+    tribunal: Optional[str] = None
+    avocat_responsable: int
+    date_creation: Optional[datetime] = None
+    commentaire: Optional[str] = None
+    consentement_rgpd: bool = False
+
+    mode_creation: str = "nouveau"
+
+    client_id: Optional[int] = None
+
+    nouveau_client: Optional['ClientCreate'] = None
+
+    demandeurs: List['DemandeurCreate'] = []
+    adverses: List['AdverseCreate'] = []
 
 
-class DossierOut(DossierCreate):
+class DossierOut(BaseModel):
+    id: int
     numero_dossier: str
-    dossier_path: str
+    nom_dossier: str
+    type_affaire: int
+    sous_type_affaire: Optional[int]
+    urgence: Optional[int]
+    current_stage: str
+    client_id: Optional[int]
+    dossier_path: Optional[str]
     pieces_jointes: Optional[List[str]]
 
     class Config:
         orm_mode = True
+
+
+DossierCreate.update_forward_refs(
+    ClientCreate=ClientCreate,
+    DemandeurCreate=DemandeurCreate,
+    AdverseCreate=AdverseCreate
+)

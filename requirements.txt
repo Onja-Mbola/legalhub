@@ -3,7 +3,7 @@ uvicorn[standard]
 jinja2
 sqlalchemy
 psycopg2-binary
-pydantic
+pydantic<2.0,>=1.10.7
 email-validator
 passlib
 python-jose[cryptography]
@@ -25,9 +25,7 @@ opencv-python-headless==4.10.0.84
 spacy==3.7.5
 scikit-learn==1.5.2
 transformers==4.44.2
-torch==2.4.1
 sentence-transformers==3.1.1
-numpy==2.1.1
 scipy==1.14.1
 
 whoosh==2.7.4
@@ -35,6 +33,4 @@ whoosh==2.7.4
 python-multipart==0.0.9
 alembic==1.13.3
 scikit-learn
-
-opencv-python
 

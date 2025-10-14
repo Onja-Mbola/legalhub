@@ -589,7 +589,7 @@ def send_relance_facture_task(email: str, facture_data: dict):
         return {"status": "error", "message": str(e)}
 
 
-@celery_app.task(name="check_factures_rappel")
+@celery_app.task()
 def check_factures_rappel():
     from app.db.session import SessionLocal
     from app.repositories.facture import get_factures_en_attente_relance, update_relance_facture

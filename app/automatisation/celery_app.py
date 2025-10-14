@@ -19,7 +19,7 @@ celery_app = Celery(
         "app.services.facture_service",
         "app.automatisation.cleanup",
         "app.services.fond_service",
-        "app.services.cassation_service"
+        "app.services.cassation_service",
     ],
 )
 
@@ -58,15 +58,15 @@ celery_app.conf.beat_schedule = {
         "schedule": crontab(hour=9, minute=0),
     },
     "check_factures_rappel": {
-        "task": "app.services.facture_service.check_factures_rappel",
+        "task": "app.services.email.check_factures_rappel",
         "schedule": crontab(hour=9, minute=0),
     },
     "check_factures_rappel_hebdomadaire": {
-        "task": "app.services.facture_service.check_factures_rappel",
+        "task": "app.services.email.check_factures_rappel",
         "schedule": crontab(hour=9, minute=0, day_of_week=1),
     },
     "check_factures_rappel_fin_mois": {
-        "task": "app.services.facture_service.check_factures_rappel",
+        "task": "app.services.email.check_factures_rappel",
         "schedule": crontab(hour=9, minute=0, day_of_month=28),
     },
     "update_facture_status": {

@@ -170,7 +170,7 @@ def check_and_send_relances():
         db.close()
 
 
-@celery_app.task(name="update_facture_status_task")
+@celery_app.task()
 def update_facture_status_task():
     from app.db.session import SessionLocal
     from app.models.facture import Facture

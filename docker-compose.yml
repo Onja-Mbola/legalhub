@@ -14,8 +14,11 @@ services:
     depends_on:
       - db
       - redis
+      - minio
     networks:
       - legalhub-network
+    mem_limit: 800m
+    mem_reservation: 400m
 
   db:
     image: postgres:16
@@ -31,6 +34,9 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - legalhub-network
+    mem_limit: 512m
+    mem_reservation: 256m
+    command: postgres -c shared_buffers=128MB -c max_connections=50
 
   redis:
     image: redis:7
@@ -40,11 +46,13 @@ services:
       - "6379:6379"
     networks:
       - legalhub-network
+    mem_limit: 128m
+    command: redis-server --maxmemory 100mb --maxmemory-policy allkeys-lru
 
   celery_worker:
     build: .
     container_name: legalhub_worker
-    command: celery -A app.automatisation.celery_app.celery_app worker --loglevel=info
+    command: celery -A app.automatisation.celery_app.celery_app worker --loglevel=info --concurrency=1 --max-tasks-per-child=50 --max-memory-per-child=300000
     volumes:
       - .:/app
     env_file:
@@ -54,6 +62,8 @@ services:
       - db
     networks:
       - legalhub-network
+    mem_limit: 700m
+    mem_reservation: 400m
 
   celery_beat:
     build: .
@@ -68,6 +78,8 @@ services:
       - db
     networks:
       - legalhub-network
+    mem_limit: 300m
+    mem_reservation: 150m
 
   minio:
     image: minio/minio:latest
@@ -80,6 +92,9 @@ services:
     environment:
       - MINIO_ROOT_USER=minioadmin
       - MINIO_ROOT_PASSWORD=minioadmin
+    networks:
+      - legalhub-network
+    mem_limit: 512m
 
 volumes:
   postgres_data:
@@ -88,4 +103,3 @@ volumes:
 
 networks:
   legalhub-network:
-    driver: bridge

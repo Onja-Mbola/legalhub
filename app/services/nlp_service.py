@@ -23,8 +23,8 @@ patterns = [
             {"SHAPE": "d+"},
             {"LOWER": {"IN": ["du", "de", "d'"]}},
             {"LOWER": {"IN": ["code", "codes"]}},
-            {"LOWER": {"IN": ["civil", "pénal", "procédure", "pénal", "obligations", "civiles", "commerciales"]}},
-            {"LOWER": {"IN": ["malgache"], "OP": "?"}},
+            {"LOWER": {"IN": ["civil", "pénal", "procédure", "obligations", "civiles", "commerciales"]}},
+            {"LOWER": "malgache", "OP": "?"}
         ]
     },
     {
@@ -33,8 +33,8 @@ patterns = [
             {"LOWER": {"IN": ["loi", "ordonnance"]}},
             {"LOWER": "n°"},
             {"SHAPE": "d+"},
-            {"SHAPE": {"IN": ["d+", "-d{3}"]}, "OP": "?"},
-            {"LOWER": {"IN": ["du", "du"], "OP": "?"}},
+            {"SHAPE": "d+", "OP": "?"},
+            {"LOWER": "du", "OP": "?"}
         ]
     },
     {
@@ -42,10 +42,9 @@ patterns = [
         "pattern": [
             {"LOWER": {"IN": ["tribunal", "tpi", "cour"]}},
             {"LOWER": {"IN": ["de", "d'"]}},
-            {"LOWER": {"IN": ["première", "premiere"], "OP": "?"}},
+            {"LOWER": {"IN": ["première", "premiere"]}, "OP": "?"},
             {"LOWER": {"IN": ["instance", "appel"]}, "OP": "?"},
-            {"LOWER": {"IN": ["d'", "de"]}, "OP": "?"},
-            {"LOWER": {"IN": ["antananarivo", "toamasina", "fianarantsoa", "mahajanga", "toliara", "antsiranana"]}},
+            {"LOWER": {"IN": ["antananarivo", "toamasina", "fianarantsoa", "mahajanga", "toliara", "antsiranana"]}}
         ]
     },
     {
@@ -53,10 +52,11 @@ patterns = [
         "pattern": [
             {"LOWER": {"IN": ["greffe", "huissier", "notaire", "avocat"]}},
             {"LOWER": {"IN": ["du", "de"]}, "OP": "?"},
-            {"LOWER": {"IN": ["tribunal", "justice"]}, "OP": "?"},
+            {"LOWER": {"IN": ["tribunal", "justice"]}, "OP": "?"}
         ]
     },
 ]
+
 
 ruler.add_patterns(patterns)
 

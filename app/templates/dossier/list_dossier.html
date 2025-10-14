@@ -12,6 +12,7 @@
 
 {% block head %}
 <link href="/static/css/custom_list_dossier.css" rel="stylesheet">
+<link href="/static/css/custom_pagination.css" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -77,19 +78,35 @@
                     {% endif %}
                 </p>
             </div>
-            {% if user.role.value == 'avocat' %}
-            <a class="btn btn-light btn-modern" href="/dossiers/nouveau">
-                <i class="fas fa-plus mr-2"></i> Nouveau dossier
-            </a>
-            {% else %}
-            <span class="badge badge-info badge-lg px-3 py-2">
-                <i class="fas fa-user-tie mr-2"></i>Mode Clerk
-            </span>
-            {% endif %}
+            <div id="d-flex gap-2">
+                <a href="/dossiers/export/csv" class="btn btn-success btn-modern">
+                    <i class="fas fa-file-csv mr-2"></i> Exporter CSV
+                </a>
+                <a href="/dossiers/export/pdf" class="btn btn-danger btn-modern">
+                    <i class="fas fa-file-pdf mr-2"></i> Exporter PDF
+                </a>
+                {% if user.role.value == 'avocat' %}
+                <a class="btn btn-light btn-modern" href="/dossiers/nouveau">
+                    <i class="fas fa-plus mr-2"></i> Nouveau dossier
+                </a>
+                {% else %}
+                <span class="badge badge-info badge-lg px-3 py-2">
+                    <i class="fas fa-user-tie mr-2"></i>Mode Clerk
+                </span>
+                {% endif %}
+            </div>
         </div>
     </div>
 
     <div class="card modern-card">
+        <div class="px-3 py-2 border-bottom bg-light">
+            <small class="text-muted">
+                <i class="fas fa-info-circle mr-1"></i>
+                Affichage de {{ (pagination.page - 1) * pagination.per_page + 1 }} à
+                {{ [pagination.page * pagination.per_page, pagination.total]|min }}
+                sur {{ pagination.total }} dossier(s)
+            </small>
+        </div>
         <div class="table-responsive">
             <table class="table table-modern table-hover mb-0">
                 <thead>
@@ -411,16 +428,42 @@
 
         <nav aria-label="Pagination" class="px-3 py-3 border-top bg-light">
             <ul class="pagination pagination-modern pagination-sm mb-0 justify-content-end">
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" tabindex="-1">
+                <li class="page-item {% if pagination.page <= 1 %}disabled{% endif %}">
+                    <a class="page-link" href="?page={{ pagination.page - 1 }}" {% if pagination.page <= 1 %}tabindex="-1"{% endif %}>
                         <i class="fas fa-chevron-left"></i>
                     </a>
                 </li>
-                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
+
+                {% if pagination.page > 3 %}
                 <li class="page-item">
-                    <a class="page-link" href="#">
+                    <a class="page-link" href="?page=1">1</a>
+                </li>
+                {% if pagination.page > 4 %}
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+                {% endif %}
+                {% endif %}
+
+                {% for p in range([pagination.page - 2, 1]|max, [pagination.page + 3, pagination.total_pages + 1]|min) %}
+                <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                    <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                </li>
+                {% endfor %}
+
+                {% if pagination.page < pagination.total_pages - 2 %}
+                {% if pagination.page < pagination.total_pages - 3 %}
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+                {% endif %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ pagination.total_pages }}">{{ pagination.total_pages }}</a>
+                </li>
+                {% endif %}
+
+                <li class="page-item {% if pagination.page >= pagination.total_pages %}disabled{% endif %}">
+                    <a class="page-link" href="?page={{ pagination.page + 1 }}" {% if pagination.page >= pagination.total_pages %}tabindex="-1"{% endif %}>
                         <i class="fas fa-chevron-right"></i>
                     </a>
                 </li>

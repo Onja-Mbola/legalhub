@@ -26,7 +26,6 @@
         padding: 0.875rem;
     }
 
-
     .sidebar-modern.toggled .sidebar-brand-text-modern,
     .sidebar-modern.toggled .nav-link-modern span,
     .sidebar-modern.toggled .sidebar-heading-modern,
@@ -295,8 +294,6 @@
     #accordionSidebar.toggled ~ #content-wrapper {
         margin-left: 80px;
     }
-
-
 </style>
 
 <ul class="navbar-nav sidebar-modern sidebar sidebar-dark accordion" id="accordionSidebar">
@@ -381,7 +378,7 @@
     <hr class="sidebar-divider-modern">
 
     <div class="sidebar-heading-modern">
-        <i class="fas fa-briefcase mr-1"></i> Interface
+        <i class="fas fa-briefcase mr-1"></i> Gestion
     </div>
 
     <li class="nav-item-modern">
@@ -395,13 +392,13 @@
             <div class="collapse-inner-modern">
                 <h6 class="collapse-header-modern">Gestion des dossiers</h6>
                 <a class="collapse-item-modern" href="/dossiers">
-                    <i class="fas fa-list mr-2"></i> Voir les dossiers
-                </a>
-                <a class="collapse-item-modern" href="/dossiers_archiver">
-                    <i class="fas fa-archive mr-2"></i> Dossiers archivés
+                    <i class="fas fa-list mr-2"></i> Tous les dossiers
                 </a>
                 <a class="collapse-item-modern" href="/dossiers/nouveau">
                     <i class="fas fa-plus-circle mr-2"></i> Nouveau dossier
+                </a>
+                <a class="collapse-item-modern" href="/dossiers_archiver">
+                    <i class="fas fa-archive mr-2"></i> Dossiers archivés
                 </a>
             </div>
         </div>
@@ -415,6 +412,33 @@
     </li>
 
     <li class="nav-item-modern">
+        <a class="nav-link-modern collapsed" href="/clients" data-toggle="collapse" data-target="#collapseClients"
+           aria-expanded="true" aria-controls="collapseClients">
+            <i class="fas fa-users"></i>
+            <span>Clients</span>
+            <i class="fas fa-chevron-down ml-auto" style="font-size: 0.8rem;"></i>
+        </a>
+        <div id="collapseClients" class="collapse" aria-labelledby="headingClients"
+             data-parent="#accordionSidebar">
+            <div class="collapse-inner-modern">
+                <h6 class="collapse-header-modern">Gestion clients</h6>
+                <a class="collapse-item-modern" href="/clients">
+                    <i class="fas fa-address-book mr-2"></i> Liste des clients
+                </a>
+                <a class="collapse-item-modern" href="/clients/nouveau">
+                    <i class="fas fa-user-plus mr-2"></i> Nouveau client
+                </a>
+            </div>
+        </div>
+    </li>
+
+    <hr class="sidebar-divider-modern">
+
+    <div class="sidebar-heading-modern">
+        <i class="fas fa-chart-line mr-1"></i> Finances
+    </div>
+
+    <li class="nav-item-modern">
         <a class="nav-link-modern collapsed" href="#" data-toggle="collapse" data-target="#collapseFacturation"
            aria-expanded="true" aria-controls="collapseFacturation">
             <i class="fas fa-file-invoice-dollar"></i>
@@ -424,25 +448,44 @@
         <div id="collapseFacturation" class="collapse" aria-labelledby="headingFacturation"
              data-parent="#accordionSidebar">
             <div class="collapse-inner-modern">
-                <h6 class="collapse-header-modern">Gestion des factures</h6>
+                <h6 class="collapse-header-modern">Factures</h6>
                 <a class="collapse-item-modern" href="/factures">
-                    <i class="fas fa-file-invoice mr-2"></i> Toutes les Factures
+                    <i class="fas fa-file-invoice mr-2"></i> Toutes les factures
                 </a>
                 <a class="collapse-item-modern" href="/factures/nouveau">
-                    <i class="fas fa-plus-square mr-2"></i> Nouvelle Facture
+                    <i class="fas fa-plus-square mr-2"></i> Nouvelle facture
                 </a>
-                <div class="collapse-divider-modern"></div>
-                <h6 class="collapse-header-modern">Analyses</h6>
-                <a class="collapse-item-modern" href="/statistiques/facturation">
-                    <i class="fas fa-chart-line mr-2"></i> Statistiques
-                </a>
-                <a class="collapse-item-modern text-danger" href="/factures?statut=en_retard">
-                    <i class="fas fa-exclamation-triangle mr-2"></i> Factures en Retard
+                <a class="collapse-item-modern text-warning" href="/factures?statut=en_retard">
+                    <i class="fas fa-exclamation-triangle mr-2"></i> Factures en retard
                 </a>
             </div>
         </div>
     </li>
 
+    <li class="nav-item-modern">
+        <a class="nav-link-modern" href="/statistiques/facturation">
+            <i class="fas fa-chart-pie"></i>
+            <span>Statistiques</span>
+        </a>
+    </li>
+
+    <li class="nav-item-modern">
+        <a class="nav-link-modern" href="/analytics/performance">
+            <i class="fas fa-chart-bar"></i>
+            <span>Performances</span>
+        </a>
+    </li>
+
+    <hr class="sidebar-divider-modern">
+
+    <li class="nav-item-modern">
+        <a class="nav-link-modern" href="/profil">
+            <i class="fas fa-user-circle"></i>
+            <span>Mon profil</span>
+        </a>
+    </li>
+
+    <hr class="sidebar-divider-modern">
 
     <li class="nav-item-modern">
         <a class="nav-link-modern" href="/logout">
@@ -521,7 +564,5 @@
             sidebar.classList.toggle('toggled');
             console.log("Classes sidebar:", sidebar.className);
         });
-
-
     });
 </script>

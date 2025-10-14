@@ -61,3 +61,4 @@ class OppositionOut(OppositionBase):
 
     class Config:
         orm_mode = True
+        

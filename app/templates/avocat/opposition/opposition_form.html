@@ -10,41 +10,125 @@
 {% include "partials/topbar.html" %}
 {% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_opposition.css">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <h3>Créer une Opposition pour le dossier {{ dossier.numero_dossier }}</h3>
-    <form method="post" action="/dossiers/{{ dossier.id }}/opposition">
-        <div class="form-group">
-            <select name="jugement_id" class="form-control">
-                {% for jugement in dossier.jugements %}
-                <option value="{{ jugement.id }}">
-                    Jugement du {{ jugement.date_jugement }} (ID: {{ jugement.id }})
-                </option>
-                {% endfor %}
-            </select>
+<div class="container-fluid py-4">
+    <div class="page-header">
+        <div class="container-fluid">
+            <h2 class="text-white mb-1 font-weight-bold">
+                <i class="fas fa-plus-circle me-2"></i>Créer une Opposition
+            </h2>
+            <div class="opposition-badge">
+                Dossier: {{ dossier.numero_dossier }}
+            </div>
         </div>
+    </div>
 
-        <div class="form-group">
-            <label for="date_notification">Date de Notification</label>
-            <input type="date" name="date_notification" class="form-control" required>
+    <div class="form-card">
+        <div class="form-section">
+            <div class="info-banner">
+                <i class="fas fa-info-circle"></i>
+                <div class="info-banner-content">
+                    <h6>Enregistrement d'une nouvelle opposition</h6>
+                    <p>Sélectionnez le jugement concerné et indiquez la date de notification pour créer une opposition.</p>
+                </div>
+            </div>
+
+            <form method="post" action="/dossiers/{{ dossier.id }}/opposition">
+                <div class="form-group-section">
+                    <div class="section-title">
+                        <i class="fas fa-gavel"></i>
+                        <span>Informations de l'opposition</span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="jugement_id" class="form-label">
+                            <i class="fas fa-balance-scale"></i>
+                            Jugement concerné
+                            <span class="required-badge">REQUIS</span>
+                        </label>
+                        <select name="jugement_id" id="jugement_id" class="form-control" required>
+                            <option value="">-- Sélectionner un jugement --</option>
+                            {% for jugement in dossier.jugements %}
+                            <option value="{{ jugement.id }}">
+                                Jugement du {{ jugement.date_jugement }} (ID: {{ jugement.id }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="date_notification" class="form-label">
+                            <i class="far fa-calendar"></i>
+                            Date de Notification
+                            <span class="required-badge">REQUIS</span>
+                        </label>
+                        <input type="date"
+                               name="date_notification"
+                               id="date_notification"
+                               class="form-control"
+                               required>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        Enregistrer Opposition
+                    </button>
+                    <a href="/dossiers/{{ dossier.id }}" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>
+                        Annuler
+                    </a>
+                </div>
+            </form>
+
+            <div class="details-card">
+                <div class="section-title">
+                    <i class="fas fa-list"></i>
+                    <span>Oppositions existantes</span>
+                </div>
+
+                {% if oppositions %}
+                <ul class="opposition-list">
+                    {% for opp in oppositions %}
+                    <li class="opposition-item">
+                        <i class="fas fa-file-alt"></i>
+                        <div class="opposition-content">
+                            <div class="opposition-date">
+                                <i class="fas fa-bell me-2"></i>
+                                Notifiée le {{ opp.date_notification.strftime("%d/%m/%Y") }}
+                            </div>
+                            <div class="opposition-deadline">
+                                <i class="fas fa-clock me-2"></i>
+                                Échéance: {{ opp.opposition_possible_jusqua.strftime("%d/%m/%Y") }}
+                            </div>
+                        </div>
+                        {% if opp.alerte_envoyee %}
+                        <span class="status-badge sent">
+                            <i class="fas fa-check-circle"></i>
+                            Alerte envoyée
+                        </span>
+                        {% else %}
+                        <span class="status-badge pending">
+                            <i class="fas fa-hourglass-half"></i>
+                            En attente
+                        </span>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>Aucune opposition enregistrée pour ce dossier.</p>
+                </div>
+                {% endif %}
+            </div>
         </div>
-
-        <button type="submit" class="btn btn-primary mt-3">Enregistrer Opposition</button>
-        <a href="/dossiers/{{ dossier.id }}" class="btn btn-secondary mt-3">Annuler</a>
-    </form>
-
-    <hr>
-    <h5>Oppositions existantes</h5>
-    <ul>
-        {% for opp in oppositions %}
-        <li>
-            Notifiée le {{ opp.date_notification.strftime("%d/%m/%Y") }},
-            échéance {{ opp.opposition_possible_jusqua.strftime("%d/%m/%Y") }}
-            {% if opp.alerte_envoyee %} ✅ alerte envoyée {% endif %}
-        </li>
-        {% else %}
-        <li>Aucune opposition enregistrée.</li>
-        {% endfor %}
-    </ul>
+    </div>
 </div>
 {% endblock %}

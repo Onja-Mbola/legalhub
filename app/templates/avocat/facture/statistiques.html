@@ -245,7 +245,10 @@
                                 <span class="font-weight-bold">{{ "{:,.0f}".format(facture.montant_ttc if facture.montant_ttc else 0) }} Ariary</span><br>
                                 <small class="text-danger">
                                     {% if facture.date_echeance %}
-                                        {{ (now().date() - facture.date_echeance).days }} jours
+                                        {% set date_ech = facture.date_echeance.date() if facture.date_echeance.__class__.__name__ == 'datetime' else facture.date_echeance %}
+                                        {% set today_date = now().date() %}
+                                        {% set delta = (today_date - date_ech).days %}
+                                        {{ delta }} jour{{ 's' if delta > 1 else '' }}
                                     {% else %}
                                         N/A
                                     {% endif %}

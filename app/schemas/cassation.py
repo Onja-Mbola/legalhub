@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from typing import Optional
 
-from pydantic import BaseModel, validator, field_validator
+from pydantic import BaseModel, validator
 
 
 class CassationBase(BaseModel):
@@ -24,7 +24,7 @@ class CassationCreate(CassationBase):
     decision_fond_id: int
     dossier_id: int
 
-    @field_validator("*", mode="before")
+    @validator("*", pre=True)
     def empty_str_to_none(cls, v):
         if v == "":
             return None
@@ -111,7 +111,7 @@ class CassationUpdate(CassationBase):
     alerte_requete_envoyee: Optional[bool] = None
     alerte_memoire_ampliatif_envoyee: Optional[bool] = None
 
-    @field_validator("*", mode="before")
+    @validator("*", pre=True)
     def empty_str_to_none(cls, v):
         if v == "":
             return None

@@ -1,5 +1,7 @@
-from pydantic import BaseModel
 from typing import Optional
+
+from pydantic import BaseModel
+
 
 class ParamGeneralBase(BaseModel):
     nom: str
@@ -7,11 +9,14 @@ class ParamGeneralBase(BaseModel):
     unite: Optional[str] = None
     ordre: Optional[str] = None
 
+
 class ParamGeneralCreate(ParamGeneralBase):
     pass
 
+
 class ParamGeneralUpdate(ParamGeneralBase):
     pass
+
 
 class ParamGeneral(BaseModel):
     id: int

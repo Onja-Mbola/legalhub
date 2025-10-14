@@ -256,9 +256,7 @@ else:
     print(f"\n⚠️ Trop peu de données (<6 échantillons). Entraînement sur tout sans split ni CV.")
     print("   Ajoutez plus de PDFs ou seeds pour une évaluation fiable !")
     model.fit(X, labels)
-    # Pas d'évaluation détaillée
 
-# Sauvegarde
 os.makedirs("app/model", exist_ok=True)
 with open("app/model/model.pkl", "wb") as f:
     pickle.dump((model, vectorizer), f)

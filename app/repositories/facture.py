@@ -145,11 +145,6 @@ def get_statistiques_facturation(db: Session, avocat_id: int, annee: Optional[in
 
     factures = query.all()
 
-    print("Factures trouvées:", factures)
-    print("Dates emission:", [f.date_emission for f in factures])
-    print("Dates creation:", [f.date_creation for f in factures])
-    print("Montants TTC:", [f.montant_ttc for f in factures])
-
     total_facture = sum(f.montant_ttc for f in factures)
     factures_payees = [f for f in factures if f.statut == StatutFacture.PAYEE]
     total_paye = sum(f.montant_ttc for f in factures_payees)
@@ -225,7 +220,7 @@ def calculate_next_reminder(type_rappel: TypeRappel, date_echeance) -> Optional[
 
 
 def get_factures_en_retard(db: Session, avocat_id: int) -> list[Type[Facture]]:
-    today = datetime.now().date()
+    today = datetime.now()
 
     return db.query(Facture).join(Dossier).filter(
         Dossier.avocat_responsable == avocat_id,

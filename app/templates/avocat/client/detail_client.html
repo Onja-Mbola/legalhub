@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+
+{% block title %}Client #{{ client.id }} - {{ client.nom }}{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_deliberation.css">
+<link rel="stylesheet" href="/static/css/custom_detail_client.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="client-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h2 class="text-white mb-0 d-flex align-items-center">
+                    <i class="fas fa-user me-3"></i>
+                    {{ client.nom }}
+                    {% if stats.statut == 'gros_client' %}
+                    <span class="badge-client-status badge-gros">Gros Client</span>
+                    {% elif stats.statut == 'client_regulier' %}
+                    <span class="badge-client-status badge-regulier">Client Régulier</span>
+                    {% else %}
+                    <span class="badge-client-status badge-nouveau">Nouveau Client</span>
+                    {% endif %}
+                </h2>
+                <p class="text-white-50 mb-0 mt-2">Client #{{ client.id }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <!-- Statistiques -->
+    <div class="client-stats-grid">
+        <div class="stat-card">
+            <div class="stat-card-icon">
+                <i class="fas fa-folder"></i>
+            </div>
+            <div class="stat-value">{{ stats.total_dossiers }}</div>
+            <div class="stat-label">Dossiers totaux</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-icon success">
+                <i class="fas fa-folder-open"></i>
+            </div>
+            <div class="stat-value">{{ stats.dossiers_actifs }}</div>
+            <div class="stat-label">Dossiers actifs</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-icon warning">
+                <i class="fas fa-archive"></i>
+            </div>
+            <div class="stat-value">{{ stats.dossiers_archives }}</div>
+            <div class="stat-label">Dossiers archivés</div>
+        </div>
+    </div>
+
+    <!-- Boutons d'action -->
+    <div class="action-buttons">
+        <a href="/clients" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Retour à la liste
+        </a>
+        <a href="/clients/{{ client.id }}/modifier" class="btn btn-warning text-white">
+            <i class="fas fa-edit me-2"></i>
+            Modifier le client
+        </a>
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+            <i class="fas fa-trash me-2"></i>
+            Supprimer le client
+        </button>
+    </div>
+
+    <!-- Informations du client -->
+    <div class="info-section">
+        <h3 class="info-section-title">
+            <i class="fas fa-info-circle"></i>
+            Informations du client
+        </h3>
+
+        <div class="info-row">
+            <div class="info-label">
+                <i class="fas fa-hashtag"></i>
+                ID Client
+            </div>
+            <div class="info-value">#{{ client.id }}</div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-label">
+                <i class="fas fa-user"></i>
+                Nom complet
+            </div>
+            <div class="info-value">{{ client.nom }}</div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-label">
+                <i class="fas fa-envelope"></i>
+                Email
+            </div>
+            <div class="info-value">{{ client.email if client.email else 'Non renseigné' }}</div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-label">
+                <i class="fas fa-phone"></i>
+                Téléphone
+            </div>
+            <div class="info-value">{{ client.telephone if client.telephone else 'Non renseigné' }}</div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-label">
+                <i class="fas fa-map-marker-alt"></i>
+                Adresse
+            </div>
+            <div class="info-value">{{ client.adresse if client.adresse else 'Non renseignée' }}</div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-label">
+                <i class="fas fa-tag"></i>
+                Type de client
+            </div>
+            <div class="info-value">
+                {% if client.qualite == 'particulier' %}
+                    <i class="fas fa-user mr-2"></i> Particulier
+                {% elif client.qualite == 'entreprise' %}
+                    <i class="fas fa-building mr-2"></i> Entreprise
+                {% elif client.qualite == 'association' %}
+                    <i class="fas fa-users mr-2"></i> Association
+                {% elif client.qualite == 'administration' %}
+                    <i class="fas fa-landmark mr-2"></i> Administration
+                {% else %}
+                    Non spécifié
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Demandeurs associés -->
+    {% if demandeurs and demandeurs|length > 0 %}
+    <div class="info-section">
+        <h3 class="info-section-title">
+            <i class="fas fa-user-friends"></i>
+            Demandeurs associés ({{ demandeurs|length }})
+        </h3>
+
+        <div class="table-responsive">
+            <table class="dossiers-table">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Qualité</th>
+                        <th>Contact</th>
+                        <th>Adresse</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for demandeur in demandeurs %}
+                    <tr>
+                        <td><strong>{{ demandeur.nom if demandeur.nom else 'N/A' }}</strong></td>
+                        <td>
+                            {% if demandeur.qualite_param %}
+                                <span class="badge badge-info">{{ demandeur.qualite_param.valeur }}</span>
+                            {% else %}
+                                <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if demandeur.email or demandeur.telephone %}
+                                <div>
+                                    {% if demandeur.email %}
+                                    <div><i class="fas fa-envelope mr-1"></i> {{ demandeur.email }}</div>
+                                    {% endif %}
+                                    {% if demandeur.telephone %}
+                                    <div><i class="fas fa-phone mr-1"></i> {{ demandeur.telephone }}</div>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ demandeur.adresse if demandeur.adresse else 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Liste des dossiers -->
+    <div class="info-section">
+        <h3 class="info-section-title">
+            <i class="fas fa-folder-open"></i>
+            Dossiers associés ({{ dossiers|length }})
+        </h3>
+
+        {% if dossiers %}
+        <div class="table-responsive">
+            <table class="dossiers-table">
+                <thead>
+                    <tr>
+                        <th>Numéro</th>
+                        <th>Nom du dossier</th>
+                        <th>Type d'affaire</th>
+                        <th>Date création</th>
+                        <th>Statut</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dossier in dossiers %}
+                    <tr>
+                        <td><strong>{{ dossier.numero_dossier if dossier.numero_dossier else '#' + dossier.id|string }}</strong></td>
+                        <td>{{ dossier.nom_dossier if dossier.nom_dossier else 'Sans nom' }}</td>
+                        <td>
+                            {% if dossier.type_affaire_param %}
+                                {{ dossier.type_affaire_param.valeur }}
+                            {% else %}
+                                Non spécifié
+                            {% endif %}
+                        </td>
+                        <td>{{ dossier.date_creation.strftime('%d/%m/%Y') if dossier.date_creation else 'N/A' }}</td>
+                        <td>
+                            {% if dossier.current_stage in ['archivé', 'cloturé'] %}
+                                <span class="badge-status badge-archive">
+                                    <i class="fas fa-archive mr-1"></i> Archivé
+                                </span>
+                            {% else %}
+                                <span class="badge-status badge-actif">
+                                    <i class="fas fa-folder-open mr-1"></i> Actif
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="/dossiers/{{ dossier.id }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-eye me-1"></i>
+                                Voir
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-folder-open"></i>
+            <p class="mb-0">Aucun dossier associé à ce client</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">
+                    <strong>Êtes-vous sûr de vouloir supprimer ce client ?</strong>
+                </p>
+                <p class="text-muted mb-0">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Cette action est irréversible. Le client "{{ client.nom }}" sera définitivement supprimé.
+                </p>
+                {% if stats.total_dossiers > 0 %}
+                <div class="alert alert-warning mt-3 mb-0">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Attention :</strong> Ce client a {{ stats.total_dossiers }} dossier(s) associé(s).
+                    La suppression sera impossible tant que des dossiers sont liés.
+                </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>
+                    Annuler
+                </button>
+                <form method="post" action="/clients/{{ client.id }}/supprimer" style="display: inline;">
+                    <button type="submit" class="btn btn-danger" {% if stats.total_dossiers > 0 %}disabled{% endif %}>
+                        <i class="fas fa-trash me-2"></i>
+                        Supprimer définitivement
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

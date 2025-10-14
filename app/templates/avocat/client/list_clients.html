@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Clients{% endblock %}
+
+{% block sidebar %}
+{% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+{% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block head %}
+<link href="/static/css/custom_list_clients.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-1 font-weight-bold">
+                    <i class="fas fa-users mr-2"></i>
+                    Mes Clients
+                </h2>
+                <p class="mb-0 opacity-75">
+                    Gestion de votre portefeuille client
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <a class="btn btn-outline-light btn-modern" href="/clients/export/csv">
+                    <i class="fas fa-file-csv mr-2"></i> Export CSV
+                </a>
+                <a class="btn btn-outline-light btn-modern" href="/clients/export/pdf">
+                    <i class="fas fa-file-pdf mr-2"></i> Export PDF
+                </a>
+                <a class="btn btn-light btn-modern" href="/clients/nouveau">
+                    <i class="fas fa-user-plus mr-2"></i> Nouveau client
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card modern-card">
+        <div class="card-header bg-white border-bottom px-4 py-3">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <form method="get" action="/clients" class="search-form">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text bg-transparent border-right-0">
+                                    <i class="fas fa-search text-muted"></i>
+                                </span>
+                            </div>
+                            <input type="text" 
+                                   name="search" 
+                                   class="form-control border-left-0 pl-0" 
+                                   placeholder="Rechercher un client (nom, email, téléphone)..."
+                                   value="{{ search }}">
+                            <input type="hidden" name="sort_by" value="{{ sort_by }}">
+                            <input type="hidden" name="order" value="{{ order }}">
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-6 text-right">
+                    <div class="btn-group" role="group">
+                        <a href="/clients?sort_by=nom&order={{ 'desc' if sort_by == 'nom' and order == 'asc' else 'asc' }}" 
+                           class="btn btn-sm btn-outline-secondary {{ 'active' if sort_by == 'nom' else '' }}">
+                            <i class="fas fa-sort-alpha-{{ 'down' if sort_by == 'nom' and order == 'desc' else 'up' }} mr-1"></i>
+                            Par nom
+                        </a>
+                        <a href="/clients?sort_by=dossiers&order={{ 'desc' if sort_by == 'dossiers' and order == 'asc' else 'asc' }}" 
+                           class="btn btn-sm btn-outline-secondary {{ 'active' if sort_by == 'dossiers' else '' }}">
+                            <i class="fas fa-sort-numeric-{{ 'down' if sort_by == 'dossiers' and order == 'desc' else 'up' }} mr-1"></i>
+                            Par dossiers
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-modern table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-user mr-1"></i> Client</th>
+                        <th><i class="fas fa-envelope mr-1"></i> Contact</th>
+                        <th><i class="fas fa-map-marker-alt mr-1"></i> Adresse</th>
+                        <th><i class="fas fa-tag mr-1"></i> Type</th>
+                        <th class="text-center"><i class="fas fa-folder mr-1"></i> Dossiers</th>
+                        <th class="text-center"><i class="fas fa-star mr-1"></i> Statut</th>
+                        <th class="text-center"><i class="fas fa-cog mr-1"></i> Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in clients %}
+                    {% set client = item.client %}
+                    {% set stats = item.stats %}
+                    {% set demandeur = item.demandeur_principal %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-circle mr-3">
+                                    {% if demandeur and demandeur.nom %}
+                                        {{ demandeur.nom[0].upper() }}
+                                    {% elif client.nom %}
+                                        {{ client.nom[0].upper() }}
+                                    {% else %}
+                                        C
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="font-weight-600">
+                                        {{ demandeur.nom if demandeur and demandeur.nom else client.nom if client.nom else 'Client #' + client.id|string }}
+                                    </div>
+                                    <small class="text-muted">ID: {{ client.id }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="contact-info">
+                                {% if (demandeur and demandeur.email) or client.email %}
+                                <div class="mb-1">
+                                    <i class="fas fa-envelope text-muted mr-2" style="width: 16px;"></i>
+                                    <span class="text-truncate" style="max-width: 200px; display: inline-block;">
+                                        {{ demandeur.email if demandeur and demandeur.email else client.email }}
+                                    </span>
+                                </div>
+                                {% endif %}
+
+                                {% if (demandeur and demandeur.telephone) or client.telephone %}
+                                <div>
+                                    <i class="fas fa-phone text-muted mr-2" style="width: 16px;"></i>
+                                    {{ demandeur.telephone if demandeur and demandeur.telephone else client.telephone }}
+                                </div>
+                                {% endif %}
+
+                                {% if not ((demandeur and demandeur.email) or client.email) and not ((demandeur and demandeur.telephone) or client.telephone) %}
+                                <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="text-truncate" style="max-width: 200px;">
+                            {{ client.adresse if client.adresse else '-' }}
+                        </td>
+                        <td>
+                            {% if client.qualite %}
+                            <span class="badge badge-role">
+                                {% if client.qualite == 'particulier' %}
+                                    <i class="fas fa-user mr-1"></i> Particulier
+                                {% elif client.qualite == 'entreprise' %}
+                                    <i class="fas fa-building mr-1"></i> Entreprise
+                                {% elif client.qualite == 'association' %}
+                                    <i class="fas fa-users mr-1"></i> Association
+                                {% elif client.qualite == 'administration' %}
+                                    <i class="fas fa-landmark mr-1"></i> Administration
+                                {% else %}
+                                    {{ client.qualite }}
+                                {% endif %}
+                            </span>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <div class="dossiers-count">
+                                <div class="font-weight-bold text-primary" style="font-size: 1.2rem;">
+                                    {{ stats.total_dossiers }}
+                                </div>
+                                <small class="text-muted">
+                                    {{ stats.dossiers_actifs }} actifs
+                                </small>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            {% if stats.statut == 'gros_client' %}
+                            <span class="badge badge-statut badge-gros-client">
+                                <i class="fas fa-crown mr-1"></i> Gros client
+                            </span>
+                            {% elif stats.statut == 'client_regulier' %}
+                            <span class="badge badge-statut badge-client-regulier">
+                                <i class="fas fa-check-circle mr-1"></i> Régulier
+                            </span>
+                            {% else %}
+                            <span class="badge badge-statut badge-nouveau-client">
+                                <i class="fas fa-star mr-1"></i> Nouveau
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <a class="btn btn-sm btn-outline-primary btn-action" 
+                               href="/clients/{{ client.id }}">
+                                <i class="fas fa-eye"></i> Voir détails
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <i class="fas fa-users"></i>
+                                <p class="mb-0">Aucun client trouvé.</p>
+                                <small>Commencez par créer un nouveau client</small>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if pagination.total_pages > 1 %}
+        <nav aria-label="Pagination" class="px-3 py-3 border-top bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="text-muted small">
+                    Page {{ pagination.current_page }} sur {{ pagination.total_pages }} 
+                    ({{ pagination.total }} client{{ 's' if pagination.total > 1 else '' }})
+                </div>
+                <ul class="pagination pagination-modern pagination-sm mb-0">
+                    {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="/clients?page={{ pagination.current_page - 1 }}&search={{ search }}&sort_by={{ sort_by }}&order={{ order }}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for page_num in range(1, pagination.total_pages + 1) %}
+                        {% if page_num == pagination.current_page %}
+                        <li class="page-item active">
+                            <a class="page-link" href="#">{{ page_num }}</a>
+                        </li>
+                        {% elif page_num <= 3 or page_num > pagination.total_pages - 3 or (page_num >= pagination.current_page - 1 and page_num <= pagination.current_page + 1) %}
+                        <li class="page-item">
+                            <a class="page-link" href="/clients?page={{ page_num }}&search={{ search }}&sort_by={{ sort_by }}&order={{ order }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% elif page_num == 4 or page_num == pagination.total_pages - 3 %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="/clients?page={{ pagination.current_page + 1 }}&search={{ search }}&sort_by={{ sort_by }}&order={{ order }}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

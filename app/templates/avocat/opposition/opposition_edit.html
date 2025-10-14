@@ -10,43 +10,116 @@
 {% include "partials/topbar.html" %}
 {% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="/static/css/custom_opposition.css">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
+<div class="container-fluid py-4">
     {% for key, message in [
-    ('success', 'Opposition modifié avec succès.'),
+        ('success', 'Opposition modifié avec succès.'),
     ] %}
     {% if request.query_params.get(key) == '1' %}
     <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <strong>Succès !</strong> {{ message }}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
-            <span aria-hidden="true">x</span>
-        </button>
+        <i class="fas fa-check-circle"></i>
+        <div>
+            <strong>Succès !</strong> {{ message }}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
     </div>
     {% endif %}
     {% endfor %}
-    <h3>Modifier l'Opposition (ID: {{ opposition.id }})</h3>
-    <form method="post">
 
-        <div class="form-group">
-            <label for="date_notification">Date de Notification</label>
-            <input type="date" name="date_notification" class="form-control"
-                   value="{{ opposition.date_notification.strftime('%Y-%m-%d') }}" required>
+    <div class="page-header">
+        <div class="container-fluid">
+            <h2 class="text-white mb-1 font-weight-bold">
+                <i class="fas fa-edit me-2"></i>Modifier l'Opposition
+            </h2>
+            <div class="opposition-badge">
+                ID Opposition: {{ opposition.id }}
+            </div>
         </div>
+    </div>
 
-        <button type="submit" class="btn btn-primary mt-3">Mettre à jour</button>
-        <a href="/dossiers/{{ opposition.dossier.id }}" class="btn btn-secondary mt-3">Annuler</a>
-    </form>
+    <div class="form-card">
+        <div class="form-section">
+            <div class="info-banner">
+                <i class="fas fa-info-circle"></i>
+                <div class="info-banner-content">
+                    <h6>Modification de l'opposition</h6>
+                    <p>Modifiez la date de notification de l'opposition. Cette date détermine automatiquement la période d'opposition possible.</p>
+                </div>
+            </div>
 
-    <hr>
-    <h5>Détails de l'opposition</h5>
-    <p>
-        Notification initiale : {{ opposition.date_notification.strftime("%d/%m/%Y") }}<br>
-        Opposition possible jusqu’au : {{ opposition.opposition_possible_jusqua.strftime("%d/%m/%Y") }}<br>
-        {% if opposition.alerte_envoyee %}
-            ✅ Alerte déjà envoyée
-        {% else %}
-            ⏳ Alerte non encore envoyée
-        {% endif %}
-    </p>
+            <form method="post">
+                <div class="form-group-section">
+                    <div class="section-title">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Date de notification</span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="date_notification" class="form-label">
+                            <i class="far fa-calendar"></i>
+                            Date de Notification
+                            <span class="required-badge">REQUIS</span>
+                        </label>
+                        <input type="date"
+                               name="date_notification"
+                               id="date_notification"
+                               class="form-control"
+                               value="{{ opposition.date_notification.strftime('%Y-%m-%d') }}"
+                               required>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>
+                        Mettre à jour
+                    </button>
+                    <a href="/dossiers/{{ opposition.dossier.id }}" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>
+                        Annuler
+                    </a>
+                </div>
+            </form>
+
+            <div class="details-card">
+                <div class="section-title">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Détails de l'opposition</span>
+                </div>
+
+                <div class="detail-item">
+                    <i class="fas fa-bell"></i>
+                    <strong>Notification initiale :</strong>
+                    <span>{{ opposition.date_notification.strftime("%d/%m/%Y") }}</span>
+                </div>
+
+                <div class="detail-item">
+                    <i class="fas fa-clock"></i>
+                    <strong>Opposition possible jusqu'au :</strong>
+                    <span>{{ opposition.opposition_possible_jusqua.strftime("%d/%m/%Y") }}</span>
+                </div>
+
+                <div class="detail-item">
+                    <i class="fas fa-envelope"></i>
+                    <strong>Statut de l'alerte :</strong>
+                    {% if opposition.alerte_envoyee %}
+                    <span class="status-badge sent">
+                        <i class="fas fa-check-circle"></i>
+                        Alerte déjà envoyée
+                    </span>
+                    {% else %}
+                    <span class="status-badge pending">
+                        <i class="fas fa-hourglass-half"></i>
+                        Alerte non encore envoyée
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Prédiction d'Issue - Dossier #{{ dossier.id }}{% endblock %}
+
+{% block sidebar %}
+    {% include "partials/sidebar.html" %}
+{% endblock %}
+
+{% block topbar %}
+    {% include "partials/topbar.html" %}
+{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="/static/css/custom_predict.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div class="container">
+        <h2 class="text-white mb-0 d-flex align-items-center flex-wrap">
+            <i class="fas fa-brain me-3"></i>
+            Prédiction d'Issue - Dossier #{{ dossier.id }}
+            <span class="badge-mode badge-prediction">Analyse IA</span>
+        </h2>
+        <p class="text-white-50 mb-0 mt-2">Prédiction automatique de l'issue du dossier basée sur le résumé NLP</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    {% if error_msg %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-exclamation-circle me-3" style="font-size: 1.5rem;"></i>
+            <div>
+                <strong>Erreur :</strong> {{ error_msg }}
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+    </div>
+    {% endif %}
+
+    <div class="form-card">
+        <div class="form-section">
+            <div class="form-group-section">
+                <h5 class="section-title">
+                    <i class="fas fa-folder-open"></i>
+                    Informations du Dossier
+                </h5>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            <i class="fas fa-hashtag"></i>
+                            Numéro de Dossier
+                        </label>
+                        <div class="form-control-plaintext fs-5 fw-bold text-primary">
+                            {{ dossier.numero_dossier or 'N/A' }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            <i class="fas fa-file-alt"></i>
+                            Nom du Dossier
+                        </label>
+                        <div class="form-control-plaintext fs-5 text-truncate">
+                            {{ dossier.nom_dossier or 'Sans nom' }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            <i class="fas fa-building"></i>
+                            Juridiction / Tribunal
+                        </label>
+                        <div class="form-control-plaintext">
+                            {{ dossier.juridiction or dossier.tribunal or 'Non spécifié' }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            <i class="fas fa-clock"></i>
+                            Date de Création
+                        </label>
+                        <div class="form-control-plaintext">
+                            {{ dossier.date_creation.strftime('%d/%m/%Y') if dossier.date_creation else 'N/A' }}
+                        </div>
+                    </div>
+                    {% if dossier.type_affaire_param %}
+                    <div class="col-12">
+                        <label class="form-label">
+                            <i class="fas fa-balance-scale"></i>
+                            Type d'Affaire
+                        </label>
+                        <div class="form-control-plaintext">
+                            {{ dossier.type_affaire_param.libelle or 'Non spécifié' }}
+                            {% if dossier.sous_type_affaire_param %}
+                            <span class="badge badge-secondary ms-2">{{ dossier.sous_type_affaire_param.libelle }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-group-section">
+                <h5 class="section-title">
+                    <i class="fas fa-file-text"></i>
+                    Texte Analysé (Résumé NLP)
+                </h5>
+                <div class="mb-3">
+                    <div class="card bg-light">
+                        <div class="card-body p-3">
+                            <p class="text-muted small mb-2"><i class="fas fa-info-circle me-1"></i>Extrait du résumé utilisé pour l'analyse IA ({{ texte_utilise|length }} caractères)</p>
+                            <div class="text-pre-wrap" style="max-height: 200px; overflow-y: auto; font-size: 0.9rem; line-height: 1.5;">
+                                {{ texte_utilise }}
+                            </div>
+                            {% if full_text|length > 500 %}
+                            <button class="btn btn-sm btn-outline-info mt-2" onclick="toggleFullText()">
+                                <i class="fas fa-expand me-1"></i>Afficher le texte complet
+                            </button>
+                            <div id="fullText" class="mt-2" style="display: none;">
+                                <hr>
+                                <div class="text-pre-wrap bg-white p-3 border rounded" style="font-size: 0.85rem; line-height: 1.4;">
+                                    {{ full_text }}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group-section">
+                <h5 class="section-title">
+                    <i class="{{ prediction_icon }}"></i>
+                    Résultat de la Prédiction
+                </h5>
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="alert {{ prediction_class }} alert-dismissible fade show" role="alert">
+                            <div class="d-flex align-items-center">
+                                <i class="{{ prediction_icon }} me-3" style="font-size: 2rem;"></i>
+                                <div>
+                                    <h4 class="alert-heading mb-1">Issue Prédite : {{ prediction_issue }}</h4>
+                                    <p class="mb-0">Basé sur l'analyse du résumé NLP, l'issue probable de ce dossier est <strong>{{ prediction_issue.lower() }}</strong>.</p>
+                                    <small class="d-block mt-2 text-white-50">
+                                        <i class="fas fa-robot me-1"></i>Prédiction générée par modèle IA. Non contraignante - consultez un expert pour confirmation.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="info-card">
+                            <div class="info-card-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="info-card-title">Statut Prédiction</div>
+                            <ul class="info-card-list">
+                                <li><i class="fas fa-check text-success me-2"></i>{{ "Sauvegardée" if dossier.prediction_issue else "Nouvelle" }}</li>
+                                <li><i class="fas fa-sync-alt me-2"></i>Modèle : IA Basique</li>
+                                <li><i class="fas fa-exclamation-triangle text-warning me-2"></i>À valider manuellement</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <div class="d-flex justify-content-between align-items-center mt-5">
+                <a href="/dossiers/{{ dossier.id }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Retour au Dossier
+                </a>
+                <div>
+                    <a href="/dossiers/{{ dossier.id }}/edit" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-edit me-2"></i>
+                        Modifier Dossier
+                    </a>
+                    <button class="btn btn-info" onclick="rePredict()">
+                        <i class="fas fa-redo me-2"></i>
+                        Recalculer Prédiction
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleFullText() {
+    const fullTextDiv = document.getElementById('fullText');
+    const btn = event.target;
+    if (fullTextDiv.style.display === 'none') {
+        fullTextDiv.style.display = 'block';
+        btn.innerHTML = '<i class="fas fa-compress me-1"></i>Réduire le texte';
+    } else {
+        fullTextDiv.style.display = 'none';
+        btn.innerHTML = '<i class="fas fa-expand me-1"></i>Afficher le texte complet';
+    }
+}
+
+function rePredict() {
+    if (confirm('Recalculer la prédiction ? Cela peut prendre quelques secondes.')) {
+        window.location.href = '/dossiers/{{ dossier.id }}/predict?recompute=true';  // Ajoutez un param si besoin pour forcer
+    }
+}
+</script>
+
+{% endblock %}

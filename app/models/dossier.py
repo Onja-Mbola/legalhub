@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship
 from app.core.workflow_enums import ProcessStage
 from app.db.base_class import Base
 from app.models.action_log import ActionLog
+from app.models.adverse import Adverse
 from app.models.appel import Appel
 from app.models.avant_dire_droit import AvantDireDroit
 from app.models.cassation import Cassation
@@ -13,6 +14,7 @@ from app.models.client import Client
 from app.models.decision_avant_dire_droit import DecisionAvantDireDroit
 from app.models.decision_definitive import DecisionDefinitive
 from app.models.deliberation_decision import DeliberationDecision
+from app.models.demandeur import Demandeur
 from app.models.echange_conclusion import EchangeConclusion
 from app.models.enrolement import Enrolement
 from app.models.facture import Facture
@@ -50,7 +52,8 @@ class Dossier(Base):
     current_stage = Column(String, default=ProcessStage.INTRODUCTION_INSTANCE.value, nullable=False)
     last_completed_stage = Column(String, nullable=True)
 
-    client_id = Column(Integer, ForeignKey("clients.id"))
+    client_id = Column(Integer, ForeignKey("clients.id"), nullable=True)
+
     client = relationship(lambda: Client, back_populates="dossiers")
     avocat_responsable_user = relationship(lambda: User, foreign_keys=[avocat_responsable])
 
@@ -61,6 +64,9 @@ class Dossier(Base):
     consentement_rgpd = Column(Boolean, default=False)
     date_consentement = Column(DateTime, nullable=True)
     traitement_actif = Column(Boolean, default=False)
+
+    demandeurs = relationship(lambda: Demandeur, back_populates="dossier", cascade="all, delete-orphan")
+    adverses = relationship(lambda: Adverse, back_populates="dossier", cascade="all, delete-orphan")
 
     type_affaire_param = relationship(lambda: ParamGeneral, foreign_keys=[type_affaire])
     sous_type_affaire_param = relationship(lambda: ParamGeneral, foreign_keys=[sous_type_affaire])

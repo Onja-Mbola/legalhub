@@ -3,18 +3,18 @@ import os
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.responses import JSONResponse
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST, \
     HTTP_500_INTERNAL_SERVER_ERROR
-from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.db.init_db import init_db
 from app.api.routes import clarck
+from app.api.routes.admin import admin, auth, param_general
 from app.api.routes.avocat import dossier, avocat, enrolement, requete_assignation, premiere_audience, \
     echange_conclusion, deliberation_decision, decision_definitive, decision_avant_dire_droit, jugement, opposition, \
     retour_audience, jugement_definitif, appel, facturation, dashboard, facture, profile, premiere_audience_appel, \
-    avant_dire_droit, fond, cassation, search
-from app.api.routes.admin import admin, auth, param_general
+    avant_dire_droit, fond, cassation, search, client
+from app.db.init_db import init_db
 
 app = FastAPI()
 
@@ -22,14 +22,6 @@ app = FastAPI()
 @app.on_event("startup")
 def startup_event():
     init_db()
-    from app.core.elasticsearch_config import es_client
-    try:
-        if es_client.ping():
-            print("Elasticsearch connecté")
-        else:
-            print("Elasticsearch non disponible")
-    except Exception as e:
-        print(f"Erreur Elasticsearch: {e}")
 
 
 app.include_router(auth.router)
@@ -59,6 +51,7 @@ app.include_router(avant_dire_droit.router)
 app.include_router(fond.router)
 app.include_router(cassation.router)
 app.include_router(search.router)
+app.include_router(client.router)
 
 documents_path = "app/documents"
 if not os.path.exists(documents_path):
